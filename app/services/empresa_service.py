@@ -9,10 +9,14 @@ class EmpresaService:
     def crear_empresa(self, data: dict) -> dict:
         nombre = data.get("nombre")
         nit = data.get("nit")
-        if not nombre or not nit:
-            raise ValidationError("nombre y nit son obligatorios")
+        sector = data.get("sector")
+        direccion = data.get("direccion")
+        if not nombre or not nit or not sector or not direccion:
+            raise ValidationError(
+                "nombre, nit, sector y direccion son obligatorios"
+            )
 
-        empresa = Empresa(nombre=nombre, nit=nit)
+        empresa = Empresa(nombre=nombre, nit=nit, sector=sector, direccion=direccion)
         empresa_id = self.empresa_repository.insert(empresa.to_dict())
         return self.obtener_empresa(empresa_id)
 
