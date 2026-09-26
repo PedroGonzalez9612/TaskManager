@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <main class="principal">
+        <div class="encabezado-pagina">
+            <div>
+                <h1>Usuarios</h1>
+                <p id="subtitulo">Operarios y administradores de tu empresa.</p>
+            </div>
+            <button type="button" class="boton" data-abrir-dialogo>+ Nuevo usuario</button>
+        </div>
+
+        <section class="panel">
+            <div class="cupos" aria-live="polite">
+                <span>Operarios: <strong id="cupo-operarios">—</strong></span>
+                <span>Administradores: <strong id="cupo-administradores">—</strong></span>
+            </div>
+            <p id="aviso-cupo" class="aviso-cupo" hidden>
+                Tu empresa alcanzó el límite de usuarios. Solicita al Superadmin ampliarlo.
+            </p>
+            <div class="contenedor-tabla">
+                <table id="tabla-usuarios" class="tabla" hidden>
+                    <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="estado-vacio" class="estado-vacio" hidden>
+                <strong>Aún no hay usuarios</strong>
+                Crea a los operarios de tu empresa para poder asignarles actividades.
+                <div><button type="button" class="boton" data-abrir-dialogo>+ Nuevo usuario</button></div>
+            </div>
+        </section>
+    </main>
+
+    <dialog id="dialogo-usuario" class="dialogo" aria-labelledby="titulo-dialogo">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-dialogo">Nuevo usuario</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <label for="rol">Rol</label>
+            <select id="rol" name="rol">
+                <option value="OPERARIO" selected>Operario</option>
+                <option value="ADMINISTRADOR">Administrador</option>
+            </select>
+
+            <label for="nombre">Nombre completo</label>
+            <input id="nombre" name="nombre" required>
+
+            <label for="correo">Correo</label>
+            <input id="correo" name="correo" type="email" autocomplete="off" required>
+
+            <label for="contraseña">Contraseña inicial</label>
+            <input id="contraseña" name="contraseña" type="password" autocomplete="new-password" minlength="8" required>
+            <p class="ayuda-campo">Mínimo 8 caracteres. Compártela con el usuario.</p>
+
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Crear usuario</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/usuarios-comun.js"></script>
+    <script src="/static/admin/usuarios.js"></script>
+</body>
+</html>

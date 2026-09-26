@@ -1,52 +1,80 @@
-# TaskManager
+# GestLab
 
-API REST en Flask + MongoDB para la gestión de tareas de una empresa, siguiendo el flujo:
+Sistema web para la gestión y análisis de la carga laboral de operarios en empresas: qué se debe hacer, quién lo está haciendo y cuánto trabajo hay en curso.
 
-**Empresa → Usuarios → Requerimiento → Actividad → Asignación → Prioridad → Ejecución → Registro de tiempo → Análisis**
+Proyecto académico de las materias Diseño Orientado a Objetos y Diseño de Interfaces (UCC).
+
+- Alcance del proyecto: [docs/alcance_proyecto.md](docs/alcance_proyecto.md)
+- Estado del avance: [docs/avance.md](docs/avance.md)
 
 ## Arquitectura
 
-Diseño por capas orientado a objetos:
+Aplicación web en tres capas, con Flask y MongoDB:
 
-- `app/models`: clases de dominio (Empresa, Usuario, Requerimiento, Actividad, Asignacion, Ejecucion, RegistroTiempo) y enums (Prioridad, EstadoActividad, EstadoEjecucion, EstadoRequerimiento).
-- `app/repositories`: acceso a MongoDB (patrón Repository) por entidad.
-- `app/services`: reglas de negocio (validaciones, transiciones de estado, orquestación entre repositorios).
-- `app/routes`: blueprints de Flask que exponen la API REST.
+- `app/static/`: interfaz web (HTML, CSS y JavaScript). Es un cliente en el navegador que consume la API REST con `fetch`.
+- `app/routes/`: blueprints de Flask que exponen la API REST en JSON y validan la sesión y el rol.
+- `app/services/`: reglas de negocio.
+- `app/repositories/`: acceso a MongoDB (patrón Repository).
+- `app/models/`: clases de dominio y enums.
 
-## Requisitos
+## Ejecución con Docker (recomendado)
 
-- Python 3.11+
-- MongoDB corriendo localmente (`mongodb://localhost:27017` por defecto)
+1. Copia el archivo de ejemplo y edita los valores:
 
-## Instalación
+   ```bash
+   copy .env.example .env
+   ```
+
+   Variables importantes:
+
+   | Variable | Para qué sirve |
+   |---|---|
+   | `SECRET_KEY` | Firma la cookie de sesión. Usa un texto largo y aleatorio. |
+   | `SUPERADMIN_CORREO` / `SUPERADMIN_CONTRASENA` | Datos del primer Superadmin, que se crea solo al arrancar si todavía no existe ninguno. |
+
+2. Levanta la aplicación y la base de datos:
+
+   ```bash
+   docker compose up --build
+   ```
+
+3. Abre `http://localhost:5000` e inicia sesión con el correo y la contraseña del Superadmin.
+
+Para borrar la base de datos de desarrollo y empezar de cero: `docker compose down -v`.
+
+## Ejecución sin Docker
+
+Requiere Python 3.11+ y MongoDB corriendo en `mongodb://localhost:27017`.
 
 ```bash
 python -m venv .venv
 .venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 copy .env.example .env
-```
-
-## Ejecución
-
-Asegúrate de tener MongoDB corriendo localmente, luego:
-
-```bash
 python run.py
 ```
 
-La API queda disponible en `http://localhost:5000`. Verifica con `GET /health`.
+## Roles y primer uso
 
-## Flujo de uso (endpoints principales)
+1. El **Superadmin** registra una empresa (con su logo y sus límites de usuarios) y le crea un Administrador.
+2. El **Administrador** entra con su correo y crea a los Operarios de su empresa.
+3. El **Operario** entra desde el celular y ve sus actividades ordenadas por prioridad.
 
-1. `POST /empresas` — crear empresa
-2. `POST /usuarios` — crear usuario (requiere `empresa_id`)
-3. `POST /requerimientos` — crear requerimiento (requiere `empresa_id`)
-4. `POST /actividades` — crear actividad (requiere `requerimiento_id`, `prioridad`: ALTA/MEDIA/BAJA)
-5. `POST /actividades/<id>/asignar` — asignar actividad a un usuario (`usuario_id`)
-6. `POST /actividades/<id>/iniciar` — iniciar ejecución (requiere asignación previa)
-7. `POST /actividades/<id>/registros-tiempo` — registrar horas trabajadas (`usuario_id`, `horas`)
-8. `POST /actividades/<id>/finalizar` — finalizar ejecución
-9. `GET /analisis/horas-por-actividad`, `/analisis/horas-por-usuario`, `/analisis/actividades-por-estado`, `/analisis/requerimientos/<id>/resumen` — reportes
+Cada rol ve su propia interfaz. Los usuarios de una empresa ven el logo de su empresa en lugar del de GestLab.
 
-Cada entidad también tiene `GET`, `PUT` y `DELETE` estándar (`/empresas/<id>`, `/usuarios/<id>`, etc.).
+## API principal
+
+Todas las rutas (salvo `/auth/login` y `/health`) requieren sesión iniciada.
+
+| Método y ruta | Quién | Descripción |
+|---|---|---|
+| `POST /auth/login` | Todos | Inicia sesión (`correo`, `contraseña`) |
+| `POST /auth/logout` | Todos | Cierra sesión |
+| `GET /auth/sesion` | Todos | Usuario actual y datos de su empresa |
+| `GET, POST /empresas` | Superadmin | Lista y registra empresas (con `limite_administradores` y `limite_operarios`) |
+| `GET, PUT /empresas/<id>` | Superadmin (y Administrador, solo lectura de la suya) | Consulta o edita una empresa |
+| `GET, PUT /empresas/<id>/logo` | Ver: usuarios de la empresa · Cambiar: Superadmin | Logo de la empresa (PNG, JPG o WEBP, máx. 512 KB) |
+| `GET, POST /usuarios` | Superadmin, Administrador | Lista y crea usuarios de una empresa |
+| `GET /health` | Público | Verificación del servidor |
+
+Las rutas de requerimientos, actividades, asignaciones, registros de tiempo y análisis existen, pero todavía no exigen sesión; se ajustarán en las próximas etapas (ver [docs/avance.md](docs/avance.md)).
