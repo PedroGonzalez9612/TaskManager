@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresas — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <main class="principal">
+        <div class="encabezado-pagina">
+            <div>
+                <h1>Empresas</h1>
+                <p>Clientes registrados en GestLab. Entra a una empresa para gestionar sus administradores.</p>
+            </div>
+            <button type="button" class="boton" data-abrir-dialogo>+ Nueva empresa</button>
+        </div>
+
+        <section class="panel">
+            <div class="contenedor-tabla">
+                <table id="tabla-empresas" class="tabla" hidden>
+                    <thead>
+                        <tr><th>Empresa</th><th>NIT</th><th>Sector</th><th>Administradores</th><th>Operarios</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="estado-vacio" class="estado-vacio" hidden>
+                <strong>Todavía no hay empresas</strong>
+                Registra la primera empresa para empezar.
+                <div><button type="button" class="boton" data-abrir-dialogo>+ Nueva empresa</button></div>
+            </div>
+        </section>
+    </main>
+
+    <dialog id="dialogo-empresa" class="dialogo" aria-labelledby="titulo-dialogo">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-dialogo">Nueva empresa</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" required>
+
+            <label for="nit">NIT</label>
+            <input id="nit" name="nit" required>
+
+            <label for="sector">Sector</label>
+            <input id="sector" name="sector" required>
+
+            <label for="direccion">Dirección</label>
+            <input id="direccion" name="direccion" required>
+
+            <fieldset class="grupo-campos">
+                <legend>Límite de usuarios</legend>
+                <div class="fila-campos">
+                    <div class="campo">
+                        <label for="limite_administradores">Administradores</label>
+                        <input id="limite_administradores" name="limite_administradores" type="number" min="1" step="1" value="2" required>
+                    </div>
+                    <div class="campo">
+                        <label for="limite_operarios">Operarios</label>
+                        <input id="limite_operarios" name="limite_operarios" type="number" min="1" step="1" value="10" required>
+                    </div>
+                </div>
+            </fieldset>
+
+            <label for="logo">Logo (opcional)</label>
+            <div class="campo-logo">
+                <img class="vista-previa-logo" alt="Vista previa del logo" hidden>
+                <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp">
+            </div>
+            <p class="ayuda-campo">PNG, JPG o WEBP, máximo 512 KB. Los usuarios de la empresa lo verán en lugar del logo de GestLab.</p>
+
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Registrar empresa</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/superadmin/empresas.js"></script>
+</body>
+</html>

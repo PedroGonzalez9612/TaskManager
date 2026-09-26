@@ -33,7 +33,7 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 
 ## 4. Usuarios del sistema
 
-- **Superadmin:** rol técnico/operativo del sistema, no pertenece a ninguna empresa específica. Es responsable de dar de alta nuevas empresas en el sistema y crear el primer usuario Administrador de cada una. No participa en la gestión diaria de requerimientos, actividades ni ejecución.
+- **Superadmin:** rol técnico/operativo del sistema, no pertenece a ninguna empresa específica. Es responsable de dar de alta nuevas empresas en el sistema y crear el primer usuario Administrador de cada una. También define, para cada empresa, su logo (marca blanca) y la cantidad máxima de Administradores y de Operarios que puede tener. No participa en la gestión diaria de requerimientos, actividades ni ejecución.
 - **Administrador** (antes "Supervisor"): administra y da seguimiento a los requerimientos y actividades del área, asigna responsables, establece prioridades y consulta la carga laboral del personal. Además, define los turnos de la empresa y asigna uno a cada operario, valida o corrige la asistencia diaria y reasigna actividades cuando un operario falta.
 - **Operario** (antes "Empleado"): consulta sus actividades, conoce la información necesaria para ejecutarlas, registra su ejecución y puede reportar actividades solicitadas por otras áreas para conocimiento y gestión del administrador. Además, marca su entrada y salida de cada jornada.
 
@@ -45,13 +45,15 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Registro y administración de empresas.
 - Registro de empresas y creación del primer usuario Administrador de cada una, a cargo del Superadmin.
 - Registro y administración de usuarios con perfiles de Administrador y Operario, dentro de su respectiva empresa.
+- Límite de usuarios por empresa: el Superadmin define un máximo de Administradores y otro de Operarios. El sistema impide crear usuarios por encima del límite y reducir un límite por debajo de los usuarios que la empresa ya tiene.
+- Marca blanca: el Superadmin puede cargar el logo de cada empresa (PNG, JPG o WEBP, máximo 512 KB). Los usuarios de esa empresa ven su logo y su nombre en la interfaz en lugar de la marca GestLab. La pantalla de inicio de sesión conserva la marca GestLab, porque antes de ingresar el sistema no sabe a qué empresa pertenece el usuario.
 - Registro y seguimiento de requerimientos que llegan al área.
 - Conversión y organización de requerimientos en actividades de trabajo.
 - Creación y asignación de actividades a uno o varios operarios.
 - Definición de información clara para cada actividad.
 - Clasificación de actividades por tipo o categoría.
 - Definición de prioridad de las actividades en cuatro niveles: Baja, Media, Alta y Urgente. El nivel Urgente indica que la actividad debe interrumpir la tarea que el operario tenga en curso.
-- Definición de tiempo estimado de ejecución.
+- Definición de tiempo estimado de ejecución. El tiempo estimado corresponde a la actividad completa: si la actividad tiene varios operarios, no se reparte entre ellos (cada uno la suma completa a su carga).
 - Definición de una fecha programada de ejecución para cada actividad.
 - Consulta del estado y asignación de las actividades.
 - Posibilidad de que un operario registre una actividad solicitada por otra área y la socialice con su administrador.
@@ -137,6 +139,31 @@ Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usua
 - El **motivo de pausa** debe registrarse junto con cada evento de pausa (no es un campo global de la actividad, sino un dato asociado a cada pausa específica, ya que una actividad puede pausarse varias veces por razones distintas).
 
 Esta subsección no reemplaza la Sección 5 (Alcance funcional) — la complementa desde la perspectiva de interfaz y experiencia de usuario.
+
+### 6.2 Vistas por rol y diseño general de la interfaz (Diseño de Interfaces)
+
+Cada rol ingresa por la misma pantalla de inicio de sesión y es llevado a su propia interfaz. Un usuario que intente abrir una pantalla de otro rol es redirigido a la suya.
+
+| Rol | Dispositivo principal | Opciones del menú |
+|---|---|---|
+| Superadmin | Computador | Empresas (lista, registro, detalle con usuarios, edición de datos, límites y logo) |
+| Administrador | Computador (también usable en celular) | Inicio (tablero del día) · Requerimientos y actividades · Usuarios / Operarios · Turnos y asistencia · Indicadores |
+| Operario | Celular | Mis actividades (lista priorizada → detalle → ejecución), marca de entrada y salida |
+
+Las opciones del menú se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
+
+**Decisiones de diseño comunes a todas las vistas:**
+- **Marco común:** menú lateral con las opciones del rol y, al pie, el nombre del usuario, su rol y "Cerrar sesión". En celular el menú se oculta detrás de un botón "Menú".
+- **Primero la información:** cada pantalla muestra primero su lista o tabla. Crear o editar es una acción secundaria: un botón ("+ Nueva empresa", "+ Nuevo usuario") abre el formulario en una ventana (diálogo). Al guardar, la ventana se cierra y aparece una confirmación breve.
+- **Estados vacíos y límites explicados:** cuando no hay datos, la pantalla explica qué hacer y ofrece el botón para hacerlo. Cuando una acción no está disponible (por ejemplo, se alcanzó el límite de usuarios), el botón se desactiva y un aviso explica por qué.
+- **Paleta sobria:** fondos neutros y un solo color de acento. Los colores fuertes se reservan para lo que tiene significado (prioridades, avisos) y siempre van acompañados de texto.
+
+**Relación con los principios de usabilidad (6.1) y las heurísticas de Nielsen:**
+- Pocas opciones de menú por rol (Ley de Hick) y patrón de menú lateral más tabla, habitual en sistemas administrativos (Ley de Jakob).
+- Confirmación después de guardar y botones desactivados mientras se procesa (Nielsen 1: visibilidad del estado del sistema).
+- "Cancelar", la tecla Esc y la "X" en todos los diálogos (Nielsen 3: control y libertad del usuario).
+- Validación antes de enviar y acciones deshabilitadas cuando no son posibles (Nielsen 5: prevención de errores).
+- Mensajes de error en lenguaje claro dentro del mismo formulario (Nielsen 9: ayudar a reconocer y corregir errores).
 
 ---
 
@@ -270,9 +297,20 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-09-26 | Diseño de Interfaces | Sección 6.1 | Se agrega el banner de "en turno / fuera de turno" (color y texto) y la marca de entrada y salida desde el celular | Aplicación de la heurística de visibilidad del estado del sistema; no depender solo del color, por accesibilidad |
 | 2026-09-26 | Ambas | Sección 8 | Se agregan los criterios 7 (turnos y asistencia) y 8 (indicadores de cumplimiento) al MVP | Decisión del equipo de incluir toda la nueva funcionalidad en el MVP |
 | 2026-09-26 | POO | Sección 9 | Se retira "control de asistencia laboral" de lo excluido (nómina y remuneración siguen fuera) y se agrega la excepción de reprogramación automática por ausencia | Consecuencia de incluir asistencia en el alcance. Se mantiene la frontera con la nómina para no convertir el producto en un software de pagos |
+| 2026-09-26 | POO | Sección 5.1 | El tiempo estimado corresponde a la actividad completa y no se reparte entre los operarios asignados | Decisión del equipo; resuelve la ambigüedad que dejó la asignación a varios operarios |
+| 2026-09-26 | Diseño de Interfaces | Ninguna (aclaración) | Se cierra la discrepancia sobre Penpot: los wireframes y prototipos del syllabus ya se entregaron en un primer momento; desde ahora el trabajo de interfaz es en código | Aclaración del equipo |
+| 2026-09-26 | Ambas | Secciones 4 y 5.1 | Marca blanca: el Superadmin puede cargar el logo de cada empresa (PNG, JPG o WEBP, máximo 512 KB), y los usuarios de esa empresa ven su logo y nombre en lugar de la marca GestLab | Decisión del equipo: que cada cliente sienta el sistema como propio |
+| 2026-09-26 | POO | Secciones 4 y 5.1 | El Superadmin define por empresa un límite de Administradores y otro de Operarios; el sistema impide crear usuarios por encima del límite y reducir un límite por debajo de los usuarios existentes | Decisión del equipo: controlar el tamaño de cada cliente (base para un futuro esquema de planes) |
+| 2026-09-26 | Diseño de Interfaces | Nueva Sección 6.2 | Se definen las vistas y el menú de cada rol, y las decisiones de diseño comunes: marco con menú lateral, formularios en diálogos detrás de un botón, estados vacíos, paleta sobria y su relación con las heurísticas de Nielsen | La primera versión de la interfaz mostraba formularios de creación siempre abiertos y sin menú de navegación; se reorganizó para que cada pantalla muestre primero la información |
 | 2026-09-26 | Ambas | Sección 13 | Se anota como consideración de comercialización la política de tratamiento de datos personales de asistencia | La asistencia es un dato personal de trabajadores; no afecta el proyecto académico |
 
 ### Texto original de las secciones modificadas (para referencia)
+
+**Sección 4, Superadmin (previo a marca blanca y límites de usuarios, 2026-09-26):**
+> "Es responsable de dar de alta nuevas empresas en el sistema y crear el primer usuario Administrador de cada una." (sin logo ni límites de usuarios)
+
+**Sección 5.1 (fragmento previo a la aclaración del tiempo estimado, 2026-09-26):**
+> - "Definición de tiempo estimado de ejecución." (sin definir cómo se trata cuando hay varios operarios)
 
 **Sección 1 (v0.1 original):**
 > "El proyecto consiste en el desarrollo de un sistema web orientado a la gestión y análisis de las actividades laborales de empleados pertenecientes a diferentes empresas. La solución busca centralizar los requerimientos que llegan a un área, convertirlos en actividades de trabajo, asignarlas y priorizarlas, registrar su ejecución y generar información sobre la carga laboral del personal."

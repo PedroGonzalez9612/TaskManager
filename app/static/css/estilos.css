@@ -1,0 +1,764 @@
+/* Estilos de GestLab.
+   Paleta sobria: fondos neutros y un solo color de acento. Los colores fuertes se reservan
+   para lo que tiene significado (prioridades, avisos) y siempre van acompañados de texto. */
+
+:root {
+    --fondo: #f5f6f8;
+    --superficie: #ffffff;
+    --borde: #e3e6eb;
+    --texto: #18212f;
+    --texto-suave: #5b6676;
+
+    --acento: #0f766e;
+    --acento-hover: #0b5f58;
+    --acento-suave: #e6f4f2;
+
+    --error: #b42318;
+    --error-suave: #fdecea;
+    --exito: #166534;
+    --exito-suave: #e7f6ec;
+
+    /* Prioridades: fondo suave + texto oscuro, legibles y distinguibles también por su texto. */
+    --urgente: #9b1c1c;
+    --urgente-suave: #fde8e8;
+    --alta: #9a3412;
+    --alta-suave: #fdeee3;
+    --media: #854d0e;
+    --media-suave: #fdf6d8;
+    --baja: #4b5563;
+    --baja-suave: #eef0f3;
+
+    --radio: 10px;
+    --sombra: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --ancho-menu: 240px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--texto);
+    background: var(--fondo);
+}
+
+/* Mientras se comprueba la sesión no se muestra nada, para que no "parpadee" una pantalla ajena. */
+body.cargando {
+    visibility: hidden;
+}
+
+h1, h2, h3 {
+    line-height: 1.25;
+}
+
+a {
+    color: var(--acento);
+}
+
+:focus-visible {
+    outline: 3px solid var(--acento);
+    outline-offset: 2px;
+}
+
+/* ================= Marco general: menú lateral + contenido ================= */
+
+.menu-lateral {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: var(--ancho-menu);
+    display: flex;
+    flex-direction: column;
+    background: var(--superficie);
+    border-right: 1px solid var(--borde);
+    z-index: 20;
+}
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--texto);
+    text-decoration: none;
+}
+
+.marca-icono {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--acento);
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+/* Logo de la empresa (marca blanca): se ajusta sin deformarse. */
+.marca-logo {
+    max-width: 44px;
+    max-height: 36px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.marca-nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.menu-opciones {
+    list-style: none;
+    margin: 0;
+    padding: 8px 12px;
+    flex: 1;
+}
+
+.menu-opciones a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: var(--texto-suave);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.menu-opciones a:hover {
+    background: var(--fondo);
+    color: var(--texto);
+}
+
+.menu-opciones a[aria-current="page"] {
+    background: var(--acento-suave);
+    color: var(--acento);
+}
+
+.menu-opciones svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.menu-usuario {
+    padding: 16px 20px;
+    border-top: 1px solid var(--borde);
+}
+
+.menu-usuario strong {
+    display: block;
+    overflow-wrap: anywhere;
+}
+
+.menu-usuario span {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--texto-suave);
+    font-size: 0.85rem;
+}
+
+.barra-movil {
+    display: none;
+}
+
+.principal {
+    margin-left: var(--ancho-menu);
+    padding: 32px;
+    max-width: calc(1100px + var(--ancho-menu));
+}
+
+/* En celular el menú lateral se oculta y se abre con el botón "Menú". */
+@media (max-width: 800px) {
+    .barra-movil {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 16px;
+        background: var(--superficie);
+        border-bottom: 1px solid var(--borde);
+        z-index: 10;
+    }
+
+    .barra-movil .marca {
+        padding: 0;
+    }
+
+    .menu-lateral {
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        box-shadow: 0 0 40px rgba(16, 24, 40, 0.2);
+    }
+
+    body.menu-abierto .menu-lateral {
+        transform: translateX(0);
+    }
+
+    .fondo-menu {
+        position: fixed;
+        inset: 0;
+        background: rgba(16, 24, 40, 0.35);
+        z-index: 15;
+    }
+
+    .principal {
+        margin-left: 0;
+        padding: 20px 16px;
+    }
+}
+
+/* ================= Encabezado de cada pantalla ================= */
+
+.encabezado-pagina {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.encabezado-pagina h1 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.encabezado-pagina p {
+    margin: 4px 0 0;
+    color: var(--texto-suave);
+}
+
+.migas {
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    color: var(--texto-suave);
+}
+
+.migas a {
+    text-decoration: none;
+}
+
+/* ================= Botones ================= */
+
+.boton,
+.boton-secundario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.boton {
+    border: 1px solid var(--acento);
+    background: var(--acento);
+    color: #ffffff;
+}
+
+.boton:hover {
+    background: var(--acento-hover);
+}
+
+.boton-secundario {
+    border: 1px solid var(--borde);
+    background: var(--superficie);
+    color: var(--texto);
+}
+
+.boton-secundario:hover {
+    background: var(--fondo);
+}
+
+.boton:disabled,
+.boton-secundario:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.boton-bloque {
+    width: 100%;
+}
+
+.boton-pequeno {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 0.9rem;
+}
+
+/* ================= Paneles, tablas y listas ================= */
+
+.panel {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    margin-bottom: 24px;
+}
+
+.panel-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.panel-encabezado h2 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.panel-cuerpo {
+    padding: 20px;
+}
+
+.datos-empresa {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 0;
+}
+
+.datos-empresa dt {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--texto-suave);
+}
+
+.datos-empresa dd {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+}
+
+/* Las tablas anchas se desplazan dentro de su contenedor, nunca toda la página. */
+.contenedor-tabla {
+    overflow-x: auto;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla th {
+    padding: 10px 20px;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--texto-suave);
+    background: #fafbfc;
+    border-bottom: 1px solid var(--borde);
+    white-space: nowrap;
+}
+
+.tabla td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.tabla tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabla tbody tr:hover {
+    background: #fafbfc;
+}
+
+.tabla .enlace-fila {
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.tabla .enlace-fila:hover {
+    text-decoration: underline;
+}
+
+.texto-suave {
+    color: var(--texto-suave);
+}
+
+/* Estado vacío: explica qué pasa y qué hacer (Nielsen: ayuda y documentación). */
+.estado-vacio {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--texto-suave);
+}
+
+.estado-vacio strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--texto);
+    font-size: 1.05rem;
+}
+
+.estado-vacio .boton {
+    margin-top: 16px;
+}
+
+.mensaje-error {
+    color: var(--error);
+}
+
+.celda-empresa {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-miniatura {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+.titulo-con-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.logo-encabezado {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    border: 1px solid var(--borde);
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.cupos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--borde);
+    color: var(--texto-suave);
+}
+
+.cupos strong {
+    color: var(--texto);
+}
+
+.aviso-cupo {
+    margin: 0;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--borde);
+    background: var(--media-suave);
+    color: var(--media);
+    font-weight: 600;
+}
+
+/* ================= Etiquetas ================= */
+
+.etiqueta {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    background: var(--baja-suave);
+    color: var(--baja);
+}
+
+.etiqueta-rol-administrador { background: var(--acento-suave); color: var(--acento); }
+.etiqueta-rol-operario      { background: var(--baja-suave);   color: var(--baja); }
+
+/* ================= Formularios y diálogos ================= */
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.formulario label {
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.formulario label:first-of-type {
+    margin-top: 0;
+}
+
+.ayuda-campo {
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--texto-suave);
+}
+
+/* Controles de al menos 44px de alto: fáciles de tocar en celular (Ley de Fitts). */
+.formulario input,
+.formulario select {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid #cfd4dc;
+    border-radius: 8px;
+    font: inherit;
+    background: #ffffff;
+}
+
+.formulario input:focus,
+.formulario select:focus {
+    outline: 3px solid var(--acento-suave);
+    border-color: var(--acento);
+}
+
+.grupo-campos {
+    margin: 14px 0 0;
+    padding: 0;
+    border: none;
+}
+
+.grupo-campos legend {
+    padding: 0;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.fila-campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo label {
+    margin-top: 8px;
+    font-weight: 500;
+    color: var(--texto-suave);
+}
+
+.campo-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.campo-logo input[type="file"] {
+    flex: 1;
+    min-width: 0;
+    padding: 10px;
+}
+
+.vista-previa-logo {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    object-fit: contain;
+    border: 1px solid var(--borde);
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+/* Diálogos largos: se desplaza el contenido, no se corta en pantallas bajas. */
+.dialogo[open] {
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+}
+
+.mensaje-formulario {
+    margin: 12px 0 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: var(--error);
+    background: var(--error-suave);
+}
+
+.dialogo {
+    width: min(480px, calc(100vw - 32px));
+    padding: 0;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(16, 24, 40, 0.25);
+    color: var(--texto);
+}
+
+.dialogo::backdrop {
+    background: rgba(16, 24, 40, 0.45);
+}
+
+.dialogo-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--borde);
+}
+
+.dialogo-encabezado h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.boton-cerrar {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--texto-suave);
+    cursor: pointer;
+}
+
+.boton-cerrar:hover {
+    background: var(--fondo);
+}
+
+.dialogo .formulario {
+    padding: 20px;
+}
+
+.dialogo-acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+/* Confirmación breve después de guardar (visibilidad del estado del sistema). */
+.aviso-flotante {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    max-width: calc(100vw - 48px);
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--exito);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(16, 24, 40, 0.2);
+    z-index: 50;
+}
+
+/* ================= Login ================= */
+
+.pagina-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.tarjeta-login {
+    width: 100%;
+    max-width: 400px;
+    padding: 32px 28px;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: 14px;
+    box-shadow: var(--sombra);
+}
+
+.tarjeta-login .marca {
+    padding: 0 0 20px;
+}
+
+.tarjeta-login h1 {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.tarjeta-login .subtitulo {
+    margin: 4px 0 24px;
+    color: var(--texto-suave);
+}
+
+.tarjeta-login .boton {
+    margin-top: 18px;
+}
+
+/* ================= Operario: actividades ================= */
+
+.aviso-urgente {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 1px solid var(--urgente);
+    border-radius: var(--radio);
+    background: var(--urgente-suave);
+    color: var(--urgente);
+    font-weight: 700;
+}
+
+.lista-actividades {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 680px;
+}
+
+/* Toda la tarjeta es tocable: objetivo grande (Ley de Fitts). */
+.tarjeta-actividad {
+    display: block;
+    padding: 16px;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-left: 4px solid var(--baja);
+    border-radius: var(--radio);
+    box-shadow: var(--sombra);
+    color: inherit;
+    text-decoration: none;
+}
+
+.tarjeta-actividad h2 {
+    margin: 8px 0 4px;
+    font-size: 1.05rem;
+}
+
+.tarjeta-actividad p {
+    margin: 0;
+    color: var(--texto-suave);
+    font-size: 0.9rem;
+}
+
+.estado {
+    margin-left: 8px;
+    font-size: 0.82rem;
+    color: var(--texto-suave);
+}
+
+.prioridad-urgente { border-left-color: var(--urgente); }
+.prioridad-alta    { border-left-color: var(--alta); }
+.prioridad-media   { border-left-color: var(--media); }
+.prioridad-baja    { border-left-color: var(--baja); }
+
+.prioridad-urgente .etiqueta { background: var(--urgente-suave); color: var(--urgente); }
+.prioridad-alta .etiqueta    { background: var(--alta-suave);    color: var(--alta); }
+.prioridad-media .etiqueta   { background: var(--media-suave);   color: var(--media); }
+.prioridad-baja .etiqueta    { background: var(--baja-suave);    color: var(--baja); }

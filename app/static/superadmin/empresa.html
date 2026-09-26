@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empresa — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <main class="principal">
+        <nav class="migas" aria-label="Ruta de navegación">
+            <a href="/static/superadmin/empresas.html">Empresas</a> / <span id="migas-empresa">Empresa</span>
+        </nav>
+        <div class="encabezado-pagina">
+            <div class="titulo-con-logo">
+                <img id="logo-empresa" class="logo-encabezado" alt="" hidden>
+                <h1 id="nombre-empresa">Empresa</h1>
+            </div>
+            <button type="button" id="boton-editar" class="boton-secundario">Editar empresa</button>
+        </div>
+
+        <section class="panel">
+            <div class="panel-encabezado"><h2>Datos de la empresa</h2></div>
+            <div class="panel-cuerpo">
+                <dl class="datos-empresa">
+                    <div><dt>NIT</dt><dd id="dato-nit">—</dd></div>
+                    <div><dt>Sector</dt><dd id="dato-sector">—</dd></div>
+                    <div><dt>Dirección</dt><dd id="dato-direccion">—</dd></div>
+                    <div><dt>Administradores</dt><dd id="dato-administradores">—</dd></div>
+                    <div><dt>Operarios</dt><dd id="dato-operarios">—</dd></div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-encabezado">
+                <h2>Usuarios</h2>
+                <button type="button" class="boton boton-pequeno" data-abrir-dialogo>+ Nuevo administrador</button>
+            </div>
+            <p id="aviso-cupo" class="aviso-cupo" hidden>
+                Se alcanzó el límite de administradores. Amplíalo con "Editar empresa" para crear otro.
+            </p>
+            <div class="contenedor-tabla">
+                <table id="tabla-usuarios" class="tabla" hidden>
+                    <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="estado-vacio" class="estado-vacio" hidden>
+                <strong>Esta empresa aún no tiene usuarios</strong>
+                Crea su primer Administrador; él se encargará de crear a los operarios.
+                <div><button type="button" class="boton" data-abrir-dialogo>+ Nuevo administrador</button></div>
+            </div>
+        </section>
+    </main>
+
+    <dialog id="dialogo-usuario" class="dialogo" aria-labelledby="titulo-dialogo-usuario">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-dialogo-usuario">Nuevo administrador</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <input type="hidden" name="rol" value="ADMINISTRADOR">
+
+            <label for="nombre">Nombre completo</label>
+            <input id="nombre" name="nombre" required>
+
+            <label for="correo">Correo</label>
+            <input id="correo" name="correo" type="email" autocomplete="off" required>
+
+            <label for="contraseña">Contraseña inicial</label>
+            <input id="contraseña" name="contraseña" type="password" autocomplete="new-password" minlength="8" required>
+            <p class="ayuda-campo">Mínimo 8 caracteres. Compártela con el administrador.</p>
+
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Crear administrador</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="dialogo-editar" class="dialogo" aria-labelledby="titulo-dialogo-editar">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-dialogo-editar">Editar empresa</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <label for="editar-nombre">Nombre</label>
+            <input id="editar-nombre" name="nombre" required>
+
+            <label for="editar-sector">Sector</label>
+            <input id="editar-sector" name="sector" required>
+
+            <label for="editar-direccion">Dirección</label>
+            <input id="editar-direccion" name="direccion" required>
+
+            <fieldset class="grupo-campos">
+                <legend>Límite de usuarios</legend>
+                <div class="fila-campos">
+                    <div class="campo">
+                        <label for="editar-limite-administradores">Administradores</label>
+                        <input id="editar-limite-administradores" name="limite_administradores" type="number" min="1" step="1" required>
+                    </div>
+                    <div class="campo">
+                        <label for="editar-limite-operarios">Operarios</label>
+                        <input id="editar-limite-operarios" name="limite_operarios" type="number" min="1" step="1" required>
+                    </div>
+                </div>
+            </fieldset>
+
+            <label for="editar-logo">Logo</label>
+            <div class="campo-logo">
+                <img class="vista-previa-logo" alt="Logo actual" hidden>
+                <input id="editar-logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp">
+            </div>
+            <p class="ayuda-campo">Elige una imagen solo si quieres cambiar el logo. PNG, JPG o WEBP, máximo 512 KB.</p>
+
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Guardar cambios</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/usuarios-comun.js"></script>
+    <script src="/static/superadmin/empresa.js"></script>
+</body>
+</html>

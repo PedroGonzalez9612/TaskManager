@@ -8,5 +8,16 @@ class UsuarioRepository(BaseRepository):
     def find_by_empresa(self, empresa_id: str):
         return list(self.collection.find({"empresa_id": empresa_id}))
 
-    def find_by_email(self, email: str):
-        return self.collection.find_one({"email": email})
+    def find_by_correo(self, correo: str):
+        return self.collection.find_one({"correo": correo})
+
+    def contar_por_rol(self, empresa_id: str) -> dict:
+        """Cantidad de usuarios de la empresa por rol, por ejemplo {"OPERARIO": 3, "ADMINISTRADOR": 1}."""
+        grupos = self.collection.aggregate([
+            {"$match": {"empresa_id": empresa_id}},
+            {"$group": {"_id": "$rol", "cantidad": {"$sum": 1}}},
+        ])
+        return {grupo["_id"]: grupo["cantidad"] for grupo in grupos}
+
+    def existe_rol(self, rol: str) -> bool:
+        return self.collection.count_documents({"rol": rol}, limit=1) > 0

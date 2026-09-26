@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class Rol(str, Enum):
+    SUPERADMIN = "SUPERADMIN"
+    ADMINISTRADOR = "ADMINISTRADOR"
+    OPERARIO = "OPERARIO"
+
+
 class Prioridad(str, Enum):
     ALTA = "ALTA"
     MEDIA = "MEDIA"

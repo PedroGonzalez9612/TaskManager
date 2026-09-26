@@ -1,5 +1,10 @@
+from app.models.empresa import CAMPO_LIMITE_POR_ROL
+from app.models.enums import Rol
 from app.models.usuario import Usuario
-from app.utils.errors import NotFoundError, ValidationError
+from app.services.empresa_service import NOMBRE_ROL_PLURAL
+from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
+
+LONGITUD_MINIMA_CONTRASEÑA = 8
 
 
 class UsuarioService:
@@ -7,46 +12,98 @@ class UsuarioService:
         self.usuario_repository = usuario_repository
         self.empresa_repository = empresa_repository
 
-    def crear_usuario(self, data: dict) -> dict:
-        nombre = data.get("nombre")
-        email = data.get("email")
-        empresa_id = data.get("empresa_id")
-        rol = data.get("rol", "MIEMBRO")
+    def crear_usuario(self, data: dict, solicitante: dict) -> dict:
+        nombre = (data.get("nombre") or "").strip()
+        correo = (data.get("correo") or "").strip().lower()
+        contraseña = data.get("contraseña") or ""
+        rol = data.get("rol")
 
-        if not nombre or not email or not empresa_id:
-            raise ValidationError("nombre, email y empresa_id son obligatorios")
+        if not nombre or not correo or not contraseña or not rol:
+            raise ValidationError("nombre, correo, contraseña y rol son obligatorios")
+        if len(contraseña) < LONGITUD_MINIMA_CONTRASEÑA:
+            raise ValidationError(f"La contraseña debe tener al menos {LONGITUD_MINIMA_CONTRASEÑA} caracteres")
 
-        if not self.empresa_repository.find_by_id(empresa_id):
+        empresa_id = self._empresa_destino(data, solicitante, rol)
+
+        empresa = self.empresa_repository.find_by_id(empresa_id)
+        if not empresa:
             raise NotFoundError(f"Empresa {empresa_id} no encontrada")
+        self._verificar_cupo(empresa, empresa_id, rol)
+        if self.usuario_repository.find_by_correo(correo):
+            raise ValidationError(f"Ya existe un usuario con el correo {correo}")
 
-        if self.usuario_repository.find_by_email(email):
-            raise ValidationError(f"Ya existe un usuario con email {email}")
-
-        usuario = Usuario(nombre=nombre, email=email, empresa_id=empresa_id, rol=rol)
+        usuario = Usuario(
+            nombre=nombre,
+            correo=correo,
+            contraseña_hash=Usuario.hashear_contraseña(contraseña),
+            rol=Rol(rol),
+            empresa_id=empresa_id,
+        )
         usuario_id = self.usuario_repository.insert(usuario.to_dict())
-        return self.obtener_usuario(usuario_id)
+        return self.obtener_usuario(usuario_id, solicitante)
 
-    def obtener_usuario(self, usuario_id: str) -> dict:
+    def _empresa_destino(self, data: dict, solicitante: dict, rol: str) -> str:
+        """Aplica quién puede crear a quién (Sección 4 del alcance) y decide la empresa del nuevo usuario."""
+        if solicitante["rol"] == Rol.SUPERADMIN.value:
+            if rol != Rol.ADMINISTRADOR.value:
+                raise ProhibidoError("El Superadmin solo crea usuarios Administrador")
+            if not data.get("empresa_id"):
+                raise ValidationError("empresa_id es obligatorio")
+            return data["empresa_id"]
+
+        if solicitante["rol"] == Rol.ADMINISTRADOR.value:
+            if rol not in (Rol.ADMINISTRADOR.value, Rol.OPERARIO.value):
+                raise ValidationError("El rol debe ser ADMINISTRADOR u OPERARIO")
+            # Un Administrador solo crea usuarios en su propia empresa, sin importar lo que envíe el cliente.
+            return solicitante["empresa_id"]
+
+        raise ProhibidoError("No tienes permiso para crear usuarios")
+
+    def _verificar_cupo(self, empresa: dict, empresa_id: str, rol: str) -> None:
+        """Impide superar el límite de usuarios de ese rol que el Superadmin definió para la empresa."""
+        limite = empresa.get(CAMPO_LIMITE_POR_ROL[rol])
+        if limite is None:
+            return
+        actuales = self.usuario_repository.contar_por_rol(empresa_id).get(rol, 0)
+        if actuales >= limite:
+            raise ValidationError(
+                f"La empresa alcanzó su límite de {limite} {NOMBRE_ROL_PLURAL[rol]}. "
+                f"Solicita al Superadmin ampliar el límite."
+            )
+
+    def obtener_usuario(self, usuario_id: str, solicitante: dict) -> dict:
         doc = self.usuario_repository.find_by_id(usuario_id)
         if not doc:
             raise NotFoundError(f"Usuario {usuario_id} no encontrado")
+        self._verificar_acceso_empresa(solicitante, doc.get("empresa_id"))
         return Usuario.from_doc(doc)
 
-    def listar_usuarios(self, empresa_id: str = None) -> list:
-        docs = self.usuario_repository.find_by_empresa(empresa_id) if empresa_id \
-            else self.usuario_repository.find_all()
-        return [Usuario.from_doc(doc) for doc in docs]
+    def listar_usuarios(self, empresa_id: str, solicitante: dict) -> list:
+        if solicitante["rol"] == Rol.ADMINISTRADOR.value:
+            empresa_id = solicitante["empresa_id"]
+        if not empresa_id:
+            raise ValidationError("empresa_id es obligatorio")
+        self._verificar_acceso_empresa(solicitante, empresa_id)
+        return [Usuario.from_doc(doc) for doc in self.usuario_repository.find_by_empresa(empresa_id)]
 
-    def actualizar_usuario(self, usuario_id: str, data: dict) -> dict:
-        updates = {k: v for k, v in data.items() if k in ("nombre", "email", "rol")}
-        if not updates:
+    def actualizar_usuario(self, usuario_id: str, data: dict, solicitante: dict) -> dict:
+        self.obtener_usuario(usuario_id, solicitante)
+        nombre = (data.get("nombre") or "").strip()
+        if not nombre:
             raise ValidationError("No hay campos válidos para actualizar")
-        updated = self.usuario_repository.update(usuario_id, updates)
-        if not updated:
-            raise NotFoundError(f"Usuario {usuario_id} no encontrado")
-        return self.obtener_usuario(usuario_id)
+        self.usuario_repository.update(usuario_id, {"nombre": nombre})
+        return self.obtener_usuario(usuario_id, solicitante)
 
-    def eliminar_usuario(self, usuario_id: str) -> None:
-        deleted = self.usuario_repository.delete(usuario_id)
-        if not deleted:
-            raise NotFoundError(f"Usuario {usuario_id} no encontrado")
+    def eliminar_usuario(self, usuario_id: str, solicitante: dict) -> None:
+        if usuario_id == solicitante["id"]:
+            raise ValidationError("No puedes eliminar tu propio usuario")
+        self.obtener_usuario(usuario_id, solicitante)
+        self.usuario_repository.delete(usuario_id)
+
+    @staticmethod
+    def _verificar_acceso_empresa(solicitante: dict, empresa_id: str) -> None:
+        if solicitante["rol"] == Rol.SUPERADMIN.value:
+            return
+        if solicitante["rol"] == Rol.ADMINISTRADOR.value and solicitante["empresa_id"] == empresa_id:
+            return
+        raise ProhibidoError("No tienes acceso a los usuarios de esta empresa")

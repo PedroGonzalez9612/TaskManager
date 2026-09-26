@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis actividades — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <main class="principal">
+        <div class="encabezado-pagina">
+            <div>
+                <h1>Mis actividades</h1>
+                <p>Ordenadas de la más a la menos prioritaria.</p>
+            </div>
+        </div>
+
+        <div id="aviso-urgente" class="aviso-urgente" role="alert" hidden></div>
+        <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando actividades…</p>
+        <ul id="lista-actividades" class="lista-actividades"></ul>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/operario/principal.js"></script>
+</body>
+</html>
