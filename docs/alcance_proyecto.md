@@ -1,0 +1,362 @@
+# DOCUMENTO DE ALCANCE DEL PROYECTO
+## GestLab
+### Sistema web para la gestión y análisis de carga laboral
+### Proyecto académico — Diseño Orientado a Objetos (POO) & Diseño de Interfaces
+
+> **Estado:** Documento vivo. Versión base: v0.1 (original). Se actualiza de forma incremental a medida que avanzan ambas materias. La bitácora completa de cambios, con fecha y motivo de cada uno, se encuentra al final del documento.
+
+---
+
+## 1. Descripción general
+
+El proyecto consiste en el desarrollo de un sistema web orientado a la gestión y análisis de las actividades laborales de operarios pertenecientes a diferentes empresas. Su propósito es dar orden y visibilidad a todo el ciclo de trabajo dentro de un área: desde que llega una necesidad o solicitud, hasta que esta se convierte en una actividad concreta, se asigna a una persona responsable, se ejecuta y finalmente se analiza en conjunto con el resto de la carga laboral del equipo.
+
+En términos simples, el sistema busca responder tres preguntas que suelen ser difíciles de contestar en el día a día de un área de trabajo: **qué se debe hacer**, **quién lo está haciendo (o debería hacerlo)**, y **cuánto trabajo hay realmente en curso**. Para lograrlo, la solución centraliza los requerimientos que llegan al área, los transforma en actividades de trabajo claramente definidas, permite asignarlas y priorizarlas según su importancia, registra su ejecución en tiempo real, y finalmente genera información útil sobre la carga laboral del personal — tanto la actual como una proyección de lo que viene.
+
+De esta forma, el sistema no solo sirve como una herramienta operativa para gestionar el trabajo diario, sino también como una fuente de información para entender cómo se está distribuyendo la carga entre las personas del equipo y detectar a tiempo posibles situaciones de sobrecarga.
+
+---
+
+## 2. Problema que busca resolver
+
+En diferentes entornos laborales, los requerimientos y actividades pueden llegar por medios dispersos o de manera informal, dificultando conocer qué trabajo debe realizarse, quién es responsable, cuál es su prioridad, qué actividades están pendientes y qué capacidad tiene disponible cada operario.
+
+La falta de información sobre los tiempos estimados y los tiempos reales de ejecución también limita la capacidad de analizar la distribución del trabajo y detectar situaciones de sobrecarga. El sistema busca centralizar esta información y proporcionar una visión tanto operativa como analítica.
+
+---
+
+## 3. Propósito del sistema
+
+El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión permitirá administrar requerimientos, actividades, responsables, prioridades y ejecución. El análisis utilizará los datos generados durante la operación para conocer tiempos, ocupación y carga laboral actual y futura.
+
+---
+
+## 4. Usuarios del sistema
+
+- **Superadmin:** rol técnico/operativo del sistema, no pertenece a ninguna empresa específica. Es responsable de dar de alta nuevas empresas en el sistema y crear el primer usuario Administrador de cada una. No participa en la gestión diaria de requerimientos, actividades ni ejecución.
+- **Administrador** (antes "Supervisor"): administra y da seguimiento a los requerimientos y actividades del área, asigna responsables, establece prioridades y consulta la carga laboral del personal. Además, define los turnos de la empresa y asigna uno a cada operario, valida o corrige la asistencia diaria y reasigna actividades cuando un operario falta.
+- **Operario** (antes "Empleado"): consulta sus actividades, conoce la información necesaria para ejecutarlas, registra su ejecución y puede reportar actividades solicitadas por otras áreas para conocimiento y gestión del administrador. Además, marca su entrada y salida de cada jornada.
+
+---
+
+## 5. Alcance funcional inicial
+
+### 5.1 Gestión
+- Registro y administración de empresas.
+- Registro de empresas y creación del primer usuario Administrador de cada una, a cargo del Superadmin.
+- Registro y administración de usuarios con perfiles de Administrador y Operario, dentro de su respectiva empresa.
+- Registro y seguimiento de requerimientos que llegan al área.
+- Conversión y organización de requerimientos en actividades de trabajo.
+- Creación y asignación de actividades a uno o varios operarios.
+- Definición de información clara para cada actividad.
+- Clasificación de actividades por tipo o categoría.
+- Definición de prioridad de las actividades en cuatro niveles: Baja, Media, Alta y Urgente. El nivel Urgente indica que la actividad debe interrumpir la tarea que el operario tenga en curso.
+- Definición de tiempo estimado de ejecución.
+- Definición de una fecha programada de ejecución para cada actividad.
+- Consulta del estado y asignación de las actividades.
+- Posibilidad de que un operario registre una actividad solicitada por otra área y la socialice con su administrador.
+- Gestión de la ejecución de actividades, incluyendo inicio, pausa, reanudación y finalización.
+- Registro automático de los tiempos asociados a la ejecución.
+- Consideración de cambios de prioridad durante la jornada y posibilidad de interrumpir temporalmente una actividad para atender otra de mayor prioridad, conservando el historial de ejecución.
+- Cada operario puede tener una sola actividad en ejecución a la vez. Para iniciar otra, debe pausar (registrando el motivo) o finalizar la actual de forma manual; el sistema bloquea el inicio de una segunda actividad mientras exista una en curso.
+
+**Turnos y asistencia**
+- Definición, por parte de cada empresa, de un catálogo de turnos. Cada turno tiene un identificador, nombre, hora de inicio, hora de fin y tiempo de descanso.
+- Asignación de un único turno a cada operario. Cuando se cambia el turno de un operario, el sistema conserva la fecha del cambio, para que los indicadores de periodos anteriores se calculen con el turno vigente en ese momento.
+- Una jornada pertenece al día en que inicia el turno, aunque el turno termine después de la medianoche.
+- El turno no limita el trabajo: el operario puede ejecutar actividades fuera de su turno, y ese tiempo se registra como tiempo adicional.
+- Registro de asistencia: el operario marca su entrada y su salida de cada jornada (la hora la registra el servidor), y el Administrador valida o corrige cada marca.
+- Aviso de posible ausencia: si pasado un tiempo de tolerancia desde el inicio del turno (configurable por empresa) el operario no ha marcado entrada, el Administrador recibe un aviso con las actividades programadas de ese operario para la jornada.
+- Ante una ausencia confirmada, el Administrador reasigna manualmente las actividades a otros operarios.
+- Las actividades que no se reasignen se reprograman automáticamente a la siguiente jornada del operario. La reprogramación queda registrada como un evento (con la jornada de origen), y si la jornada de destino supera el 100% de la capacidad del operario, el Administrador recibe un aviso.
+
+### 5.2 Análisis
+- Comparación entre tiempo estimado y tiempo real de ejecución.
+- Análisis de la carga laboral de los operarios.
+- Visualización de la ocupación actual.
+- Proyección de la ocupación futura a partir de las actividades programadas.
+- Identificación de posibles situaciones de sobrecarga.
+- Capacidad de cada operario por jornada, calculada a partir de su turno: duración del turno menos el tiempo de descanso.
+- Cálculo de la carga por jornada: suma de los tiempos estimados de las actividades asignadas al operario y programadas para esa jornada.
+- Alerta en pantalla al momento de asignar una actividad, cuando la carga del operario para la jornada programada de esa actividad supere el 100% de su capacidad.
+- Análisis de la distribución de actividades por categoría.
+- Consulta de información histórica generada por la ejecución de actividades.
+
+**Indicadores de jornada y cumplimiento**
+- Por cada jornada se registran: tiempo programado (turno menos descanso), tiempo presente (entre las marcas de entrada y salida validadas), tiempo en actividades (ejecución real sin pausas) y tiempo adicional (trabajo fuera del turno).
+- **Cumplimiento de jornada:** tiempo en actividades dividido entre tiempo programado.
+- **Aprovechamiento:** tiempo en actividades dividido entre tiempo presente.
+- **Tiempo adicional:** se muestra como dato propio; no se clasifica como hora extra ni se calcula su valor (ver Sección 9).
+- **Cumplimiento de actividades:** una actividad se considera cumplida si se finaliza en su jornada programada. Las actividades reprogramadas por ausencia cuentan como retraso.
+- **Precisión de estimación:** comparación entre tiempo estimado y tiempo real de ejecución (se mantiene como indicador separado del cumplimiento).
+- Todos los indicadores se consultan por operario, por categoría de actividad y para la empresa. Los valores agregados se calculan sumando los tiempos de todos los involucrados y dividiendo al final, no promediando porcentajes individuales.
+
+---
+
+## 6. Experiencia de uso
+
+La aplicación será web y tendrá un diseño responsive. La interfaz para administradores estará orientada principalmente a la gestión y análisis, mientras que la experiencia del operario dará especial importancia al uso desde dispositivos móviles, debido a que la ejecución de actividades requiere iniciar, pausar, reanudar y finalizar tareas durante la jornada laboral.
+
+### 6.1 Persona y decisiones de diseño de interfaz — Operario (Diseño de Interfaces)
+
+Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usuario y un mapa de empatía para el rol Operario, y se definió la primera propuesta de wireframes de baja fidelidad para la interfaz web responsive de ese rol. Estos insumos no cambian el alcance funcional ya definido en la Sección 5, pero sí deben orientar cómo se prioriza y se presenta esa funcionalidad en la interfaz.
+
+**Persona de referencia:** Carlos Andrés Ramírez, 34 años, operario de línea de producción, técnico en electrónica, turno rotativo. Usa únicamente celular durante su jornada.
+
+**Hallazgo central del mapa de empatía:** Carlos no necesita más control sobre su trabajo — necesita **evidencia y contexto**: poder demostrar lo que hizo (hoy depende solo de su palabra) y no perder el hilo cuando una tarea se interrumpe por otra más urgente.
+
+**Necesidades identificadas que la interfaz debe resolver explícitamente:**
+- Ver sus actividades asignadas ordenadas por prioridad, sin tener que preguntar.
+- Notar visualmente cuándo una prioridad cambió durante el turno.
+- Registrar inicio/pausa/reanudación/finalización de una actividad de forma rápida.
+- Ver el historial de pausas de la actividad en curso (para no perder contexto al retomarla).
+- Dejar una constancia (observación) al finalizar una actividad, no solo cerrarla.
+- Registrar un motivo/causa al pausar una actividad, no solo el hecho de que se pausó.
+- Reportar una actividad solicitada por otra área sin que "quede en el aire".
+- Ver un aviso claro y visible cuando tiene una actividad de prioridad Urgente pendiente, tanto en la pantalla principal como en la de ejecución, para que pueda pausar la actividad en curso y atenderla.
+- Saber en todo momento si está dentro o fuera de su turno, mediante un indicador visible (banner) que combine color y texto (por ejemplo, "En turno" / "Fuera de turno: tiempo adicional"), sin depender solo del color.
+- Marcar su entrada y su salida de la jornada desde el celular.
+
+**Pantallas mínimas definidas para el flujo del Operario (sitio web responsive, vista móvil):**
+1. Bienvenida + Inicio de sesión (unificadas — el Operario no se autoregistra, según Sección 4)
+2. Pantalla principal (lista priorizada de actividades + acceso a reportar actividad externa)
+3. Detalle de actividad (información completa antes de iniciar una tarea)
+4. Ejecución de actividad (cronómetro, control de estado, historial de pausas, observación final)
+
+**Principios de usabilidad que orientan el diseño de la interfaz** (Diseño de Interfaces, Semana 7):
+- **Ley de Hick:** más opciones implican más tiempo para decidir; cada pantalla debe mostrar solo las opciones necesarias para el paso actual.
+- **Ley de Fitts:** los elementos grandes y cercanos son más fáciles de seleccionar; los controles de ejecución deben ser fáciles de tocar en móvil.
+- **Ley de Jakob:** los usuarios esperan que el sistema funcione como otros que ya conocen; se privilegian patrones de interacción familiares.
+- **Ley de Miller:** la capacidad de procesar información es limitada; la información se presenta en bloques pequeños y priorizados.
+- **Ley de Proximidad:** los elementos cercanos se perciben como relacionados; los controles y datos que van juntos se agrupan visualmente.
+- **Efecto estético-usabilidad:** los diseños atractivos se perciben como más fáciles de usar; se cuida la consistencia visual sin sacrificar claridad.
+
+**Nota para Diseño Orientado a Objetos:** dos de estas necesidades tienen implicación directa en el modelo de datos y conviene tenerlas presentes al diseñar las clases de Actividad/Ejecución:
+- El **historial de pausas/reanudaciones** de una actividad debe quedar registrado como datos consultables (no solo el tiempo total), para poder mostrarlo en la interfaz.
+- El **campo de observación al finalizar** una actividad debe existir como atributo opcional de la ejecución, no solo como una acción de cierre sin datos asociados.
+- El **motivo de pausa** debe registrarse junto con cada evento de pausa (no es un campo global de la actividad, sino un dato asociado a cada pausa específica, ya que una actividad puede pausarse varias veces por razones distintas).
+
+Esta subsección no reemplaza la Sección 5 (Alcance funcional) — la complementa desde la perspectiva de interfaz y experiencia de usuario.
+
+---
+
+## 7. Alcance técnico
+
+- Python como lenguaje principal.
+- Flask como framework para el desarrollo de la aplicación web.
+- MongoDB como sistema de persistencia de datos.
+- HTML, CSS y JavaScript para la interfaz web. La interfaz funciona como un cliente en el navegador que consume la API REST del sistema (intercambio de datos en JSON). Los archivos de la interfaz los entrega el mismo servidor Flask (mismo origen), y la autenticación se maneja con la sesión de Flask mediante cookie.
+- Programación Orientada a Objetos como paradigma principal para el diseño de la lógica del sistema.
+- Arquitectura en capas, manteniendo separadas la presentación, la lógica de negocio y la persistencia.
+- Git y un repositorio remoto para el control de versiones y trabajo colaborativo.
+- Despliegue de la aplicación en un entorno local, con la posibilidad de desplegarla en un servidor independiente si las condiciones lo permiten, utilizando Docker como mecanismo de containerización para empaquetar y ejecutar la aplicación de forma consistente entre entornos.
+- **SonarQube** como herramienta de análisis estático y control de calidad de código, integrado al repositorio de GitHub, para monitorear de forma continua aspectos como cobertura de pruebas, code smells, duplicación y cumplimiento de buenas prácticas de diseño (por ejemplo, principios SOLID).
+
+---
+
+## 8. Alcance del MVP
+
+La primera versión funcional deberá demostrar el flujo principal del sistema de extremo a extremo:
+
+**Empresa → usuarios → requerimiento → actividad → asignación → prioridad → ejecución → registro de tiempo → análisis de carga laboral.**
+
+El MVP se considerará cumplido cuando el sistema permita verificar, de forma concreta, lo siguiente:
+
+1. **Empresa y usuarios:** el Superadmin puede registrar al menos una empresa y crear su primer usuario Administrador; ese Administrador puede a su vez crear usuarios Operario dentro de su empresa, y cada uno de los tres roles (Superadmin, Administrador, Operario) accede a una interfaz distinta según su rol.
+2. **Requerimiento → Actividad:** un Administrador puede registrar un requerimiento y convertirlo en una o más actividades de trabajo.
+3. **Asignación y prioridad:** cada actividad puede asignarse a uno o varios Operarios, y se le puede definir una prioridad, un tiempo estimado de ejecución y una fecha programada.
+4. **Ejecución:** un Operario puede iniciar, pausar, reanudar y finalizar una actividad asignada, y el sistema registra automáticamente los tiempos reales de cada una de esas acciones.
+5. **Registro de tiempo:** al finalizar una actividad, el sistema almacena el tiempo real de ejecución y permite compararlo con el tiempo estimado.
+6. **Análisis de carga laboral:** el Administrador puede consultar, para al menos un Operario, su ocupación actual (actividades en curso/pendientes) con base en los datos generados en los pasos anteriores.
+7. **Turnos y asistencia:** el Administrador puede definir al menos un turno y asignarlo a un Operario; el Operario puede marcar entrada y salida, y el Administrador puede validarlas o corregirlas. Si el Operario no marca entrada dentro de la tolerancia, el Administrador recibe el aviso y puede reasignar sus actividades; las que no reasigne quedan reprogramadas en la siguiente jornada del Operario, con el evento registrado.
+8. **Indicadores de cumplimiento:** el Administrador puede consultar, para al menos un Operario y para la empresa, el cumplimiento de jornada, el aprovechamiento, el tiempo adicional y el cumplimiento de actividades, calculados con los datos generados en los pasos anteriores.
+
+El MVP priorizará el funcionamiento completo y verificable de este flujo sobre la incorporación de funcionalidades avanzadas (ver Sección 9 y Sección 13).
+
+---
+
+## 9. Funcionalidades fuera del alcance obligatorio inicial
+
+- Inteligencia Artificial como componente obligatorio del MVP. Se considera una posible ampliación sujeta a validación.
+- Aplicación móvil nativa para Android o iOS; la primera versión será una aplicación web responsive.
+- Sistemas avanzados de nómina o remuneración. El sistema registra la asistencia y el tiempo adicional para los indicadores, pero no calcula pagos, horas extra ni descuentos.
+- Automatización completa de decisiones de asignación o priorización, salvo la reprogramación automática por ausencia definida en la Sección 5.1, que queda registrada y es visible para el Administrador.
+- Integraciones empresariales externas que no sean necesarias para demostrar el funcionamiento del MVP.
+
+---
+
+## 10. Referencias normativas
+
+El proyecto tomará como referencia principios de normas internacionales relacionadas con sistemas de trabajo, interacción humano-sistema y gestión de calidad. Estas referencias se utilizarán como orientación para el diseño y no implican certificación o conformidad formal.
+
+- **ISO 6385:2016** – Ergonomics principles in the design of work systems. Referencia para considerar la relación entre personas, tecnología y organización del trabajo, especialmente en el diseño de la experiencia de ejecución y el análisis de carga laboral.
+- **ISO 9241-210:2019** – Ergonomics of human-system interaction – Part 210: Human-centred design for interactive systems. Referencia para el diseño centrado en el usuario y la interacción con la aplicación, particularmente en el uso desde dispositivos móviles.
+- **ISO 10006:2017** – Quality management – Guidelines for quality management in projects. Referencia conceptual para aspectos relacionados con recursos, medición, análisis y mejora.
+- **PEP 8** – Guía de estilo oficial para código Python. Se utilizará como referencia de buenas prácticas de escritura de código (nombres, indentación, formato), y su cumplimiento se verificará de forma automática mediante SonarQube (ver Sección 7).
+- **Clean Code (Robert C. Martin)** – Conjunto de principios y buenas prácticas de programación (nombres significativos, funciones pequeñas y con una sola responsabilidad, entre otros). Se utilizará como referencia conceptual complementaria a los principios SOLID y la Ley de Demeter trabajados en la materia de Diseño Orientado a Objetos.
+- **Especificación de Requisitos de Software (ERS)** – Documento complementario del Alcance, basado en el estándar IEEE Std 830-1998, elaborado por el equipo del proyecto (Pedro González y Sebastián Vargas). Detalla los requisitos funcionales (RF01-RF12) y no funcionales, así como casos de uso específicos, que amplían y formalizan lo definido en este documento de Alcance.
+
+---
+
+## 11. Trabajo colaborativo y control de versiones
+
+El desarrollo será realizado por un equipo de dos integrantes mediante Git y un repositorio remoto compartido. Se propone mantener una rama estable para el producto, una rama de integración y ramas de funcionalidades para desarrollar cambios de manera independiente.
+
+- `main`: versión estable.
+- `develop`: integración del trabajo del equipo.
+- `feature/*`: desarrollo de funcionalidades específicas.
+
+Los cambios deberán integrarse mediante Pull Requests, los cuales deberán pasar la revisión automática de **SonarQube** antes de ser aprobados e integrados, con el fin de validar la calidad del código (cumplimiento de PEP 8, principios SOLID, ausencia de code smells, entre otros). Los cambios deberán mantenerse documentados para facilitar la colaboración y reducir conflictos entre los integrantes.
+
+---
+
+## 12. Arquitectura inicial propuesta
+
+- **Capa de presentación:** interfaz web responsive construida como un cliente en el navegador (HTML, CSS y JavaScript), separada de las rutas del servidor. Se comunica con el backend únicamente a través de la API REST.
+- **Servidor web (Flask):** expone la API REST y entrega los archivos estáticos de la interfaz; no genera pantallas.
+- **Capa de lógica de negocio:** reglas de gestión, priorización, ejecución, tiempos y análisis implementadas en Python mediante POO.
+- **Capa de persistencia:** acceso y almacenamiento de información en MongoDB.
+
+La definición detallada de clases, relaciones y patrones de diseño se realizará después de cerrar el dominio y las reglas de negocio.
+
+---
+
+## 13. Posibles ampliaciones futuras
+
+- Uso de datos históricos para mejorar la estimación de duración de actividades.
+- Funciones de Inteligencia Artificial para apoyar la estimación, clasificación o análisis de actividades.
+- Notificaciones avanzadas (por ejemplo, fuera de la aplicación: correo electrónico, push, mensajería). No incluye alertas simples dentro de la misma interfaz, como la de sobrecarga definida en la Sección 5.2.
+- Análisis y reportes más especializados.
+- Integración con otras herramientas empresariales.
+- Trabajo sin conexión: guardar en el dispositivo los eventos de ejecución (inicio, pausa, reanudación, fin) cuando se pierda la red y sincronizarlos automáticamente al recuperarla (ERS, CU01, excepción E1). Se excluye del MVP por su complejidad (cola de eventos, confiabilidad de la hora del dispositivo, duplicados y conflictos); en el MVP la hora de cada evento la registra el servidor.
+- Consideración para la comercialización: al registrar asistencia de trabajadores, cada empresa cliente necesitará una política de tratamiento de datos personales (en Colombia, Ley 1581 de 2012). No es un requisito del proyecto académico.
+
+---
+
+## Bitácora de cambios
+
+| Fecha | Materia | Sección(es) | Cambio realizado | Motivo |
+|---|---|---|---|---|
+| 2026-09-05 | POO | Sección 7 — Alcance técnico | Se agrega Docker como mecanismo de containerización para el despliegue | Instrucción de clase: Docker se usará de forma transversal para desplegar todo el proyecto, no estaba contemplado en la v0.1 |
+| 2026-09-05 | POO | Sección 1 — Descripción general | Se amplía el texto original para dar más claridad sobre el propósito del sistema, sin agregar detalle técnico | Solicitud de mejorar la redacción para que sea más entendible, manteniendo el mismo contenido |
+| 2026-09-05 | POO | Secciones 1, 2, 4, 5.1, 5.2, 6 | Cambio de terminología de roles: "Supervisor" → "Administrador", "Empleado" → "Operario" (y sus variantes: empleados, supervisores) | Ajuste de nomenclatura solicitado para alinear los roles del sistema con los términos que se van a usar en el proyecto |
+| 2026-09-05 | POO | Sección 7 — Alcance técnico (punto 8) | Se cambia el tipo de despliegue: de "servidor o plataforma en la nube" a "entorno local, con posibilidad de servidor independiente" | El plan de presentación es local, con un servidor aparte como opción deseable si es posible; se descarta por ahora la nube |
+| 2026-09-05 | POO | Sección 8 — Alcance del MVP | Se transforma el flujo general en 6 criterios de aceptación medibles (verificables como sí/no), incluyendo explícitamente los roles Administrador/Operario en cada paso | Se buscaba que el MVP fuera medible y no solo descriptivo, para usarlo como checklist de aceptación en la sustentación |
+| 2026-09-05 | POO | Sección 7 — Alcance técnico | Se agrega análisis estático de calidad con SonarQube integrado a GitHub | Instrucción de clase: se debe interactuar con SonarQube de forma transversal en el proyecto; no se agregan pytest ni Postman porque no fueron solicitados |
+| 2026-09-05 | POO | Sección 10 — Referencias normativas | Se agregan PEP 8 (guía de estilo Python) y Clean Code (Robert C. Martin) como referencias de buenas prácticas de programación | Se buscaba alinear el proyecto con buenas prácticas de código; PEP 8 se aprovecha directamente con SonarQube y Clean Code refuerza SOLID/Ley de Demeter ya vistos en POO |
+| 2026-09-05 | POO | Sección 11 — Trabajo colaborativo y control de versiones | Se especifica que los Pull Requests deben pasar la revisión automática de SonarQube antes de ser aprobados e integrados | Se necesitaba definir en qué punto del flujo de Git se ejecuta SonarQube |
+| 2026-09-05 | POO | Sección 14 — Criterio de cierre del alcance inicial | Se elimina la sección completa | Su contenido quedó duplicado y superado por los 6 criterios medibles ya definidos en la Sección 8 (Alcance del MVP) |
+| 2026-09-06 | Diseño de Interfaces | Título del documento; nueva Sección 6.1 | Se agrega el nombre definitivo del proyecto ("GestLab") y una nueva subsección 6.1 con la persona (Carlos), el hallazgo del mapa de empatía y las 4 pantallas mínimas definidas para el Operario | Documentar en el alcance los insumos de investigación de usuario y wireframes trabajados en Diseño de Interfaces (Semana 6, personas/mapa de empatía + wireframes combinados), para que informen tanto el diseño de interfaz como el modelo de datos en POO |
+| 2026-09-06 | Diseño de Interfaces | Sección 8 — Alcance del MVP (sin cambio) | Se decide explícitamente NO agregar un criterio verificable de interfaz a la Sección 8 | Se prefiere mantener el MVP con criterios solo de datos/flujo por ahora; queda como decisión registrada, no como omisión |
+| 2026-09-06 | POO | Secciones 5.1 y 8 | Se cambia la relación actividad-operario de "uno a uno" a "uno o varios operarios" por actividad | Insumo del documento ERS (IEEE 830) del equipo: RF05 permite asignar una actividad a varios empleados; implica una relación muchos-a-muchos entre Actividad y Operario en el modelo de clases |
+| 2026-09-06 | Diseño de Interfaces | Secciones 5.2 y 9 | Se agrega una alerta en pantalla (no notificación externa) cuando la asignación supera el 100% de capacidad del operario; se aclara en la Sección 9 que esto no es lo mismo que "notificaciones avanzadas" | Insumo del ERS (RF12): se decidió implementarlo como validación simple en pantalla, no como sistema de notificaciones externo (que sigue fuera de alcance) |
+| 2026-09-06 | Diseño de Interfaces | Sección 6.1 | Se agrega la necesidad de registrar un motivo/causa al pausar una actividad, y su implicación como dato asociado a cada evento de pausa | Insumo del ERS (RF09): al pausar, el sistema debe solicitar un motivo de interrupción |
+| 2026-09-06 | Ambas | Sección 10 — Referencias normativas | Se agrega el documento ERS (IEEE 830) del equipo como referencia complementaria del Alcance | El equipo elaboró un ERS formal que detalla RF/RNF y casos de uso; se documenta como referencia, sin fusionar su contenido completo al Alcance |
+| 2026-09-12 | POO | Sección 4 — Usuarios del sistema | Se agrega un tercer rol, Superadmin, no contemplado en la v0.1 ni en el ERS | Al diseñar la Etapa 1 (Empresa + usuarios) surgió una ambigüedad no resuelta: ningún documento definía quién registra una empresa nueva. Se decidió introducir un rol técnico separado de Administrador/Operario para dar de alta empresas y su primer Administrador |
+| 2026-09-12 | POO | Sección 5.1 | Se separa "registro de empresa y primer Administrador" (a cargo del Superadmin) de "administración de usuarios Administrador/Operario dentro de la empresa" | Consecuencia directa de introducir el rol Superadmin: la Sección 5.1 quedaba inconsistente si no distinguía quién hace qué |
+| 2026-09-12 | POO | Sección 8, criterio 1 | Se reescribe el criterio de "Empresa y usuarios" para reflejar los tres roles y quién crea a quién (Superadmin → Administrador → Operario) | Mantener el MVP medible y consistente con el nuevo rol Superadmin |
+| 2026-09-26 | POO | Sección 5.1 | Se definen cuatro niveles de prioridad (Baja, Media, Alta, Urgente); Urgente significa interrumpir la actividad en curso | Insumo del ERS (CU01), que usa cuatro niveles; el código tenía tres y el alcance no lo definía. Se decidió que Urgente tenga un comportamiento propio, alineado con la interrupción de actividades ya prevista en 5.1 y la necesidad de notar cambios de prioridad (6.1) |
+| 2026-09-26 | POO | Sección 5.1 | Se agrega la regla de una sola actividad en ejecución por operario, con pausa manual | Insumo del ERS (CU01, FA1). Evita contar tiempo real doble y protege la calidad del dato de carga laboral. Se eligió pausa manual (no automática) para que el operario decida y registre el motivo |
+| 2026-09-26 | POO | Secciones 5.1, 5.2 y 8 (criterio 3) | Se agregan la fecha programada de cada actividad, la capacidad diaria por operario y el cálculo de carga por día; la alerta del 100% compara contra la capacidad del día programado | La alerta de sobrecarga (RF12) no tenía definidos capacidad ni carga. Capacidad por operario porque la persona de referencia tiene turno rotativo; fecha programada para dar sustento a la "proyección a partir de actividades programadas" de 5.2 |
+| 2026-09-26 | Diseño de Interfaces | Sección 6.1 | Se agrega la necesidad de un aviso visible de actividad Urgente pendiente | Consecuencia de las decisiones de prioridad Urgente y pausa manual: el operario necesita enterarse para poder pausar su actividad actual |
+| 2026-09-26 | Diseño de Interfaces | Sección 6.1 | Se agregan las 6 leyes de usabilidad (Hick, Fitts, Jakob, Miller, Proximidad, estético-usabilidad) como principios de diseño | Insumo de la clase de Semana 7. Los indicadores de evaluación de esa clase no se incorporan al alcance: se usan como material de evaluación de la materia, ya que varios están pensados para portales de contenido |
+| 2026-09-26 | Ambas | Secciones 7 y 12 | Se define la interfaz como cliente HTML/CSS/JS que consume la API REST, servido por el mismo Flask | Separación clara cliente-servidor y de tres capas (Momentos 2 y 3 de DOO), retroalimentación inmediata sin recargar (heurísticas de Nielsen) y reutilización de la API por futuros clientes, como una app móvil |
+| 2026-09-26 | POO | Sección 13 | Se registra el trabajo sin conexión con sincronización como ampliación futura | Insumo del ERS (CU01, E1). Se excluye del MVP por su complejidad y porque ninguno de los dos syllabus lo exige |
+| 2026-09-26 | Diseño de Interfaces | Ninguna (decisión registrada) | Se decide presentar en Diseño de Interfaces la interfaz construida en código (HTML/CSS/JS), sin prototipo previo en Penpot | Decisión del equipo. **Discrepancia pendiente:** el syllabus asigna a las semanas 8 y 9 wireframes de media fidelidad y prototipos interactivos, y cita Penpot. Pendiente confirmar con el profesor antes de la evaluación de Semana 10 |
+| 2026-09-26 | POO | Secciones 4 y 5.1 | Se agregan turnos (catálogo por empresa, un turno por operario con fecha de cambio) y registro de asistencia (marca del operario, validación del Administrador) | Nueva necesidad del equipo: medir el tiempo que el operario debió trabajar contra el que dedicó a actividades. Se eligió validación por el Administrador para que la asistencia tenga dos fuentes y sirva como evidencia |
+| 2026-09-26 | POO | Sección 5.1 | Se agregan el aviso de posible ausencia por tolerancia, la reasignación manual y la reprogramación automática de actividades no reasignadas, con registro del evento y aviso de sobrecarga | Nueva necesidad del equipo: reaccionar a tiempo ante ausencias. El evento de reprogramación evita que el incumplimiento desaparezca de las métricas |
+| 2026-09-26 | POO | Sección 5.2 | La capacidad deja de ser un valor fijo por operario y pasa a calcularse desde su turno; "carga por día" pasa a ser "carga por jornada" (la jornada pertenece al día de inicio del turno) | Modifica la decisión tomada el mismo día sobre capacidad. Los turnos nocturnos cruzan la medianoche y se decidió no partir una jornada en dos días |
+| 2026-09-26 | POO | Sección 5.2 | Se agregan los indicadores de cumplimiento de jornada, aprovechamiento, tiempo adicional, cumplimiento de actividades y precisión de estimación, por operario, categoría y empresa | Nueva necesidad del equipo: estadísticas personales y generales. Se definen dos indicadores separados para distinguir asistencia de productividad, y los agregados se calculan sumando tiempos para no distorsionar el resultado |
+| 2026-09-26 | Diseño de Interfaces | Sección 6.1 | Se agrega el banner de "en turno / fuera de turno" (color y texto) y la marca de entrada y salida desde el celular | Aplicación de la heurística de visibilidad del estado del sistema; no depender solo del color, por accesibilidad |
+| 2026-09-26 | Ambas | Sección 8 | Se agregan los criterios 7 (turnos y asistencia) y 8 (indicadores de cumplimiento) al MVP | Decisión del equipo de incluir toda la nueva funcionalidad en el MVP |
+| 2026-09-26 | POO | Sección 9 | Se retira "control de asistencia laboral" de lo excluido (nómina y remuneración siguen fuera) y se agrega la excepción de reprogramación automática por ausencia | Consecuencia de incluir asistencia en el alcance. Se mantiene la frontera con la nómina para no convertir el producto en un software de pagos |
+| 2026-09-26 | Ambas | Sección 13 | Se anota como consideración de comercialización la política de tratamiento de datos personales de asistencia | La asistencia es un dato personal de trabajadores; no afecta el proyecto académico |
+
+### Texto original de las secciones modificadas (para referencia)
+
+**Sección 1 (v0.1 original):**
+> "El proyecto consiste en el desarrollo de un sistema web orientado a la gestión y análisis de las actividades laborales de empleados pertenecientes a diferentes empresas. La solución busca centralizar los requerimientos que llegan a un área, convertirlos en actividades de trabajo, asignarlas y priorizarlas, registrar su ejecución y generar información sobre la carga laboral del personal."
+
+**Sección 4 (v0.1 original):**
+> - "Supervisor: administra y da seguimiento a los requerimientos y actividades del área, asigna responsables, establece prioridades y consulta la carga laboral del personal."
+> - "Empleado: consulta sus actividades, conoce la información necesaria para ejecutarlas, registra su ejecución y puede reportar actividades solicitadas por otras áreas para conocimiento y gestión del supervisor."
+
+**Sección 5.1 (fragmentos v0.1 originales):**
+> - "Registro y administración de usuarios con perfiles de Supervisor y Empleado."
+> - "Creación y asignación de actividades a empleados."
+> - "Posibilidad de que un empleado registre una actividad solicitada por otra área y la socialice con su supervisor."
+
+**Sección 5.2 (fragmento v0.1 original):**
+> - "Análisis de la carga laboral de los empleados."
+
+**Sección 6 (v0.1 original):**
+> "La aplicación será web y tendrá un diseño responsive. La interfaz para supervisores estará orientada principalmente a la gestión y análisis, mientras que la experiencia del empleado dará especial importancia al uso desde dispositivos móviles, debido a que la ejecución de actividades requiere iniciar, pausar, reanudar y finalizar tareas durante la jornada laboral."
+
+**Sección 7, último punto (v0.1 original):**
+> "Despliegue de la aplicación en un servidor o plataforma en la nube."
+
+**Sección 8 (v0.1 original):**
+> "La primera versión funcional deberá demostrar el flujo principal del sistema:
+> Empresa → usuarios → requerimiento → actividad → asignación → prioridad → ejecución → registro de tiempo → análisis de carga laboral.
+> El MVP priorizará el funcionamiento completo de este flujo sobre la incorporación de funcionalidades avanzadas."
+
+**Sección 5.1 (fragmento previo a este cambio):**
+> - "Creación y asignación de actividades a operarios." (relación uno a uno)
+
+**Sección 8, criterio 3 (previo a este cambio):**
+> "Asignación y prioridad: cada actividad puede asignarse a un Operario y se le puede definir una prioridad y un tiempo estimado de ejecución."
+
+**Sección 5.2 (fragmento previo a este cambio):**
+> - "Identificación de posibles situaciones de sobrecarga." (sin mecanismo de alerta definido)
+
+**Sección 9 (fragmento previo a este cambio):**
+> - "Notificaciones avanzadas." (sin distinción entre alertas simples en interfaz y notificaciones externas)
+
+**Sección 4 (previo a este cambio, sin Superadmin):**
+> - "Administrador (antes "Supervisor"): administra y da seguimiento a los requerimientos y actividades del área, asigna responsables, establece prioridades y consulta la carga laboral del personal."
+> - "Operario (antes "Empleado"): consulta sus actividades, conoce la información necesaria para ejecutarlas, registra su ejecución y puede reportar actividades solicitadas por otras áreas para conocimiento y gestión del administrador."
+
+**Sección 5.1 (fragmento previo a este cambio):**
+> - "Registro y administración de usuarios con perfiles de Administrador y Operario." (sin distinguir quién registra la empresa)
+
+**Sección 8, criterio 1 (previo a este cambio):**
+> "Empresa y usuarios: es posible registrar al menos una empresa y crear usuarios con los dos perfiles definidos (Administrador y Operario), y cada uno accede a una interfaz distinta según su rol."
+
+**Sección 10 (v0.1 original):**
+> "El proyecto tomará como referencia principios de normas internacionales relacionadas con sistemas de trabajo, interacción humano-sistema y gestión de calidad... ISO 6385:2016... ISO 9241-210:2019... ISO 10006:2017..." (sin PEP 8 ni Clean Code)
+
+**Sección 11 (v0.1 original):**
+> "Los cambios deberán integrarse mediante Pull Requests y mantenerse documentados para facilitar la colaboración y reducir conflictos entre los integrantes." (sin mención a SonarQube)
+
+**Sección 14 (v0.1 original, eliminada):**
+> "El alcance inicial se considerará cumplido cuando un usuario pueda registrar o gestionar una empresa, operar con los perfiles definidos, registrar y asignar actividades, establecer prioridades y tiempos estimados, ejecutar actividades desde una interfaz web adaptable a móviles, registrar sus tiempos reales y consultar información básica sobre carga y ocupación del personal."
+
+**Sección 5.1 (fragmentos previos a los cambios del 2026-09-26):**
+> - "Definición de prioridad de las actividades." (sin niveles definidos)
+> - Sin fecha programada de actividades ni regla de una sola actividad en ejecución.
+
+**Sección 5.2 (fragmento previo a los cambios del 2026-09-26):**
+> - "Alerta en pantalla al momento de asignar una actividad, cuando la carga proyectada del operario supere el 100% de su capacidad disponible." (sin definir capacidad ni forma de calcular la carga)
+
+**Sección 7 (fragmento previo a los cambios del 2026-09-26):**
+> - "HTML, CSS y JavaScript para la interfaz web, según las necesidades de implementación."
+
+**Sección 8, criterio 3 (previo a los cambios del 2026-09-26):**
+> "Asignación y prioridad: cada actividad puede asignarse a uno o varios Operarios, y se le puede definir una prioridad y un tiempo estimado de ejecución."
+
+**Sección 12 (fragmento previo a los cambios del 2026-09-26):**
+> - "Capa de presentación: interfaz web responsive."
+
+**Sección 4 (previo a los cambios de turnos y asistencia del 2026-09-26):**
+> Administrador y Operario sin funciones de turnos ni asistencia.
+
+**Sección 5.2 (fragmento previo a los cambios de turnos del 2026-09-26):**
+> - "Definición de una capacidad diaria propia para cada operario, expresada en horas por día."
+> - "Cálculo de la carga por día: suma de los tiempos estimados de las actividades asignadas al operario y programadas para ese día."
+
+**Sección 8 (previo a los cambios de turnos y asistencia del 2026-09-26):**
+> Seis criterios de aceptación, sin turnos, asistencia ni indicadores de cumplimiento.
+
+**Sección 9 (fragmentos previos al 2026-09-26):**
+> - "Sistemas avanzados de nómina, remuneración o control de asistencia laboral."
+> - "Automatización completa de decisiones de asignación o priorización."
