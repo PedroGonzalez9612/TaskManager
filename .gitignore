@@ -8,9 +8,8 @@ venv/
 
 .sonar/
 
-# Herramientas de IA del equipo (agentes e instrucciones): se quedan en cada computador
-.claude/
-CLAUDE.md
+# Configuración personal de Claude Code (los agentes y CLAUDE.md sí se suben)
+.claude/settings.local.json
 
 # Capturas de pantalla para revisar el diseño (herramientas/capturas.py)
 herramientas/capturas/
