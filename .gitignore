@@ -7,3 +7,10 @@ venv/
 *.egg-info/
 
 .sonar/
+
+# Herramientas de IA del equipo (agentes e instrucciones): se quedan en cada computador
+.claude/
+CLAUDE.md
+
+# Capturas de pantalla para revisar el diseño (herramientas/capturas.py)
+herramientas/capturas/
