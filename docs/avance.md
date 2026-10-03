@@ -19,7 +19,7 @@ Leyenda: ✅ terminado · 🟡 parcial · ⬜ pendiente
 
 ## Etapa 1 — Inicio de sesión, empresas y usuarios (2026-09-26) ✅
 
-Rama: `feature/login-empresas-usuarios` (pendiente de Pull Request a `develop`).
+Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #4).
 
 ### Qué se puede hacer
 
@@ -63,11 +63,47 @@ Rama: `feature/login-empresas-usuarios` (pendiente de Pull Request a `develop`).
 - No existe todavía cambio de contraseña ni recuperación de contraseña.
 - Usuarios creados antes de esta etapa (con campo `email` y sin contraseña) no son compatibles: hay que borrar la base de datos de desarrollo (`docker compose down -v`).
 
+## Fase 2 de Diseño de Interfaces — Identidad visual (2026-10-02 y 2026-10-03) 🟡
+
+Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta etapa **definió** la identidad visual y las herramientas para revisarla; todavía **no cambió** cómo se ve la aplicación.
+
+### Qué quedó definido (en el alcance)
+
+- **Perfil ampliado de los usuarios** (Sección 6.1) y las cuatro exigencias de diseño que se derivan.
+- **Leyes de Gestalt aplicadas** (Sección 6.2): proximidad, semejanza, continuidad y figura y fondo, con el lugar donde se evidencia cada una. Cierre queda pendiente.
+- **Sistema de color "Aqua de trabajo"** (Sección 6.3): base, principal, acento de marca, colores de estado con sus tres variantes, reglas obligatorias y conflictos resueltos.
+- **Sistema tipográfico** (Sección 6.4): Lexend y Atkinson Hyperlegible Mono, escala 1,2 sobre base de 18 px y reglas de uso.
+- Enunciado de la Fase 2 guardado en `docs/enunciados/`.
+
+### Qué quedó construido
+
+- `herramientas/contraste.py`: contraste WCAG entre colores (HEX o variables de `:root`).
+- `herramientas/capturas.py`: capturas de cada pantalla por rol, en celular y escritorio, con versiones desenfocada y en grises. Funciona con un navegador ya instalado (`CAPTURAS_NAVEGADOR`).
+- `requirements-dev.txt`: dependencias de desarrollo, separadas de las del producto.
+
+### Cómo se verificó
+
+- Los 10 contrastes declarados en la Sección 6.3 se midieron con `contraste.py` y coinciden. La medición mostró que el ámbar base no sirve sobre blanco ni con texto blanco, y se agregó la regla 7.
+- `capturas.py` generó las 10 capturas (5 pantallas × 2 tamaños) con sus variantes, usando Brave.
+
+### Pendientes de esta fase
+
+- **Implementar el color y la tipografía en `app/static/css/estilos.css`**: sigue con la paleta inicial (`#0f766e`) y la fuente del sistema, y la carpeta `app/static/fuentes/` aún no existe.
+- Validar el diseño de las pantallas con una herramienta externa de diseño.
+- Elaborar el documento de diseño en PDF que pide el enunciado (evolución, usabilidad, Gestalt, color, conclusiones) con las capturas como evidencia.
+
+## Estado del repositorio (2026-10-03)
+
+- `main` contiene la Etapa 1 y la Fase 2. `develop` está atrasada respecto a `main` y debe sincronizarse (Pull Request `main` → `develop`) antes de abrir la siguiente rama.
+- `CLAUDE.md` y `.claude/` ya no se suben al repositorio (Sección 11 del alcance).
+
 ## Decisiones abiertas
 
 - ¿La ejecución (pausas y tiempos) pertenece a la asignación (operario + actividad) o a la actividad? Se debe resolver antes de construir la ejecución (criterio 4).
 - ¿El login debe mostrar la marca de cada empresa? Requeriría una dirección por empresa (por ejemplo `/metalicas`). Por ahora el login muestra GestLab.
 
 ## Próxima etapa
+
+**Cierre de la Fase 2 de Diseño de Interfaces:** aplicar las Secciones 6.3 y 6.4 a `estilos.css`, validar las pantallas y preparar el documento de diseño.
 
 **Etapa 2 — Requerimientos y actividades (Administrador):** menú del Administrador, registro de requerimientos, conversión en actividades con prioridad de 4 niveles, tiempo estimado, fecha programada, categoría y asignación a uno o varios operarios (criterios 2 y 3).
