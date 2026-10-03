@@ -95,7 +95,7 @@ Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta et
 ## Estado del repositorio (2026-10-03)
 
 - `main` contiene la Etapa 1 y la Fase 2. `develop` está atrasada respecto a `main` y debe sincronizarse (Pull Request `main` → `develop`) antes de abrir la siguiente rama.
-- `CLAUDE.md` y `.claude/` ya no se suben al repositorio (Sección 11 del alcance).
+- `CLAUDE.md` y `.claude/agents/` se versionan en el repositorio (Sección 11 del alcance).
 
 ## Decisiones abiertas
 

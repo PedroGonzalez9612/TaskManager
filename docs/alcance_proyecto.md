@@ -386,9 +386,9 @@ Los cambios deberán integrarse mediante Pull Requests, los cuales deberán pasa
 | `profesor-doo` | Verificación contra el syllabus de Diseño Orientado a Objetos | Solo lectura |
 | `profesor-interfaces` | Verificación contra el syllabus de Diseño de Interfaces y auditoría del diseño de las pantallas (Secciones 6.1 a 6.4, normas citadas, capturas); propone correcciones sin aplicarlas | Solo lectura, más la ejecución de los scripts de `herramientas/` |
 
-Los agentes son herramientas de trabajo del equipo: no forman parte del producto ni de los entregables de las materias. Por eso `CLAUDE.md` y la carpeta `.claude/` **no se suben al repositorio**: están en el `.gitignore` y se mantienen solo en el computador de cada integrante. Al no viajar por Git, cada integrante es responsable de conservar su propia copia.
+Los agentes son herramientas de trabajo del equipo: no forman parte del producto ni de los entregables de las materias. Aun así, `CLAUDE.md` y la carpeta `.claude/agents/` **se versionan en el repositorio**, para que los dos integrantes trabajen con las mismas instrucciones y para no perderlos: al no estar en Git, un cambio de rama los borró del computador.
 
-**Archivos que no se suben al repositorio:** el `.env` (claves y contraseñas; el repositorio solo incluye `.env.example` con valores de ejemplo), los archivos de apoyo de IA (`CLAUDE.md`, `.claude/`), las capturas de `herramientas/capturas/` y los entornos virtuales de Python.
+**Archivos que no se suben al repositorio:** el `.env` (claves y contraseñas; el repositorio solo incluye `.env.example` con valores de ejemplo), la configuración personal de Claude Code (`.claude/settings.local.json`), las capturas de `herramientas/capturas/` y los entornos virtuales de Python.
 
 ---
 
@@ -472,7 +472,7 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-10-03 | Diseño de Interfaces | Sección 6.2 | Se agrega el bloque "Leyes de Gestalt aplicadas" (proximidad, semejanza, continuidad, figura y fondo; cierre pendiente) con el lugar donde se evidencia cada una | Requerimiento 2 de la Fase 2: el alcance documentaba usabilidad y color, pero de Gestalt solo mencionaba la semejanza |
 | 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico (sin cambio de texto) | Se actualiza Playwright de 1.47.0 a 1.63.0 en `requirements-dev.txt` | La versión 1.47.0 depende de una versión de `greenlet` sin instalador para Python 3.13, que es la que usa el equipo fuera de Docker |
 | 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico | Las capturas pueden tomarse con un navegador Chromium ya instalado (`CAPTURAS_NAVEGADOR`), además del Chromium de Playwright | Evitar la descarga del navegador de Playwright cuando el equipo ya tiene Brave, Edge o Chrome |
-| 2026-10-03 | Ambas | Sección 11 — Trabajo colaborativo | `CLAUDE.md` y la carpeta `.claude/` dejan de subirse al repositorio (se agregan al `.gitignore`), y se listan los archivos que no se versionan | Decisión del equipo: el repositorio público contiene solo el producto y su documentación; las herramientas de apoyo quedan en el computador de cada integrante |
+| 2026-10-03 | Ambas | Sección 11 — Trabajo colaborativo | Se listan los archivos que no se versionan (`.env`, configuración personal de Claude Code, capturas, entornos virtuales). `CLAUDE.md` y `.claude/agents/` se mantienen en el repositorio | Se probó dejarlos fuera de Git, pero un cambio de rama los borró del computador y dejaban de compartirse entre los integrantes; se decidió conservarlos versionados |
 
 ### Texto original de las secciones modificadas (para referencia)
 
