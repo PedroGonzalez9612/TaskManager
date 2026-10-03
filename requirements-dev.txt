@@ -1,0 +1,6 @@
+# Dependencias solo para desarrollo (no van en la imagen de Docker).
+# Instalar con: pip install -r requirements-dev.txt
+# y luego descargar el navegador: python -m playwright install chromium
+-r requirements.txt
+playwright==1.63.0
+pillow==10.4.0

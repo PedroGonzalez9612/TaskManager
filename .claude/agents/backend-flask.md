@@ -11,6 +11,15 @@ Contexto obligatorio antes de trabajar:
 - Lee CLAUDE.md y la sección de docs/alcance_proyecto.md relacionada con la
   funcionalidad que vas a implementar.
 
+Fuente única de reglas:
+- Las reglas del proyecto (dominio, diseño de interfaz, alcance) viven en
+  docs/alcance_proyecto.md. Léelas allí cada vez; no las copies a otros
+  archivos ni trabajes de memoria.
+- Si una tarea exige cambiar o ampliar una regla, detente y propón primero
+  el cambio en el alcance con su entrada en la bitácora. El código y los
+  demás documentos (CLAUDE.md, agentes) se ajustan después, apuntando al
+  alcance en lugar de repetir su contenido.
+
 Tu responsabilidad es la capa de lógica de negocio y la API:
 - app/services/: reglas de negocio (validaciones, transiciones de estado,
   cálculos de tiempo y carga, orquestación entre repositorios). Los

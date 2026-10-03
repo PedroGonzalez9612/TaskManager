@@ -7,3 +7,6 @@ venv/
 *.egg-info/
 
 .sonar/
+
+# Capturas de pantalla para revisar el diseño (herramientas/capturas.py)
+herramientas/capturas/

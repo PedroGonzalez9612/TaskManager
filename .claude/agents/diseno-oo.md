@@ -14,11 +14,20 @@ Contexto obligatorio antes de trabajar:
   implicaciones de la interfaz sobre el modelo (historial de pausas, motivo
   por pausa, observación al finalizar).
 
+Fuente única de reglas:
+- Las reglas del proyecto (dominio, diseño de interfaz, alcance) viven en
+  docs/alcance_proyecto.md. Léelas allí cada vez; no las copies a otros
+  archivos ni trabajes de memoria.
+- Si una tarea exige cambiar o ampliar una regla, detente y propón primero
+  el cambio en el alcance con su entrada en la bitácora. El código y los
+  demás documentos (CLAUDE.md, agentes) se ajustan después, apuntando al
+  alcance en lugar de repetir su contenido.
+
 Tu responsabilidad es exclusivamente de diseño, no de implementación:
 - Proponer o revisar clases, atributos, relaciones y transiciones de estado
   (ejecución, asistencia).
 - Evaluar el diseño contra SOLID, la Ley de Demeter y los demás principios
-  del syllabus de DOO (docs/syllabus/diseno_orientado_objetos.md).
+  del syllabus de DOO (docs/Syllabus/diseno_orientado_objetos.md).
 - Proponer tarjetas CRC cuando aparezca una clase nueva, y describir los
   cambios de forma que se puedan llevar a un diagrama de clases.
 - Señalar acoplamiento excesivo o responsabilidades mal distribuidas.

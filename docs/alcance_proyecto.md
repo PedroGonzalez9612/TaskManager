@@ -105,6 +105,12 @@ Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usua
 
 **Persona de referencia:** Carlos Andrés Ramírez, 34 años, operario de línea de producción, técnico en electrónica, turno rotativo. Usa únicamente celular durante su jornada.
 
+**Perfil ampliado de los usuarios:** Carlos es la persona de referencia, pero no representa a todos los usuarios. Quienes usan GestLab son diversos: personas jóvenes y mayores, de todo género y con distintos niveles de familiaridad con la tecnología, en roles técnicos y administrativos. Además, la herramienta se usa durante gran parte de la jornada (el Operario la consulta en cada cambio de actividad y el Administrador trabaja en ella de forma continua). De este perfil se derivan cuatro exigencias de diseño que aplican a todas las vistas:
+- **Legibilidad para vista cansada o envejecida:** alto contraste entre texto y fondo (ver 6.3) y tamaños de texto y controles generosos.
+- **Bajo cansancio visual en uso prolongado:** fondos sin blanco puro, texto sin negro puro y color intenso solo donde hay algo que atender.
+- **Información que no depende solo del color:** todo estado o aviso se comunica con color, ícono y texto, por accesibilidad (daltonismo) y por la menor capacidad de distinguir tonos con la edad.
+- **Interfaz amable y profesional para un público amplio:** sin estereotipos de género en el color y con un tono cercano (por ejemplo, saludo con el nombre del usuario), sin perder la seriedad de una herramienta de trabajo.
+
 **Hallazgo central del mapa de empatía:** Carlos no necesita más control sobre su trabajo — necesita **evidencia y contexto**: poder demostrar lo que hizo (hoy depende solo de su palabra) y no perder el hilo cuando una tarea se interrumpe por otra más urgente.
 
 **Necesidades identificadas que la interfaz debe resolver explícitamente:**
@@ -156,7 +162,8 @@ Las opciones del menú se habilitan a medida que se construye cada pantalla; nun
 - **Marco común:** menú lateral con las opciones del rol y, al pie, el nombre del usuario, su rol y "Cerrar sesión". En celular el menú se oculta detrás de un botón "Menú".
 - **Primero la información:** cada pantalla muestra primero su lista o tabla. Crear o editar es una acción secundaria: un botón ("+ Nueva empresa", "+ Nuevo usuario") abre el formulario en una ventana (diálogo). Al guardar, la ventana se cierra y aparece una confirmación breve.
 - **Estados vacíos y límites explicados:** cuando no hay datos, la pantalla explica qué hacer y ofrece el botón para hacerlo. Cuando una acción no está disponible (por ejemplo, se alcanzó el límite de usuarios), el botón se desactiva y un aviso explica por qué.
-- **Paleta sobria:** fondos neutros y un solo color de acento. Los colores fuertes se reservan para lo que tiene significado (prioridades, avisos) y siempre van acompañados de texto.
+- **Paleta sobria con significado:** fondos casi neutros, un color principal para las acciones y un acento de marca usado solo en elementos de identidad. Los colores fuertes se reservan para lo que tiene significado (prioridades, estados, avisos) y siempre van acompañados de ícono y texto. El sistema de color completo se define en la Sección 6.3.
+- **Tipografía legible:** Lexend para leer y Atkinson Hyperlegible Mono para códigos, tiempos y cifras, con base de 18 px y tamaños en rem. El sistema tipográfico completo se define en la Sección 6.4.
 
 **Relación con los principios de usabilidad (6.1) y las heurísticas de Nielsen:**
 - Pocas opciones de menú por rol (Ley de Hick) y patrón de menú lateral más tabla, habitual en sistemas administrativos (Ley de Jakob).
@@ -164,6 +171,131 @@ Las opciones del menú se habilitan a medida que se construye cada pantalla; nun
 - "Cancelar", la tecla Esc y la "X" en todos los diálogos (Nielsen 3: control y libertad del usuario).
 - Validación antes de enviar y acciones deshabilitadas cuando no son posibles (Nielsen 5: prevención de errores).
 - Mensajes de error en lenguaje claro dentro del mismo formulario (Nielsen 9: ayudar a reconocer y corregir errores).
+
+**Leyes de Gestalt aplicadas** (requerimiento 2 de la Fase 2; se listan solo las que ya se evidencian en las pantallas construidas):
+- **Proximidad:** cada etiqueta va pegada a su campo y separada del siguiente; los dos límites de usuarios forman un grupo bajo un mismo título; "Cancelar" y la acción principal van juntos al pie del diálogo; el nombre del usuario, su rol y "Cerrar sesión" forman un bloque al pie del menú. Resuelve la duda de qué dato pertenece a qué control.
+- **Semejanza:** todos los botones de acción principal comparten relleno y forma, los secundarios comparten borde, las etiquetas de rol y de prioridad comparten la forma de píldora y todos los enlaces comparten color. El usuario aprende un elemento una vez y lo reconoce en las demás pantallas.
+- **Continuidad:** las tablas alinean cada dato en su columna para recorrerlo de arriba abajo; los formularios tienen una sola columna que termina en el botón de acción; las migas de pan ("Empresas / Metalicas SAS") muestran el camino recorrido.
+- **Figura y fondo:** los paneles blancos se separan del fondo tintado; al abrir un diálogo o el menú en celular, el resto de la pantalla se oscurece para que solo quede en primer plano lo que se está atendiendo.
+- **Cierre:** todavía no se aplica en las pantallas construidas; se evaluará en la pantalla de ejecución del Operario (por ejemplo, el avance de la jornada).
+
+
+### 6.3 Identidad visual: sistema de color "Aqua de trabajo" (Diseño de Interfaces)
+
+Esta subsección define la propuesta cromática del producto, exigida en la Fase 2 del Proyecto Integrador de Diseño de Interfaces. Reemplaza la paleta inicial de la interfaz (acento verde azulado `#0f766e` en `estilos.css`). El color se eligió por su función y por el contexto de uso, no por gusto estético: cada color tiene un único significado y ese significado es el mismo en todas las pantallas de los tres roles.
+
+**Fundamentos de la propuesta:**
+- **Estudios de color y trabajo.** En el estudio de Nancy Kwallek (Universidad de Texas), las personas cometieron más errores en una oficina blanca que en una de color, y el espacio aqua (verde azulado) resultó el más agradable y productivo; las personas sensibles al entorno se sintieron abrumadas en espacios de colores intensos. Mehta y Zhu (Universidad de British Columbia, *Science*, 2009) mostraron que el rojo induce una motivación de alerta y evitación que mejora las tareas que exigen atención al detalle, mientras que el azul favorece la calma. De aquí salen tres decisiones: fondo con tinte aqua en lugar de blanco, color principal aqua profundo y rojo reservado para lo que exige atención inmediata. Estos estudios se usan como respaldo, no como verdad absoluta: sus efectos varían según la persona.
+- **Normas de color de la industria.** Los significados de los colores de estado siguen la norma ISO 3864 (rojo: peligro o prohibición; amarillo: precaución; verde: condición segura; azul: indicación u obligación), que los operarios ya conocen por la señalización de planta. La escala de prioridades sigue la jerarquía de riesgo de ANSI Z535 (amarillo para precaución, naranja para advertencia, rojo para peligro). Lo que está en estado normal va en gris, según el principio de la norma ISA-101 para interfaces de operación industrial: el color se reserva para lo que requiere acción.
+- **Visión de personas mayores.** Con la edad, el cristalino se vuelve amarillento, el azul se percibe más oscuro y cuesta distinguir azules de verdes. Por eso se usan colores de saturación media, el azul no se usa en texto pequeño y el verde de "finalizada" se inclina hacia el amarillo para separarse del aqua principal.
+- **Contraste (WCAG 2.1).** Todo texto cumple al menos 4,5:1 contra su fondo y los componentes de interfaz al menos 3:1. Los textos principales superan 7:1 (nivel AAA).
+
+**Teoría del color aplicada:**
+- **Armonía complementaria:** el aqua principal (tono 190°) y el coral de marca (tono 9°) están separados 181° en la rueda de color. Siguiendo lo visto en clase, esta armonía se usa para destacar: el coral ocupa muy poca superficie y marca la identidad.
+- **Jerarquía por saturación y luminosidad:** el fondo es casi neutro (26 % de saturación, 95 % de luminosidad), el principal es firme (69 % de saturación, 28 % de luminosidad) y los estados intensos aparecen solo cuando hay algo que atender.
+- **Proporción 60-30-10:** alrededor de 60 % de fondo y superficies, 30 % de texto y color principal, y 10 % de acento de marca y colores de estado.
+
+**Base e identidad:**
+
+| Rol | HEX | Uso | Contraste |
+|---|---|---|---|
+| Fondo | `#EEF5F4` | Fondo general de todas las pantallas (tinte aqua, sin blanco puro) | — |
+| Superficie | `#FFFFFF` | Tarjetas, tablas, diálogos (separa figura y fondo) | — |
+| Principal | `#16697A` | Botones de acción principal, enlace activo, foco, actividad en curso | Texto blanco sobre principal 6,3:1 |
+| Principal (hover/presionado) | `#0F5563` | Estado del botón principal al pasar el cursor o presionar | 7,1:1 sobre su fondo suave |
+| Principal suave | `#E0EFF0` | Fondo de la etiqueta "En curso" y de elementos seleccionados | — |
+| Acento de marca (coral) | `#E9806E` | Solo identidad: logo, avatar del usuario, barra de progreso de la jornada. Nunca en texto ni en estados | No se usa para texto |
+| Texto principal | `#1F2A2E` | Títulos y texto (sin negro puro) | 14,7:1 sobre blanco |
+| Texto secundario | `#4E5B60` | Textos de apoyo, metadatos | 7,0:1 sobre blanco |
+
+**Colores de estado** (cada uno con tres variantes: base para rellenos y bordes, fondo suave para etiquetas y avisos, y texto oscuro para escribir sobre ese fondo):
+
+| Significado | Base | Fondo suave | Texto sobre fondo | Ícono | Norma | Contraste texto/fondo |
+|---|---|---|---|---|---|---|
+| Error, prioridad Urgente | `#A8322A` | `#FBE9E7` | `#8A2620` | ⚠ | ISO 3864 (peligro, prohibición) | 7,5:1 |
+| Prioridad Alta | `#B34F0B` | `#FDEBDD` | `#8A3D08` | ▲ | ANSI Z535 (advertencia) | 6,6:1 |
+| Advertencia, prioridad Media, actividad pausada, cambio de prioridad | `#E3A32B` | `#FBF1D9` | `#6B4A0E` | ! / ❚❚ / ↑ | ISO 3864 (precaución) | 7,2:1 |
+| Confirmación, actividad finalizada, en turno | `#3E7B3A` | `#E6F0E2` | `#2F5F2C` | ✓ / ● | ISO 3864 (condición segura) | 6,4:1 |
+| Información | `#2F5DA8` | `#E6EDF8` | `#24498A` | i | ISO 3864 (azul, indicación) | 7,5:1 |
+| Normal: prioridad Baja, actividad pendiente, fuera de turno | `#6B7478` | `#ECEFEF` | `#4E5B60` | • / ○ | ISA-101 (lo normal en gris) | 6,1:1 |
+
+**Asignación por elemento de la interfaz:**
+- **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco), Alta (naranja con texto blanco), Media (ámbar con texto oscuro, ver regla 7), Baja (gris). La intensidad del color crece con la urgencia y la etiqueta siempre muestra el nombre del nivel.
+- **Estados de actividad:** Pendiente (gris), En curso (principal aqua), Pausada (ámbar), Finalizada (verde).
+- **Jornada:** En turno (verde con punto ●), Fuera de turno (gris con texto que lo indica).
+- **Errores:** el error de formulario y la prioridad Urgente comparten el rojo porque significan lo mismo, "algo requiere tu atención", y se diferencian por la forma: el error de formulario es un borde rojo en el campo con el mensaje debajo; la alerta de Urgente pendiente es un bloque rojo lleno con ícono ⚠ y texto.
+- **Información:** avisos que no exigen acción (por ejemplo, la hora de fin de turno), siempre como fondo suave con el ícono "i", nunca como botón lleno, para no confundirse con una acción.
+
+**Reglas obligatorias del sistema de color:**
+1. Todo estado, prioridad o aviso se comunica con **color, ícono y texto**; nunca solo con color.
+2. Cada color tiene **un solo significado** en todo el producto.
+3. El **color intenso** (bloques llenos) se reserva para lo que exige atención inmediata; lo normal se muestra en gris.
+4. El **coral de marca** nunca se usa en texto, etiquetas de estado ni botones de acción.
+5. El **azul de información** nunca se usa en texto pequeño ni como relleno de botón.
+6. Todos los colores se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`) para garantizar la consistencia entre pantallas.
+7. El **ámbar base** (`#E3A32B`) es un color claro y tiene dos restricciones: sobre blanco solo alcanza 2,2:1, así que nunca se usa como borde, ícono o texto sobre superficies claras (para eso se usa su texto oscuro `#6B4A0E`, 8,0:1 sobre blanco); y como relleno lleva siempre texto principal oscuro `#1F2A2E` (6,7:1), nunca blanco. Los demás colores base admiten texto blanco como relleno (rojo 6,7:1; naranja 5,2:1; verde 5,1:1; gris 4,8:1).
+
+**Conflictos identificados y cómo se resuelven:**
+- **Coral de marca (9°) frente a rojo de Urgente (4°) y naranja de Alta (25°):** son tonos cálidos cercanos. Se separan por luminosidad (el coral es claro y rosado, el rojo y el naranja son oscuros), por uso (el coral nunca aparece en estados) y porque las prioridades siempre llevan su texto.
+- **Aqua principal (190°) frente a azul de información (217°) y verde de finalizada (116°):** se separan por tono, por forma de uso (el principal es relleno de botón; información y finalizada son fondos suaves) y por el ícono que acompaña a cada estado.
+- **Ámbar compartido** entre advertencia, prioridad Media, pausada y cambio de prioridad: comparten el significado de "precaución, atención no urgente"; el ícono y el texto indican de cuál se trata.
+
+**Relación con la marca blanca (Sección 4):** cuando una empresa carga su logo, este reemplaza la marca GestLab, pero el sistema de color no cambia. Los colores de estado deben significar lo mismo en todas las empresas para no perder la consistencia ni la accesibilidad.
+
+
+### 6.4 Tipografía (Diseño de Interfaces)
+
+Esta subsección define el sistema tipográfico del producto como parte de la identidad visual de la Fase 2 del Proyecto Integrador de Diseño de Interfaces. Reemplaza la fuente del sistema (`system-ui`) usada en la versión inicial de `estilos.css`. Igual que el color (6.3), la tipografía se eligió por su función y por el perfil de los usuarios (6.1): personas jóvenes y mayores que leen la interfaz durante gran parte de la jornada, en celular y en computador.
+
+**Criterios de selección:**
+- **Sin serifas:** la evidencia sobre serifas en pantalla no es concluyente, pero hay indicios de que dificultan la lectura a personas con trastornos de lectura; por eso la buena práctica en web es usar fuentes sin serifas.
+- **Tamaño mínimo:** 16 px es el mínimo recomendado para texto web, y para públicos con personas mayores se recomienda acercarse a 19 px.
+- **Interlineado:** entre 130 % y 150 % del tamaño de la letra, para no perder el renglón.
+- **Grosor:** evitar pesos delgados, sobre todo en tamaños pequeños.
+- **Caracteres inconfundibles:** en un sistema donde se leen códigos de actividad y referencias de equipos ("Sensor B2", "Línea 1"), la `l` minúscula, la `I` mayúscula y el `1`, así como la `O` y el `0`, no deben confundirse.
+- **Licencia libre para uso comercial:** ambas fuentes se distribuyen con la licencia SIL Open Font License 1.1, que permite usarlas en un producto comercial sin costo.
+
+**Fuentes elegidas y función de cada una:**
+
+| Fuente | Función | Motivo |
+|---|---|---|
+| **Lexend** | Todo lo que se *lee*: títulos, textos, botones, etiquetas, tablas y menús | Fuente sin serifas diseñada para facilitar la fluidez de lectura; formas redondeadas que dan una apariencia amable y moderna para un público amplio, sin perder seriedad |
+| **Atkinson Hyperlegible Mono** | Todo lo que se *identifica carácter por carácter*: cronómetro, códigos de actividad, referencias de equipos y cifras | Diseñada por el Braille Institute para mejorar la legibilidad en personas con baja visión, con formas que diferencian cada carácter (la `l` con cola, el `1` con gancho, el `0` con barra). Al ser monoespaciada, todos los dígitos ocupan el mismo ancho y el cronómetro no "salta" mientras corre |
+
+**Conflicto identificado y cómo se resuelve:** en Lexend, la `I` mayúscula y la `l` minúscula se parecen. Por eso el contenido donde una confusión de caracteres causaría un error real (códigos, referencias, tiempos y cifras) se escribe siempre en Atkinson Hyperlegible Mono.
+
+**Escala tipográfica:** proporción 1,2 (tercera menor) sobre una base de 18 px. Cada nivel es 1,2 veces el anterior (15 → 18 → 22 → 26 → 31 px), lo que da una jerarquía clara sin saltos bruscos en pantallas pequeñas.
+
+| Rol | Fuente | Tamaño | Peso | Interlineado | Dónde se usa |
+|---|---|---|---|---|---|
+| Título de pantalla (H1) | Lexend | 26 px móvil / 31 px escritorio (1,444 rem / 1,722 rem) | 600 | 1,25 | Título principal o saludo de cada pantalla |
+| Título de sección (H2) | Lexend | 22 px (1,222 rem) | 600 | 1,3 | Encabezados de bloque ("Mis actividades", "Usuarios") |
+| Título de tarjeta (H3) | Lexend | 18 px (1 rem) | 600 | 1,35 | Nombre de la actividad en tarjetas, títulos de diálogos |
+| Texto principal | Lexend | 18 px (1 rem) | 400 | 1,5 | Descripciones, observaciones, formularios |
+| Texto secundario | Lexend | 16 px (0,889 rem) | 400 | 1,45 | Metadatos (línea, estimado, asignado por), ayudas de campo |
+| Tablas | Lexend | 16 px (0,889 rem) | 400 | 1,45 | Tablas del Administrador y del Superadmin |
+| Etiquetas y estados | Lexend | 15 px (0,833 rem) | 600 | 1,2 | Etiquetas de prioridad, estado y jornada (siempre con ícono y color, ver 6.3) |
+| Botones | Lexend | 18 px (1 rem) | 600 | — | Todos los botones |
+| Cronómetro | Atkinson Hyperlegible Mono | 44 px (2,444 rem) | 600 | — | Tiempo en ejecución de la actividad |
+| Códigos y cifras | Atkinson Hyperlegible Mono | 16 px (0,889 rem) | 500 | — | Códigos de actividad, referencias de equipos, porcentajes y horas en tablas |
+
+Los valores en rem se calculan sobre una base de 18 px. Esa base se declara en la raíz del documento como `112,5 %` del tamaño del navegador (16 px por defecto), no como 18 px fijos, para que respete el tamaño de letra que cada usuario tenga configurado en su dispositivo.
+
+**Reglas obligatorias del sistema tipográfico:**
+1. **Solo dos pesos en Lexend:** 400 para leer y 600 para jerarquía y acción. No se usan pesos por debajo de 400.
+2. **Ningún texto por debajo de 15 px;** ese mínimo se reserva para etiquetas cortas en negrita. El texto corrido nunca baja de 16 px.
+3. **Tamaños en rem, no en px fijos:** si el usuario agranda la letra en su dispositivo, toda la interfaz crece en proporción sin romperse (WCAG 2.1, criterio 1.4.4, cambio de tamaño del texto hasta 200 %).
+4. **El diseño soporta ajustes de espaciado del usuario** (interlineado 1,5, espacio entre párrafos de 2 veces el tamaño, espaciado entre letras de 0,12 y entre palabras de 0,16) sin perder contenido (WCAG 2.1, criterio 1.4.12).
+5. **Códigos, referencias, tiempos y cifras siempre en Atkinson Hyperlegible Mono.**
+6. **Texto alineado a la izquierda,** sin justificar, para mantener espacios regulares entre palabras.
+7. Todos los estilos se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`), igual que el color.
+
+**Relación con los principios de diseño de la Fase 2:**
+- **Jerarquía visual (usabilidad):** la diferencia de tamaño y peso permite distinguir de un vistazo el título, la información principal y la secundaria, y las acciones.
+- **Consistencia (usabilidad):** los mismos roles tipográficos se usan en las vistas de los tres roles.
+- **Semejanza (Gestalt):** todos los elementos del mismo tipo comparten estilo (por ejemplo, todos los títulos de tarjeta), así el usuario los reconoce como equivalentes.
+
+**Implementación:** como el despliegue es local (Sección 7) y la planta puede no tener conexión estable a internet, los archivos de ambas fuentes se incluyen dentro del proyecto (en formato `.woff2`, en la carpeta `app/static/fuentes/`) en lugar de cargarse desde Google Fonts. Si una fuente no carga, el sistema usa como respaldo la fuente sin serifas del dispositivo (`system-ui, sans-serif`) para Lexend y una monoespaciada del sistema (`ui-monospace, monospace`) para Atkinson Hyperlegible Mono.
 
 ---
 
@@ -178,6 +310,7 @@ Las opciones del menú se habilitan a medida que se construye cada pantalla; nun
 - Git y un repositorio remoto para el control de versiones y trabajo colaborativo.
 - Despliegue de la aplicación en un entorno local, con la posibilidad de desplegarla en un servidor independiente si las condiciones lo permiten, utilizando Docker como mecanismo de containerización para empaquetar y ejecutar la aplicación de forma consistente entre entornos.
 - **SonarQube** como herramienta de análisis estático y control de calidad de código, integrado al repositorio de GitHub, para monitorear de forma continua aspectos como cobertura de pruebas, code smells, duplicación y cumplimiento de buenas prácticas de diseño (por ejemplo, principios SOLID).
+- **Herramientas de revisión del diseño (solo desarrollo)**, en la carpeta `herramientas/`: un script que calcula el contraste WCAG entre colores (`contraste.py`) y otro que toma capturas de las pantallas en tamaño celular y escritorio con Playwright, junto con versiones desenfocada y en escala de grises para revisar la jerarquía visual y la independencia del color (`capturas.py`, con la lista de pantallas en `pantallas.json`). Sus dependencias (Playwright y Pillow) van en `requirements-dev.txt`, separadas de las del producto, y no forman parte de la imagen de Docker. Las credenciales de los usuarios de prueba se leen del archivo `.env`.
 
 ---
 
@@ -221,6 +354,10 @@ El proyecto tomará como referencia principios de normas internacionales relacio
 - **ISO 10006:2017** – Quality management – Guidelines for quality management in projects. Referencia conceptual para aspectos relacionados con recursos, medición, análisis y mejora.
 - **PEP 8** – Guía de estilo oficial para código Python. Se utilizará como referencia de buenas prácticas de escritura de código (nombres, indentación, formato), y su cumplimiento se verificará de forma automática mediante SonarQube (ver Sección 7).
 - **Clean Code (Robert C. Martin)** – Conjunto de principios y buenas prácticas de programación (nombres significativos, funciones pequeñas y con una sola responsabilidad, entre otros). Se utilizará como referencia conceptual complementaria a los principios SOLID y la Ley de Demeter trabajados en la materia de Diseño Orientado a Objetos.
+- **ISO 3864-1:2011** – Graphical symbols – Safety colours and safety signs – Part 1: Design principles. Referencia para el significado de los colores de estado de la interfaz (Sección 6.3).
+- **ANSI Z535** – Norma estadounidense de señalización de seguridad. Referencia para la escala de color de las prioridades por nivel de riesgo (Sección 6.3).
+- **ANSI/ISA-101.01-2015** – Human Machine Interfaces for Process Automation Systems. Referencia para el uso de fondos neutros y la reserva del color para lo que requiere acción (Sección 6.3).
+- **WCAG 2.1** – Pautas de Accesibilidad para el Contenido Web (W3C). Referencia para los niveles mínimos de contraste entre texto, componentes y fondos (Sección 6.3), el cambio de tamaño del texto hasta 200 % (criterio 1.4.4) y el espaciado del texto (criterio 1.4.12) (Sección 6.4).
 - **Especificación de Requisitos de Software (ERS)** – Documento complementario del Alcance, basado en el estándar IEEE Std 830-1998, elaborado por el equipo del proyecto (Pedro González y Sebastián Vargas). Detalla los requisitos funcionales (RF01-RF12) y no funcionales, así como casos de uso específicos, que amplían y formalizan lo definido en este documento de Alcance.
 
 ---
@@ -234,6 +371,22 @@ El desarrollo será realizado por un equipo de dos integrantes mediante Git y un
 - `feature/*`: desarrollo de funcionalidades específicas.
 
 Los cambios deberán integrarse mediante Pull Requests, los cuales deberán pasar la revisión automática de **SonarQube** antes de ser aprobados e integrados, con el fin de validar la calidad del código (cumplimiento de PEP 8, principios SOLID, ausencia de code smells, entre otros). Los cambios deberán mantenerse documentados para facilitar la colaboración y reducir conflictos entre los integrantes.
+
+**Documento de alcance como fuente única de reglas.** Las reglas del proyecto (dominio, alcance funcional, diseño de interfaz, color y tipografía) se escriben una sola vez, en este documento. Los demás archivos del repositorio que guían el trabajo (`CLAUDE.md` y los agentes de `.claude/agents/`) apuntan a las secciones de este documento en lugar de copiar su contenido. Cuando una regla cambia, se actualiza primero este documento con su entrada en la bitácora, y después el código. Así se evita mantener versiones distintas de una misma regla. Los enunciados de las entregas de cada materia se guardan en `docs/enunciados/` como referencia; ante cualquier diferencia, manda el enunciado original de la docente.
+
+**Agentes de apoyo con Claude Code.** El equipo usa agentes de Claude Code definidos en `.claude/agents/`, cada uno con una responsabilidad acotada:
+
+| Agente | Responsabilidad | Permisos |
+|---|---|---|
+| `diseno-oo` | Diseño y revisión del modelo de clases | Solo lectura |
+| `backend-flask` | Servicios y rutas de la API | Lectura y escritura |
+| `persistencia-mongo` | Repositorios y esquemas de MongoDB | Lectura y escritura |
+| `frontend-web` | Interfaz HTML, CSS y JavaScript, aplicando las Secciones 6.1 a 6.4 | Lectura y escritura en `app/static/` (y la lista de pantallas de `herramientas/pantallas.json`) |
+| `revisor-codigo` | Calidad del código, separación de capas y seguridad básica | Solo lectura |
+| `profesor-doo` | Verificación contra el syllabus de Diseño Orientado a Objetos | Solo lectura |
+| `profesor-interfaces` | Verificación contra el syllabus de Diseño de Interfaces y auditoría del diseño de las pantallas (Secciones 6.1 a 6.4, normas citadas, capturas); propone correcciones sin aplicarlas | Solo lectura, más la ejecución de los scripts de `herramientas/` |
+
+Los agentes son herramientas de trabajo del equipo: no forman parte del producto ni de los entregables de las materias.
 
 ---
 
@@ -303,8 +456,24 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-09-26 | POO | Secciones 4 y 5.1 | El Superadmin define por empresa un límite de Administradores y otro de Operarios; el sistema impide crear usuarios por encima del límite y reducir un límite por debajo de los usuarios existentes | Decisión del equipo: controlar el tamaño de cada cliente (base para un futuro esquema de planes) |
 | 2026-09-26 | Diseño de Interfaces | Nueva Sección 6.2 | Se definen las vistas y el menú de cada rol, y las decisiones de diseño comunes: marco con menú lateral, formularios en diálogos detrás de un botón, estados vacíos, paleta sobria y su relación con las heurísticas de Nielsen | La primera versión de la interfaz mostraba formularios de creación siempre abiertos y sin menú de navegación; se reorganizó para que cada pantalla muestre primero la información |
 | 2026-09-26 | Ambas | Sección 13 | Se anota como consideración de comercialización la política de tratamiento de datos personales de asistencia | La asistencia es un dato personal de trabajadores; no afecta el proyecto académico |
+| 2026-10-02 | Diseño de Interfaces | Sección 6.1 | Se agrega el perfil ampliado de los usuarios (jóvenes y mayores, de todo género y nivel tecnológico, uso durante gran parte de la jornada) y cuatro exigencias de diseño derivadas: legibilidad, bajo cansancio visual, información que no depende solo del color e interfaz amable y profesional | Al definir la paleta de la Fase 2 se aclaró que la persona de referencia (Carlos, 34 años) no representa a todos los usuarios; las decisiones de color y tipografía deben servir a un público amplio |
+| 2026-10-02 | Diseño de Interfaces | Nueva Sección 6.3 | Se define el sistema de color "Aqua de trabajo": base con tinte aqua, principal `#16697A`, acento de marca coral `#E9806E` en armonía complementaria, colores de estado con tres variantes, asignación por elemento, reglas obligatorias y conflictos resueltos. Reemplaza la paleta inicial de `estilos.css` (acento `#0f766e`) | Requerimiento 3 de la Fase 2 del Proyecto Integrador (propuesta cromática definida y justificada). Se eligió tras varias rondas de opciones; se fundamenta en estudios de color y trabajo (Kwallek; Mehta y Zhu, 2009), en normas de color industrial y en la visión de personas mayores |
+| 2026-10-02 | Diseño de Interfaces | Sección 6.2 | Se ajusta la decisión "Paleta sobria": ahora incluye un acento de marca solo para identidad, exige ícono además de texto en los estados y remite a la Sección 6.3 | Consecuencia de la nueva Sección 6.3 |
+| 2026-10-02 | Diseño de Interfaces | Sección 10 — Referencias normativas | Se agregan ISO 3864-1, ANSI Z535, ANSI/ISA-101.01-2015 y WCAG 2.1 como referencias del sistema de color | Las decisiones de la Sección 6.3 se apoyan en estas normas; se documentan como orientación, sin implicar certificación |
+| 2026-10-02 | Diseño de Interfaces | Nueva Sección 6.4 | Se define el sistema tipográfico: Lexend para todo lo que se lee y Atkinson Hyperlegible Mono para cronómetro, códigos, referencias y cifras; escala de proporción 1,2 sobre base de 18 px con tamaños en rem, dos pesos (400 y 600), interlineados, siete reglas obligatorias, relación con los principios de la Fase 2 e implementación con fuentes incluidas en el proyecto. Reemplaza la fuente del sistema (`system-ui`) | Identidad visual de la Fase 2 del Proyecto Integrador. Se eligió Lexend entre tres opciones (Atkinson Hyperlegible Next, Bricolage Grotesque + Atkinson, Lexend) por su apariencia amable y moderna para un público amplio; su debilidad (`I` y `l` parecidas) se compensa usando Atkinson Hyperlegible Mono donde una confusión causaría un error. Fuentes incluidas en el proyecto porque el despliegue es local |
+| 2026-10-02 | Diseño de Interfaces | Sección 6.2 | Se agrega la decisión común "Tipografía legible" con remisión a la Sección 6.4 | Consecuencia de la nueva Sección 6.4 |
+| 2026-10-02 | Diseño de Interfaces | Sección 10 — Referencias normativas | Se amplía la referencia a WCAG 2.1 con los criterios 1.4.4 (cambio de tamaño del texto) y 1.4.12 (espaciado del texto) | Las reglas de la Sección 6.4 se apoyan en estos criterios |
+| 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico | Se agregan las herramientas de revisión del diseño (`herramientas/contraste.py`, `herramientas/capturas.py` con `pantallas.json`) y sus dependencias de desarrollo (Playwright y Pillow en `requirements-dev.txt`, fuera de la imagen de Docker) | Se necesitaba verificar de forma objetiva el contraste y revisar la jerarquía visual y Gestalt sobre capturas reales de la aplicación, como apoyo a la Fase 2 |
+| 2026-10-03 | Ambas | Sección 11 — Trabajo colaborativo | Se establece el documento de alcance como fuente única de reglas (CLAUDE.md y los agentes apuntan a él), se crea `docs/enunciados/` para los enunciados de las entregas y se documentan los siete agentes de Claude Code con su responsabilidad y permisos | Evitar actualizar varios documentos por separado cuando cambia una regla. Al ampliar el agente `profesor-interfaces` con la auditoría de diseño (opción elegida: un solo agente que enseña y audita) se actualizaron todos los agentes para que lean el alcance, y se corrigió la ruta del syllabus (`docs/Syllabus/`) en los agentes que la tenían mal escrita |
+| 2026-10-03 | Diseño de Interfaces | Sección 6.4 — Implementación | Se precisa la carpeta de las fuentes: `app/static/fuentes/` | Los agentes `frontend-web` y `profesor-interfaces` necesitan una ubicación concreta para construir y verificar |
+| 2026-10-03 | Diseño de Interfaces | Sección 6.3 — Reglas y asignación por elemento | Se agrega la regla 7 sobre el ámbar base `#E3A32B` (no se usa como borde, ícono o texto sobre superficies claras; como relleno lleva texto oscuro) y se precisa el color del texto de las etiquetas de prioridad Alta y Media | Al medir con `herramientas/contraste.py`, el ámbar sobre blanco da 2,2:1 (por debajo del 3:1 exigido a componentes) y no admite texto blanco; los demás colores base sí |
+| 2026-10-03 | Diseño de Interfaces | Sección 6.2 | Se agrega el bloque "Leyes de Gestalt aplicadas" (proximidad, semejanza, continuidad, figura y fondo; cierre pendiente) con el lugar donde se evidencia cada una | Requerimiento 2 de la Fase 2: el alcance documentaba usabilidad y color, pero de Gestalt solo mencionaba la semejanza |
+| 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico (sin cambio de texto) | Se actualiza Playwright de 1.47.0 a 1.63.0 en `requirements-dev.txt` | La versión 1.47.0 depende de una versión de `greenlet` sin instalador para Python 3.13, que es la que usa el equipo fuera de Docker |
 
 ### Texto original de las secciones modificadas (para referencia)
+
+**Sección 6.2, decisión "Paleta sobria" (previo al sistema de color, 2026-10-02):**
+> - "**Paleta sobria:** fondos neutros y un solo color de acento. Los colores fuertes se reservan para lo que tiene significado (prioridades, avisos) y siempre van acompañados de texto."
 
 **Sección 4, Superadmin (previo a marca blanca y límites de usuarios, 2026-09-26):**
 > "Es responsable de dar de alta nuevas empresas en el sistema y crear el primer usuario Administrador de cada una." (sin logo ni límites de usuarios)

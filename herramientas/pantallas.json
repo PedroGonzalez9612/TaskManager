@@ -1,0 +1,32 @@
+{
+    "_instrucciones": "Lista de pantallas que captura herramientas/capturas.py. Agrega una entrada por cada pantalla nueva. 'ruta' es la dirección de la página; si la pantalla necesita un dato (por ejemplo, el id de una empresa), usa 'desde' con la ruta de la pantalla anterior y 'clic' con el selector CSS del enlace que lleva a ella. 'esperar' (opcional) es un selector CSS que debe aparecer antes de tomar la captura.",
+    "pantallas": [
+        {
+            "rol": "publico",
+            "nombre": "login",
+            "ruta": "/static/login.html",
+            "esperar": "#formulario-login"
+        },
+        {
+            "rol": "superadmin",
+            "nombre": "empresas",
+            "ruta": "/static/superadmin/empresas.html"
+        },
+        {
+            "rol": "superadmin",
+            "nombre": "detalle-empresa",
+            "desde": "/static/superadmin/empresas.html",
+            "clic": "a[href*='empresa.html?id=']"
+        },
+        {
+            "rol": "administrador",
+            "nombre": "usuarios",
+            "ruta": "/static/admin/usuarios.html"
+        },
+        {
+            "rol": "operario",
+            "nombre": "mis-actividades",
+            "ruta": "/static/operario/index.html"
+        }
+    ]
+}

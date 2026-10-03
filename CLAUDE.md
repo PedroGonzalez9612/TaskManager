@@ -10,11 +10,11 @@ Responde tres preguntas: qué se debe hacer, quién lo está haciendo y cuánto 
     concurrencia, hilos, sockets, conexión a BD). Momento 3 en Semanas 15-16 (aplicación web en tres capas).
   - **Diseño de Interfaces (DI):** Semana 10 heurísticas de Nielsen (evaluación del Ser). Semana 15 presentación de la interfaz.
 - Un avance técnico de backend NO cuenta automáticamente como avance de DI, ni al revés.
-- Semana actual: 8 (actualizar esta línea cada semana).
+- Semana actual: 9 (actualizar esta línea cada semana).
 
 ## Fuentes de verdad (en orden)
 
-1. Syllabus de cada materia: `docs/Syllabus/`
+1. Syllabus de cada materia: `docs/Syllabus/`. Enunciados de las entregas: `docs/enunciados/`.
 2. Documento de alcance (vivo, con bitácora): `docs/alcance_proyecto.md`
 3. El código de este repositorio.
 4. Lo que indique el usuario en la sesión, si no contradice lo anterior.
@@ -22,6 +22,8 @@ Responde tres preguntas: qué se debe hacer, quién lo está haciendo y cuánto 
 Lee `docs/alcance_proyecto.md` antes de implementar cualquier funcionalidad nueva.
 El estado de lo construido (por etapa y por criterio del MVP) está en `docs/avance.md`; actualízalo al cerrar cada etapa.
 Si una tarea contradice o amplía el alcance, detente y avísalo; no lo resuelvas por tu cuenta.
+Las reglas viven en el alcance: este archivo y los agentes apuntan a sus secciones en lugar de copiarlas.
+Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la bitácora).
 
 ## Stack y ejecución
 
@@ -40,7 +42,10 @@ Si una tarea contradice o amplía el alcance, detente y avísalo; no lo resuelva
 - `app/routes/`: blueprints que exponen la API REST en JSON. Sin consultas a Mongo ni reglas de negocio.
 - `app/static/`: interfaz web. `login.html`; pantallas por rol en `superadmin/`, `admin/` y `operario/`
   (un `.html` y su `.js`); compartido en `js/api.js` (llamadas a la API, constantes),
-  `js/layout.js` (menú por rol, diálogos, avisos) y `css/estilos.css` (colores como variables en `:root`).
+  `js/layout.js` (menú por rol, diálogos, avisos) y `css/estilos.css` (colores y tipografía como variables
+  en `:root`, con los valores de las Secciones 6.3 y 6.4 del alcance); archivos de fuentes en `fuentes/`.
+  PENDIENTE: `estilos.css` aún tiene la paleta inicial (`#0f766e`, `system-ui`) y `fuentes/` no existe;
+  borrar esta nota al implementar las Secciones 6.3 y 6.4.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
   Flask las sirve desde el mismo origen. NO se usan plantillas Jinja para generar pantallas.
 - Autenticación con la sesión de Flask (cookie): `/auth/login`, `/auth/logout`, `/auth/sesion`.
@@ -92,6 +97,17 @@ Si una tarea contradice o amplía el alcance, detente y avísalo; no lo resuelva
 - No sobrescribas archivos sin preguntar si ya existen.
 - Haz solo lo que se pidió; si ves algo más por corregir, repórtalo en vez de cambiarlo.
 
+## Herramientas de desarrollo (`herramientas/`)
+
+- Dependencias solo de desarrollo en `requirements-dev.txt` (no van en la imagen de Docker).
+  Navegador para las capturas: uno Chromium ya instalado (Brave, Edge, Chrome) con `CAPTURAS_NAVEGADOR`
+  en el `.env`, o el de Playwright con `python -m playwright install chromium`.
+- `contraste.py`: contraste WCAG entre colores (HEX o variables de `:root`).
+- `capturas.py`: capturas de las pantallas listadas en `pantallas.json`, en celular y escritorio, con
+  versiones desenfocada y en grises. Usa los usuarios de prueba `CAPTURAS_*` del `.env`.
+  Las capturas quedan en `herramientas/capturas/` (fuera de Git).
+- Al crear una pantalla nueva, agrégala en `herramientas/pantallas.json`.
+
 ## Agentes disponibles (`.claude/agents/`)
 
 - `diseno-oo`: diseño y revisión de clases (solo lectura).
@@ -99,4 +115,7 @@ Si una tarea contradice o amplía el alcance, detente y avísalo; no lo resuelva
 - `persistencia-mongo`: repositorios y esquemas de MongoDB.
 - `frontend-web`: interfaz HTML/CSS/JS del cliente.
 - `revisor-codigo`: revisión de calidad y capas (solo lectura).
-- `profesor-doo` y `profesor-interfaces`: validan contra el syllabus de cada materia (solo lectura).
+- `profesor-doo`: valida contra el syllabus de DOO (solo lectura).
+- `profesor-interfaces`: valida contra el syllabus de Diseño de Interfaces y audita el diseño de las
+  pantallas (Secciones 6.1 a 6.4 del alcance) con el código y capturas; propone correcciones sin
+  modificar archivos (solo lectura más los scripts de `herramientas/`).
