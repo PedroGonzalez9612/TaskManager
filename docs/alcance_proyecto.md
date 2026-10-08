@@ -51,10 +51,11 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Conversión y organización de requerimientos en actividades de trabajo.
 - Creación y asignación de actividades a uno o varios operarios.
 - Definición de información clara para cada actividad.
-- Clasificación de actividades por tipo o categoría.
+- Clasificación de actividades por categoría. Las categorías son fijas en esta versión: Producción, Mantenimiento, Calidad, Limpieza y Logística.
+- Cada actividad recibe un código consecutivo por empresa (por ejemplo, `OT-0042`) y registra la ubicación donde se realiza (línea, máquina o área).
 - Definición de prioridad de las actividades en cuatro niveles: Baja, Media, Alta y Urgente. El nivel Urgente indica que la actividad debe interrumpir la tarea que el operario tenga en curso.
 - Definición de tiempo estimado de ejecución. El tiempo estimado corresponde a la actividad completa: si la actividad tiene varios operarios, no se reparte entre ellos (cada uno la suma completa a su carga).
-- Definición de una fecha programada de ejecución para cada actividad.
+- Definición de una fecha programada de ejecución para cada actividad y, de forma opcional, una hora programada. La fecha determina la jornada a la que pertenece la actividad; la hora solo sirve para ubicarla en el horario y no cambia el cálculo de la carga.
 - Consulta del estado y asignación de las actividades.
 - Posibilidad de que un operario registre una actividad solicitada por otra área y la socialice con su administrador.
 - Gestión de la ejecución de actividades, incluyendo inicio, pausa, reanudación y finalización.
@@ -78,7 +79,7 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Visualización de la ocupación actual.
 - Proyección de la ocupación futura a partir de las actividades programadas.
 - Identificación de posibles situaciones de sobrecarga.
-- Capacidad de cada operario por jornada, calculada a partir de su turno: duración del turno menos el tiempo de descanso.
+- Capacidad de cada operario por jornada, calculada a partir de su turno: duración del turno menos el tiempo de descanso. Mientras no existan los turnos (criterio 7 del MVP), se usa una capacidad provisional de 7 horas para todos los operarios.
 - Cálculo de la carga por jornada: suma de los tiempos estimados de las actividades asignadas al operario y programadas para esa jornada.
 - Alerta en pantalla al momento de asignar una actividad, cuando la carga del operario para la jornada programada de esa actividad supere el 100% de su capacidad.
 - Análisis de la distribución de actividades por categoría.
@@ -153,13 +154,15 @@ Cada rol ingresa por la misma pantalla de inicio de sesión y es llevado a su pr
 | Rol | Dispositivo principal | Opciones del menú |
 |---|---|---|
 | Superadmin | Computador | Empresas (lista, registro, detalle con usuarios, edición de datos, límites y logo) |
-| Administrador | Computador (también usable en celular) | Inicio (tablero del día) · Requerimientos y actividades · Usuarios / Operarios · Turnos y asistencia · Indicadores |
-| Operario | Celular | Mis actividades (lista priorizada → detalle → ejecución), marca de entrada y salida |
+| Administrador | Computador (también usable en celular) | **Equipo** (el día de cada operario en columnas, con su carga) · **Actividades** (requerimientos y sus actividades) · **Usuarios**. Pendientes: Turnos y asistencia · Indicadores |
+| Operario | Celular | **Hoy** (actividad en curso, carga del día y agenda) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios). Pendiente: marca de entrada y salida |
 
-Las opciones del menú se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
+Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
+
+**Varias vistas de la misma información.** Las actividades se pueden ver de tres maneras, y cada una responde una pregunta distinta: como **agenda** (qué sigue), como **horario** (cuándo y cuánto ocupa) y como **resumen** (cuánto trabajo hay). El detalle de una actividad se abre en una ventana sobre la vista en la que se esté, sin cambiar de pantalla.
 
 **Decisiones de diseño comunes a todas las vistas:**
-- **Marco común:** menú lateral con las opciones del rol y, al pie, el nombre del usuario, su rol y "Cerrar sesión". En celular el menú se oculta detrás de un botón "Menú".
+- **Marco común:** barra superior con la marca, las vistas del rol como pestañas y, a la derecha, el avatar del usuario con su nombre, su rol y el botón de cerrar sesión. En celular las vistas pasan a una barra fija en la parte inferior, al alcance del pulgar. Reemplaza el menú lateral de la primera versión.
 - **Primero la información:** cada pantalla muestra primero su lista o tabla. Crear o editar es una acción secundaria: un botón ("+ Nueva empresa", "+ Nuevo usuario") abre el formulario en una ventana (diálogo). Al guardar, la ventana se cierra y aparece una confirmación breve.
 - **Estados vacíos y límites explicados:** cuando no hay datos, la pantalla explica qué hacer y ofrece el botón para hacerlo. Cuando una acción no está disponible (por ejemplo, se alcanzó el límite de usuarios), el botón se desactiva y un aviso explica por qué.
 - **Paleta sobria con significado:** fondos casi neutros, un color principal para las acciones y un acento de marca usado solo en elementos de identidad. Los colores fuertes se reservan para lo que tiene significado (prioridades, estados, avisos) y siempre van acompañados de ícono y texto. El sistema de color completo se define en la Sección 6.3.
@@ -173,9 +176,9 @@ Las opciones del menú se habilitan a medida que se construye cada pantalla; nun
 - Mensajes de error en lenguaje claro dentro del mismo formulario (Nielsen 9: ayudar a reconocer y corregir errores).
 
 **Leyes de Gestalt aplicadas** (requerimiento 2 de la Fase 2; se listan solo las que ya se evidencian en las pantallas construidas):
-- **Proximidad:** cada etiqueta va pegada a su campo y separada del siguiente; los dos límites de usuarios forman un grupo bajo un mismo título; "Cancelar" y la acción principal van juntos al pie del diálogo; el nombre del usuario, su rol y "Cerrar sesión" forman un bloque al pie del menú. Resuelve la duda de qué dato pertenece a qué control.
+- **Proximidad:** cada etiqueta va pegada a su campo y separada del siguiente; los dos límites de usuarios forman un grupo bajo un mismo título; "Cancelar" y la acción principal van juntos al pie del diálogo; el avatar, el nombre del usuario, su rol y el botón de cerrar sesión forman un bloque en la barra superior; en el horario, cada operario tiene su columna y sus actividades quedan dentro de ella. Resuelve la duda de qué dato pertenece a qué control.
 - **Semejanza:** todos los botones de acción principal comparten relleno y forma, los secundarios comparten borde, las etiquetas de rol y de prioridad comparten la forma de píldora y todos los enlaces comparten color. El usuario aprende un elemento una vez y lo reconoce en las demás pantallas.
-- **Continuidad:** las tablas alinean cada dato en su columna para recorrerlo de arriba abajo; los formularios tienen una sola columna que termina en el botón de acción; las migas de pan ("Empresas / Metalicas SAS") muestran el camino recorrido.
+- **Continuidad:** el horario ordena las actividades de arriba abajo siguiendo las horas del día; las tablas alinean cada dato en su columna para recorrerlo de arriba abajo; los formularios tienen una sola columna que termina en el botón de acción; las migas de pan ("Empresas / Metalicas SAS") muestran el camino recorrido.
 - **Figura y fondo:** los paneles blancos se separan del fondo tintado; al abrir un diálogo o el menú en celular, el resto de la pantalla se oscurece para que solo quede en primer plano lo que se está atendiendo.
 - **Cierre:** todavía no se aplica en las pantallas construidas; se evaluará en la pantalla de ejecución del Operario (por ejemplo, el avance de la jornada).
 
@@ -247,6 +250,20 @@ Esta subsección define la propuesta cromática del producto, exigida en la Fase
 - **Aqua principal (190°) frente a azul de información (217°) y verde de finalizada (116°):** se separan por tono, por forma de uso (el principal es relleno de botón; información y finalizada son fondos suaves) y por el ícono que acompaña a cada estado.
 - **Ámbar compartido** entre advertencia, prioridad Media, pausada y cambio de prioridad: comparten el significado de "precaución, atención no urgente"; el ícono y el texto indican de cuál se trata.
 
+**Paleta de categorías (solo para el horario).** Los bloques del horario pueden colorearse de dos maneras, a elección del usuario: por **prioridad** (los colores de estado de esta sección; es el modo por defecto) o por **categoría**. La paleta de categorías es un conjunto aparte, de tonos que no coinciden con ningún color de estado, y se usa únicamente en los bloques del horario y en el ícono de la etiqueta de categoría:
+
+| Categoría | Color | Fondo del bloque | Ícono |
+|---|---|---|---|
+| Producción | `#5B4B9A` | `#E8E3F4` | Fábrica |
+| Mantenimiento | `#7A5038` | `#EFE4DB` | Llave |
+| Calidad | `#A33D72` | `#F6E1EC` | Lista de verificación |
+| Limpieza | `#5C6B24` | `#E9EDD3` | Destellos |
+| Logística | `#3D5A6C` | `#DFE8EC` | Camión |
+
+El texto de los bloques es siempre el texto principal `#1F2A2E` (al menos 11,7:1 sobre cada fondo) y cada color supera 5,8:1 sobre blanco. Las reglas 1 y 2 se mantienen: la categoría siempre lleva ícono y nombre, la prioridad sigue visible por su ícono dentro del bloque, y una actividad Urgente conserva un borde rojo también en el modo categoría.
+
+**Íconos.** Los íconos de prioridad, estado, categoría y navegación son de la colección Lucide (trazo uniforme, licencia ISC) y reemplazan los símbolos de texto de la tabla de estados: Urgente (triángulo de alerta), Alta (flecha hacia arriba), Media (círculo de alerta), Baja (guion), En curso (reproducir), Finalizada (visto bueno), Pendiente (círculo).
+
 **Relación con la marca blanca (Sección 4):** cuando una empresa carga su logo, este reemplaza la marca GestLab, pero el sistema de color no cambia. Los colores de estado deben significar lo mismo en todas las empresas para no perder la consistencia ni la accesibilidad.
 
 
@@ -312,6 +329,7 @@ Los valores en rem se calculan sobre una base de 18 px. Esa base se declara en l
 - Flask como framework para el desarrollo de la aplicación web.
 - MongoDB como sistema de persistencia de datos.
 - HTML, CSS y JavaScript para la interfaz web. La interfaz funciona como un cliente en el navegador que consume la API REST del sistema (intercambio de datos en JSON). Los archivos de la interfaz los entrega el mismo servidor Flask (mismo origen), y la autenticación se maneja con la sesión de Flask mediante cookie.
+- Bibliotecas de interfaz, todas de licencia libre y copiadas dentro del proyecto (carpeta `app/static/vendor/`) para no depender de internet ni de un proceso de compilación: **EventCalendar** (MIT) para el horario por día, por semana, en lista y por operario; **Chart.js** (MIT) para las gráficas; e íconos de **Lucide** (ISC).
 - Programación Orientada a Objetos como paradigma principal para el diseño de la lógica del sistema.
 - Arquitectura en capas, manteniendo separadas la presentación, la lógica de negocio y la persistencia.
 - Git y un repositorio remoto para el control de versiones y trabajo colaborativo.
@@ -481,6 +499,11 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico | Las capturas pueden tomarse con un navegador Chromium ya instalado (`CAPTURAS_NAVEGADOR`), además del Chromium de Playwright | Evitar la descarga del navegador de Playwright cuando el equipo ya tiene Brave, Edge o Chrome |
 | 2026-10-03 | Ambas | Sección 11 — Trabajo colaborativo | Se listan los archivos que no se versionan (`.env`, configuración personal de Claude Code, capturas, entornos virtuales). `CLAUDE.md` y `.claude/agents/` se mantienen en el repositorio | Se probó dejarlos fuera de Git, pero un cambio de rama los borró del computador y dejaban de compartirse entre los integrantes; se decidió conservarlos versionados |
 | 2026-10-07 | Diseño de Interfaces | Sección 6.3 | Se agrega el bloque "Precisiones de la implementación": colores de borde, texto sobre el coral, ícono de "En curso", borde lateral de la tarjeta en prioridad Media y etiquetas de rol en gris | Al aplicar las Secciones 6.3 y 6.4 a `estilos.css` aparecieron valores que las tablas no definían; se documentan para que el código no tenga colores sin respaldo en el alcance |
+| 2026-10-07 | POO | Sección 5.1 | Se agregan a la actividad el código consecutivo por empresa, la ubicación, la hora programada opcional y la lista fija de cinco categorías | Necesarios para construir la creación de actividades y las vistas de horario. La hora es opcional y no altera el cálculo de la carga, que sigue siendo por jornada |
+| 2026-10-07 | POO | Sección 5.2 | Capacidad provisional de 7 horas por jornada mientras no existan los turnos | La alerta de sobrecarga y las vistas de carga se construyeron antes que los turnos; se evita bloquearlas con un valor provisional y documentado |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.2 | Se reemplaza el menú lateral por una barra superior con pestañas (barra inferior en celular), se definen las vistas reales de cada rol (Equipo, Actividades y Usuarios; Hoy, Semana y Resumen) y el principio de "varias vistas de la misma información" | La estructura anterior (menú lateral, tablas y tarjetas) se veía genérica y sin identidad propia. El equipo tomó como referencia aplicaciones de agenda con vistas de lista, horario y resumen |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.3 | Se agrega la paleta de categorías (solo para los bloques del horario, como modo alterno al color por prioridad) y se adoptan los íconos de Lucide en lugar de símbolos de texto | El horario por bloques se lee mejor con color; se resolvió con una paleta aparte y un modo elegible para no romper la regla de que cada color de estado tiene un solo significado |
+| 2026-10-07 | Ambas | Sección 7 — Alcance técnico | Se incorporan EventCalendar, Chart.js y Lucide, copiados dentro del proyecto | Se descartó FullCalendar (las vistas por recurso son de pago), ApexCharts (licencia con restricción por ingresos) y los marcos Bootstrap, Material y Tailwind (traen un aspecto propio o exigen compilación) |
 
 ### Texto original de las secciones modificadas (para referencia)
 

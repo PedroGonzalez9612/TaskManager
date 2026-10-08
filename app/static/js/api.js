@@ -6,7 +6,7 @@ const RUTA_LOGIN = "/static/login.html";
 // Pantalla de inicio de cada rol después de iniciar sesión.
 const INICIO_POR_ROL = {
     SUPERADMIN: "/static/superadmin/empresas.html",
-    ADMINISTRADOR: "/static/admin/usuarios.html",
+    ADMINISTRADOR: "/static/admin/equipo.html",
     OPERARIO: "/static/operario/index.html",
 };
 
@@ -98,6 +98,8 @@ function cupoLleno(empresa, rol) {
     return limite != null && (empresa.usuarios_actuales[rol] || 0) >= limite;
 }
 
+// ---------- Catálogos: mismos valores que los enums del servidor (app/models/enums.py) ----------
+
 // Peso numérico de cada prioridad: se ordena por número, nunca comparando textos.
 const PESO_PRIORIDAD = {
     URGENTE: 4,
@@ -114,10 +116,18 @@ const NOMBRE_PRIORIDAD = {
 };
 
 const NOMBRE_ESTADO = {
-    PENDIENTE: "Pendiente",
+    PENDIENTE: "Sin asignar",
     ASIGNADA: "Por iniciar",
-    EN_EJECUCION: "En ejecución",
-    COMPLETADA: "Completada",
+    EN_EJECUCION: "En curso",
+    COMPLETADA: "Finalizada",
+};
+
+const NOMBRE_CATEGORIA = {
+    PRODUCCION: "Producción",
+    MANTENIMIENTO: "Mantenimiento",
+    CALIDAD: "Calidad",
+    LIMPIEZA: "Limpieza",
+    LOGISTICA: "Logística",
 };
 
 const NOMBRE_ROL = {
@@ -125,3 +135,55 @@ const NOMBRE_ROL = {
     ADMINISTRADOR: "Administrador",
     OPERARIO: "Operario",
 };
+
+// ---------- Fechas y tiempos ----------
+
+// Fecha local como texto "AAAA-MM-DD" (el formato que usa la API).
+function fechaTexto(fecha) {
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    return `${fecha.getFullYear()}-${mes}-${dia}`;
+}
+
+// Convierte "AAAA-MM-DD" (y opcionalmente "HH:MM") en una fecha local.
+function fechaDesdeTexto(fecha, hora = "00:00") {
+    const [anio, mes, dia] = fecha.split("-").map(Number);
+    const [horas, minutos] = hora.split(":").map(Number);
+    return new Date(anio, mes - 1, dia, horas, minutos);
+}
+
+function sumarDias(fecha, dias) {
+    const copia = new Date(fecha);
+    copia.setDate(copia.getDate() + dias);
+    return copia;
+}
+
+// Lunes de la semana de una fecha.
+function inicioDeSemana(fecha) {
+    const diaSemana = (fecha.getDay() + 6) % 7;     // lunes = 0 ... domingo = 6
+    const lunes = sumarDias(fecha, -diaSemana);
+    lunes.setHours(0, 0, 0, 0);
+    return lunes;
+}
+
+// 95 -> "1 h 35 min"; 60 -> "1 h"; 45 -> "45 min".
+function duracionTexto(minutos) {
+    const horas = Math.floor(minutos / 60);
+    const resto = Math.round(minutos % 60);
+    if (horas && resto) {
+        return `${horas} h ${resto} min`;
+    }
+    return horas ? `${horas} h` : `${resto} min`;
+}
+
+// "miércoles 7 de octubre"
+function fechaLarga(fecha) {
+    return fecha.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
+}
+
+// "mié 7 oct"
+function fechaCorta(fecha) {
+    const dia = fecha.toLocaleDateString("es-CO", { weekday: "short" }).replace(".", "");
+    const mes = fecha.toLocaleDateString("es-CO", { month: "short" }).replace(".", "");
+    return `${dia} ${fecha.getDate()} ${mes}`;
+}

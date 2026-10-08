@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <title>Actividades — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <main class="principal">
+        <div class="encabezado-pagina">
+            <div>
+                <h1>Actividades</h1>
+                <p>Cada requerimiento que llega al área se convierte en una o varias actividades de trabajo.</p>
+            </div>
+            <div class="grupo-controles">
+                <button type="button" class="boton-secundario" data-abrir-requerimiento>+ Nuevo requerimiento</button>
+                <button type="button" id="nueva-actividad" class="boton">+ Nueva actividad</button>
+            </div>
+        </div>
+
+        <div class="maestro-detalle">
+            <section class="panel" aria-label="Requerimientos">
+                <div class="panel-encabezado"><h2>Requerimientos</h2></div>
+                <div id="lista-requerimientos" class="lista-requerimientos"></div>
+                <div id="sin-requerimientos" class="estado-vacio" hidden>
+                    <strong>Aún no hay requerimientos</strong>
+                    Registra el primero para empezar a crear actividades.
+                    <div><button type="button" class="boton" data-abrir-requerimiento>+ Nuevo requerimiento</button></div>
+                </div>
+            </section>
+
+            <section class="panel" aria-live="polite">
+                <div class="panel-encabezado">
+                    <div>
+                        <h2 id="titulo-requerimiento">Todas las actividades</h2>
+                        <p id="descripcion-requerimiento" class="texto-suave"></p>
+                    </div>
+                    <button type="button" id="eliminar-requerimiento" class="boton-peligro boton-pequeno" hidden>Eliminar requerimiento</button>
+                </div>
+                <div class="contenedor-tabla">
+                    <table id="tabla-actividades" class="tabla tabla-clicable" hidden>
+                        <thead>
+                            <tr><th>Código</th><th>Actividad</th><th>Prioridad</th><th>Estado</th><th>Programada</th><th>Estimado</th><th>Operarios</th></tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="sin-actividades" class="estado-vacio" hidden>
+                    <strong>Sin actividades</strong>
+                    Crea una actividad y asígnala a uno o varios operarios.
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <dialog id="dialogo-requerimiento" class="dialogo" aria-labelledby="titulo-dialogo-requerimiento">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-dialogo-requerimiento">Nuevo requerimiento</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <label for="req-titulo">Título</label>
+            <input id="req-titulo" name="titulo" maxlength="120" required>
+
+            <label for="req-descripcion">Descripción (opcional)</label>
+            <textarea id="req-descripcion" name="descripcion" rows="3"></textarea>
+            <p class="ayuda-campo">Quién lo pidió, para qué y cualquier dato que ayude a planearlo.</p>
+
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Registrar requerimiento</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/actividades-comun.js"></script>
+    <script src="/static/js/formulario-actividad.js"></script>
+    <script src="/static/admin/actividades.js"></script>
+</body>
+</html>

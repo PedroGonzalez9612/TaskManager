@@ -53,8 +53,10 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   puede acceder" van en los servicios, que reciben el usuario de la sesión como `solicitante`.
 - Errores de negocio: lanzar subclases de `ErrorApi` (`app/utils/errors.py`); un solo manejador las
   convierte en JSON con su código HTTP.
-- Las rutas de requerimientos, actividades, asignaciones, registros de tiempo y análisis aún NO exigen
-  sesión: protegerlas al trabajar en cada una.
+- Bibliotecas de interfaz copiadas en `app/static/vendor/` (sin CDN ni compilación): EventCalendar
+  (horarios), Chart.js (gráficas) y Lucide (íconos, solo los usados, en `vendor/lucide/iconos.js`).
+- Piezas compartidas de la interfaz: `js/actividades-comun.js` (señales de prioridad y estado, detalle
+  de actividad, opciones del calendario, modo de color) y `js/formulario-actividad.js` (crear y editar).
 
 ## Reglas de dominio clave (detalle completo en el alcance)
 
@@ -67,6 +69,7 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
 - Prioridad en 4 niveles: BAJA, MEDIA, ALTA, URGENTE. URGENTE significa interrumpir la tarea actual.
   El orden se hace por un peso numérico del enum, nunca comparando textos.
 - Un operario tiene una sola actividad en ejecución a la vez; para iniciar otra debe pausar o finalizar la actual.
+- Capacidad de la jornada: provisional de 7 h (`CAPACIDAD_JORNADA_MIN` en `carga_service.py`) hasta que existan los turnos.
 - Cada pausa guarda su motivo. Al finalizar se puede dejar una observación. El historial de pausas es consultable.
 - La hora de todo evento (ejecución, asistencia) la pone el servidor, nunca el cliente.
 - Turnos: catálogo por empresa; un solo turno por operario, conservando la fecha de cada cambio.
@@ -84,9 +87,11 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
 - PEP 8. Nombres de clases, métodos y variables en español, como el código existente.
 - Git: trabajar en ramas `feature/<tema>` desde `develop`; integrar a `develop` por Pull Request; `main` es estable.
 - Interfaz (detalle en la Sección 6.2 del alcance): toda pantalla con sesión usa el marco de
-  `layout.js` (`iniciarPaginaProtegida`). Cada pantalla muestra primero su lista o tabla; crear o editar
-  se hace en un `<dialog>` que se abre con un botón. Una opción del menú se agrega en `MENU_POR_ROL`
-  solo cuando su pantalla existe. Textos del usuario siempre con `textContent`, nunca `innerHTML`.
+  `layout.js` (`iniciarPaginaProtegida`): barra superior con pestañas, barra inferior en celular.
+  Cada pantalla muestra primero su información; crear o editar se hace en un `<dialog>`. Una vista se
+  agrega en `VISTAS_POR_ROL` solo cuando su pantalla existe. Los elementos se crean con `crearElemento`
+  y `crearConIcono` (texto siempre con `textContent`, nunca `innerHTML` con datos del usuario).
+- La interfaz no debe verse genérica: antes de construir una pantalla nueva, proponer su composición.
 - Construir en el orden lógico del flujo (lo que el Administrador crea es lo que el Operario usa):
   primero lo que genera los datos, después lo que los consume.
 
