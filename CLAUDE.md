@@ -44,8 +44,12 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   (un `.html` y su `.js`); compartido en `js/api.js` (llamadas a la API, constantes),
   `js/layout.js` (menú por rol, diálogos, avisos) y `css/estilos.css` (colores y tipografía como variables
   en `:root`, con los valores de las Secciones 6.3 y 6.4 del alcance); archivos de fuentes en `fuentes/`.
-  Códigos y cifras llevan la clase `cifra` (fuente monoespaciada). Los estados y prioridades usan
-  `etiqueta` más su clase de estado; el ícono lo pone el CSS, no el HTML.
+  Sistema de composición (alcance, Sección 6.2): espacios solo con `--e1` a `--e7`; ancho de la columna con
+  `ancho-angosto` o `ancho-medio` en `<body>` (la barra superior se alinea sola); cifras con la clase
+  `cifra` (misma fuente, números de ancho fijo) y códigos con `codigo` (monoespaciada).
+  Componentes repetidos en `js/componentes.js` (logo, avatar, medidor de cupo).
+  ESTADO DEL REDISEÑO: hecho en las pantallas del Superadmin. Las del Administrador y del Operario
+  heredan las bases pero están pendientes de revisión pantalla por pantalla, con el visto bueno del usuario.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
   Flask las sirve desde el mismo origen. NO se usan plantillas Jinja para generar pantallas.
 - Autenticación con la sesión de Flask (cookie): `/auth/login`, `/auth/logout`, `/auth/sesion`.

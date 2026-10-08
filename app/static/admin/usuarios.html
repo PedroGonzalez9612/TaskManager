@@ -25,12 +25,7 @@
             <p id="aviso-cupo" class="aviso-cupo" hidden>
                 Tu empresa alcanzó el límite de usuarios. Solicita al Superadmin ampliarlo.
             </p>
-            <div class="contenedor-tabla">
-                <table id="tabla-usuarios" class="tabla" hidden>
-                    <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+            <ul id="tabla-usuarios" class="lista-filas" hidden></ul>
             <div id="estado-vacio" class="estado-vacio" hidden>
                 <strong>Aún no hay usuarios</strong>
                 Crea a los operarios de tu empresa para poder asignarles actividades.
@@ -72,6 +67,7 @@
     <script src="/static/js/api.js"></script>
     <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
+    <script src="/static/js/componentes.js"></script>
     <script src="/static/js/usuarios-comun.js"></script>
     <script src="/static/admin/usuarios.js"></script>
 </body>

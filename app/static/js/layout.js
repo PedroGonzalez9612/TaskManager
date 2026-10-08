@@ -94,10 +94,12 @@ function construirBloqueUsuario(usuario) {
     avatar.setAttribute("aria-hidden", "true");
 
     const textos = crearElemento("div", "usuario-textos");
-    textos.append(
-        crearElemento("strong", "", usuario.nombre),
-        crearElemento("span", "usuario-rol", NOMBRE_ROL[usuario.rol] || usuario.rol),
-    );
+    const rol = NOMBRE_ROL[usuario.rol] || usuario.rol;
+    textos.append(crearElemento("strong", "", usuario.nombre));
+    // Si el nombre ya dice el rol (el Superadmin inicial se llama "Superadmin"), no se repite.
+    if (rol.toLowerCase() !== usuario.nombre.trim().toLowerCase()) {
+        textos.append(crearElemento("span", "usuario-rol", rol));
+    }
 
     const salir = crearConIcono("button", "boton-icono", "log-out", "");
     salir.type = "button";

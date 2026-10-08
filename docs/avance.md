@@ -153,9 +153,23 @@ Rama: `feature/identidad-visual`.
 - Validar el diseño de las pantallas con una herramienta externa de diseño.
 - Elaborar el documento de diseño en PDF que pide el enunciado (evolución, usabilidad, Gestalt, color, conclusiones) con las capturas como evidencia.
 
+## Rediseño por pantallas (en curso, 2026-10-07) 🟡
+
+Rama: `feature/diseno-superadmin`. La interfaz usaba los colores y fuentes definidos, pero se veía desordenada. Se definió un **sistema de composición** (alcance, Sección 6.2) y se aplica pantalla por pantalla.
+
+| Pantallas | Estado |
+|---|---|
+| Bases compartidas: escala de espacios, barra superior alineada con el contenido, cifras en la fuente del texto, formularios | ✅ |
+| Superadmin: lista de empresas, ficha de empresa y sus formularios | ✅ Pendiente del visto bueno del equipo |
+| Administrador: Equipo, Actividades y Usuarios | ⬜ Heredan las bases; falta su rediseño |
+| Operario: Hoy, Semana y Resumen | ⬜ Heredan las bases; falta su rediseño |
+| Inicio de sesión | ⬜ |
+
+Verificación de las pantallas del Superadmin: la marca y el título comparten el borde izquierdo, y el usuario y el contenido el derecho (medido en el navegador); todas las filas de la lista miden lo mismo; sin desbordes a 1440, 1024 y 390 px; sin errores de JavaScript.
+
 ## Estado del repositorio (2026-10-07)
 
-- `main` contiene la Etapa 1 y la definición de la Fase 2. Faltan por integrar dos ramas, en este orden: `feature/identidad-visual` y `feature/actividades-y-vistas` (la segunda incluye a la primera).
+- `main` contiene la Etapa 1 y la definición de la Fase 2. Faltan por integrar tres ramas, cada una incluye a la anterior: `feature/identidad-visual`, `feature/actividades-y-vistas` y `feature/diseno-superadmin`.
 - `develop` está atrasada respecto a `main` y debe sincronizarse (Pull Request `main` → `develop`).
 
 ## Decisiones abiertas

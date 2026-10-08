@@ -166,7 +166,17 @@ Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestr
 - **Primero la información:** cada pantalla muestra primero su lista o tabla. Crear o editar es una acción secundaria: un botón ("+ Nueva empresa", "+ Nuevo usuario") abre el formulario en una ventana (diálogo). Al guardar, la ventana se cierra y aparece una confirmación breve.
 - **Estados vacíos y límites explicados:** cuando no hay datos, la pantalla explica qué hacer y ofrece el botón para hacerlo. Cuando una acción no está disponible (por ejemplo, se alcanzó el límite de usuarios), el botón se desactiva y un aviso explica por qué.
 - **Paleta sobria con significado:** fondos casi neutros, un color principal para las acciones y un acento de marca usado solo en elementos de identidad. Los colores fuertes se reservan para lo que tiene significado (prioridades, estados, avisos) y siempre van acompañados de ícono y texto. El sistema de color completo se define en la Sección 6.3.
-- **Tipografía legible:** Lexend para leer y Atkinson Hyperlegible Mono para códigos, tiempos y cifras, con base de 18 px y tamaños en rem. El sistema tipográfico completo se define en la Sección 6.4.
+- **Tipografía legible:** Lexend para todo lo que se lee, incluidas las cifras (con números de ancho fijo), y Atkinson Hyperlegible Mono solo para códigos y para el cronómetro, con base de 18 px y tamaños en rem. El sistema tipográfico completo se define en la Sección 6.4.
+
+**Sistema de composición** (para que la interfaz transmita calma y orden; aplica a todas las pantallas):
+- **Una sola escala de espacios:** todo relleno y toda separación sale de siete pasos (4, 8, 12, 16, 24, 32 y 48 px sobre la base de 16 px; en la interfaz se expresan en rem). No se usan valores sueltos.
+- **Una sola columna alineada:** la barra superior y el contenido comparten el mismo borde izquierdo y derecho. El ancho de la columna depende de lo que se muestra (angosto para leer una lista, medio para fichas y listados, amplio para horarios), nunca del ancho de la pantalla.
+- **Dos pesos de letra:** 600 para lo que identifica (título de la pantalla, nombre de la empresa o de la persona, acción) y 400 para todo lo demás. Los encabezados de tabla y las etiquetas de dato van en 400 y en el color de texto secundario.
+- **Una familia de letra por fila:** las cifras usan la misma fuente del texto; la fuente monoespaciada se reserva para códigos.
+- **Bordes suaves y sin sombras:** los paneles se separan del fondo por el contraste de color y un borde tenue. Los controles (campos y botones secundarios) llevan un borde más marcado, con contraste de al menos 3:1.
+- **Filas de la misma altura:** en una lista, todas las filas miden lo mismo, tengan o no logo, límite o datos opcionales.
+- **Un solo botón principal por pantalla;** las demás acciones son secundarias.
+- **El color solo donde significa algo:** el estado normal no lleva color. Una advertencia se dice con un ícono y una frase, sin franjas de color que ocupen todo el ancho.
 
 **Relación con los principios de usabilidad (6.1) y las heurísticas de Nielsen:**
 - Pocas opciones de menú por rol (Ley de Hick) y patrón de menú lateral más tabla, habitual en sistemas administrativos (Ley de Jakob).
@@ -284,9 +294,9 @@ Esta subsección define el sistema tipográfico del producto como parte de la id
 | Fuente | Función | Motivo |
 |---|---|---|
 | **Lexend** | Todo lo que se *lee*: títulos, textos, botones, etiquetas, tablas y menús | Fuente sin serifas diseñada para facilitar la fluidez de lectura; formas redondeadas que dan una apariencia amable y moderna para un público amplio, sin perder seriedad |
-| **Atkinson Hyperlegible Mono** | Todo lo que se *identifica carácter por carácter*: cronómetro, códigos de actividad, referencias de equipos y cifras | Diseñada por el Braille Institute para mejorar la legibilidad en personas con baja visión, con formas que diferencian cada carácter (la `l` con cola, el `1` con gancho, el `0` con barra). Al ser monoespaciada, todos los dígitos ocupan el mismo ancho y el cronómetro no "salta" mientras corre |
+| **Atkinson Hyperlegible Mono** | Solo lo que se *identifica carácter por carácter*: el cronómetro, los códigos de actividad y el NIT | Diseñada por el Braille Institute para mejorar la legibilidad en personas con baja visión, con formas que diferencian cada carácter (la `l` con cola, el `1` con gancho, el `0` con barra). Al ser monoespaciada, todos los dígitos ocupan el mismo ancho y el cronómetro no "salta" mientras corre |
 
-**Conflicto identificado y cómo se resuelve:** en Lexend, la `I` mayúscula y la `l` minúscula se parecen. Por eso el contenido donde una confusión de caracteres causaría un error real (códigos, referencias, tiempos y cifras) se escribe siempre en Atkinson Hyperlegible Mono.
+**Conflicto identificado y cómo se resuelve:** en Lexend, la `I` mayúscula y la `l` minúscula se parecen. Por eso el contenido donde una confusión de caracteres causaría un error real (códigos de actividad y NIT) se escribe en Atkinson Hyperlegible Mono. Las cifras (cantidades, porcentajes, duraciones y horas) no tienen ese riesgo y se quedan en Lexend, con números de ancho fijo (`tabular-nums`) para que se alineen en columnas.
 
 **Escala tipográfica:** proporción 1,2 (tercera menor) sobre una base de 18 px. Cada nivel es 1,2 veces el anterior (15 → 18 → 22 → 26 → 31 px), lo que da una jerarquía clara sin saltos bruscos en pantallas pequeñas.
 
@@ -301,7 +311,8 @@ Esta subsección define el sistema tipográfico del producto como parte de la id
 | Etiquetas y estados | Lexend | 15 px (0,833 rem) | 600 | 1,2 | Etiquetas de prioridad, estado y jornada (siempre con ícono y color, ver 6.3) |
 | Botones | Lexend | 18 px (1 rem) | 600 | — | Todos los botones |
 | Cronómetro | Atkinson Hyperlegible Mono | 44 px (2,444 rem) | 600 | — | Tiempo en ejecución de la actividad |
-| Códigos y cifras | Atkinson Hyperlegible Mono | 16 px (0,889 rem) | 500 | — | Códigos de actividad, referencias de equipos, porcentajes y horas en tablas |
+| Códigos | Atkinson Hyperlegible Mono | 92 % del texto que acompaña | 500 | — | Códigos de actividad y NIT |
+| Cifras | Lexend, números de ancho fijo | El del texto que acompaña | 400 | — | Cantidades, porcentajes, duraciones y horas |
 
 Los valores en rem se calculan sobre una base de 18 px. Esa base se declara en la raíz del documento como `112,5 %` del tamaño del navegador (16 px por defecto), no como 18 px fijos, para que respete el tamaño de letra que cada usuario tenga configurado en su dispositivo.
 
@@ -310,7 +321,7 @@ Los valores en rem se calculan sobre una base de 18 px. Esa base se declara en l
 2. **Ningún texto por debajo de 15 px;** ese mínimo se reserva para etiquetas cortas en negrita. El texto corrido nunca baja de 16 px.
 3. **Tamaños en rem, no en px fijos:** si el usuario agranda la letra en su dispositivo, toda la interfaz crece en proporción sin romperse (WCAG 2.1, criterio 1.4.4, cambio de tamaño del texto hasta 200 %).
 4. **El diseño soporta ajustes de espaciado del usuario** (interlineado 1,5, espacio entre párrafos de 2 veces el tamaño, espaciado entre letras de 0,12 y entre palabras de 0,16) sin perder contenido (WCAG 2.1, criterio 1.4.12).
-5. **Códigos, referencias, tiempos y cifras siempre en Atkinson Hyperlegible Mono.**
+5. **Los códigos van en Atkinson Hyperlegible Mono; las cifras, en Lexend con números de ancho fijo.** Nunca se mezclan dos familias de letra para escribir un mismo dato.
 6. **Texto alineado a la izquierda,** sin justificar, para mantener espacios regulares entre palabras.
 7. Todos los estilos se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`), igual que el color.
 
@@ -504,6 +515,8 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-10-07 | Diseño de Interfaces | Sección 6.2 | Se reemplaza el menú lateral por una barra superior con pestañas (barra inferior en celular), se definen las vistas reales de cada rol (Equipo, Actividades y Usuarios; Hoy, Semana y Resumen) y el principio de "varias vistas de la misma información" | La estructura anterior (menú lateral, tablas y tarjetas) se veía genérica y sin identidad propia. El equipo tomó como referencia aplicaciones de agenda con vistas de lista, horario y resumen |
 | 2026-10-07 | Diseño de Interfaces | Sección 6.3 | Se agrega la paleta de categorías (solo para los bloques del horario, como modo alterno al color por prioridad) y se adoptan los íconos de Lucide en lugar de símbolos de texto | El horario por bloques se lee mejor con color; se resolvió con una paleta aparte y un modo elegible para no romper la regla de que cada color de estado tiene un solo significado |
 | 2026-10-07 | Ambas | Sección 7 — Alcance técnico | Se incorporan EventCalendar, Chart.js y Lucide, copiados dentro del proyecto | Se descartó FullCalendar (las vistas por recurso son de pago), ApexCharts (licencia con restricción por ingresos) y los marcos Bootstrap, Material y Tailwind (traen un aspecto propio o exigen compilación) |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.2 | Se agrega el "Sistema de composición": escala única de espacios, columna alineada con la barra superior, dos pesos de letra, bordes suaves, filas de igual altura, un botón principal por pantalla y color solo donde significa algo. Primera aplicación: pantallas del Superadmin | La interfaz usaba los colores y las fuentes definidos, pero se veía desordenada e improvisada: la barra y el contenido no estaban alineados, casi todo iba en negrita y los espacios no seguían una regla |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.4 (regla 5 y tabla) y 6.2 | La fuente monoespaciada se limita a códigos y cronómetro; las cifras pasan a Lexend con números de ancho fijo | En las tablas, la fuente monoespaciada tan espaciada cortaba la lectura (tres tipos de letra en una misma fila). El riesgo de confundir caracteres solo existe en los códigos |
 
 ### Texto original de las secciones modificadas (para referencia)
 
