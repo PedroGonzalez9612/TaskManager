@@ -233,8 +233,8 @@ Esta subsección define la propuesta cromática del producto, exigida en la Fase
 | Normal: prioridad Baja, actividad pendiente, fuera de turno | `#6B7478` | `#ECEFEF` | `#4E5B60` | • / ○ | ISA-101 (lo normal en gris) | 6,1:1 |
 
 **Asignación por elemento de la interfaz:**
-- **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco), Alta (naranja con texto blanco), Media (ámbar con texto oscuro, ver regla 7), Baja (gris). La intensidad del color crece con la urgencia y la etiqueta siempre muestra el nombre del nivel.
-- **Estados de actividad:** Pendiente (gris), En curso (principal aqua), Pausada (ámbar), Finalizada (verde).
+- **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco), Alta (fondo naranja suave con su texto oscuro), Media (fondo ámbar suave con su texto oscuro), Baja (texto gris, sin fondo). Solo lo urgente usa un bloque lleno. La intensidad del color crece con la urgencia y la etiqueta siempre muestra el nombre del nivel.
+- **Estados de actividad:** Sin asignar y Por iniciar (texto gris con su ícono, sin fondo, porque son lo normal), En curso (fondo principal suave), Pausada (ámbar suave), Finalizada (verde suave).
 - **Jornada:** En turno (verde con punto ●), Fuera de turno (gris con texto que lo indica).
 - **Errores:** el error de formulario y la prioridad Urgente comparten el rojo porque significan lo mismo, "algo requiere tu atención", y se diferencian por la forma: el error de formulario es un borde rojo en el campo con el mensaje debajo; la alerta de Urgente pendiente es un bloque rojo lleno con ícono ⚠ y texto.
 - **Información:** avisos que no exigen acción (por ejemplo, la hora de fin de turno), siempre como fondo suave con el ícono "i", nunca como botón lleno, para no confundirse con una acción.
@@ -517,6 +517,7 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-10-07 | Ambas | Sección 7 — Alcance técnico | Se incorporan EventCalendar, Chart.js y Lucide, copiados dentro del proyecto | Se descartó FullCalendar (las vistas por recurso son de pago), ApexCharts (licencia con restricción por ingresos) y los marcos Bootstrap, Material y Tailwind (traen un aspecto propio o exigen compilación) |
 | 2026-10-07 | Diseño de Interfaces | Sección 6.2 | Se agrega el "Sistema de composición": escala única de espacios, columna alineada con la barra superior, dos pesos de letra, bordes suaves, filas de igual altura, un botón principal por pantalla y color solo donde significa algo. Primera aplicación: pantallas del Superadmin | La interfaz usaba los colores y las fuentes definidos, pero se veía desordenada e improvisada: la barra y el contenido no estaban alineados, casi todo iba en negrita y los espacios no seguían una regla |
 | 2026-10-07 | Diseño de Interfaces | Sección 6.4 (regla 5 y tabla) y 6.2 | La fuente monoespaciada se limita a códigos y cronómetro; las cifras pasan a Lexend con números de ancho fijo | En las tablas, la fuente monoespaciada tan espaciada cortaba la lectura (tres tipos de letra en una misma fila). El riesgo de confundir caracteres solo existe en los códigos |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.3 — Asignación por elemento | Las etiquetas de prioridad Alta y Media pasan de bloque lleno a fondo suave; Baja y los estados normales (Sin asignar, Por iniciar) quedan como texto gris con ícono, sin fondo. Solo Urgente conserva el bloque lleno | En una lista de muchas actividades, tantos bloques de color lleno competían entre sí y restaban calma. Se aplica la regla 3: el color intenso se reserva para lo que exige atención inmediata |
 
 ### Texto original de las secciones modificadas (para referencia)
 

@@ -48,8 +48,8 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   `ancho-angosto` o `ancho-medio` en `<body>` (la barra superior se alinea sola); cifras con la clase
   `cifra` (misma fuente, números de ancho fijo) y códigos con `codigo` (monoespaciada).
   Componentes repetidos en `js/componentes.js` (logo, avatar, medidor de cupo).
-  ESTADO DEL REDISEÑO: hecho en las pantallas del Superadmin. Las del Administrador y del Operario
-  heredan las bases pero están pendientes de revisión pantalla por pantalla, con el visto bueno del usuario.
+  ESTADO DEL REDISEÑO: Superadmin aprobado por el usuario; Administrador hecho, pendiente de su visto
+  bueno; Operario e inicio de sesión pendientes. Se avanza pantalla por pantalla, con su aprobación.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
   Flask las sirve desde el mismo origen. NO se usan plantillas Jinja para generar pantallas.
 - Autenticación con la sesión de Flask (cookie): `/auth/login`, `/auth/logout`, `/auth/sesion`.

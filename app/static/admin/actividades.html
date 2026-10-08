@@ -12,44 +12,35 @@
         <div class="encabezado-pagina">
             <div>
                 <h1>Actividades</h1>
-                <p>Cada requerimiento que llega al área se convierte en una o varias actividades de trabajo.</p>
+                <p id="resumen" class="cifra" aria-live="polite"></p>
             </div>
-            <div class="grupo-controles">
-                <button type="button" class="boton-secundario" data-abrir-requerimiento>+ Nuevo requerimiento</button>
-                <button type="button" id="nueva-actividad" class="boton">+ Nueva actividad</button>
-            </div>
+            <button type="button" id="nueva-actividad" class="boton">Nueva actividad</button>
         </div>
 
         <div class="maestro-detalle">
-            <section class="panel" aria-label="Requerimientos">
-                <div class="panel-encabezado"><h2>Requerimientos</h2></div>
-                <div id="lista-requerimientos" class="lista-requerimientos"></div>
-                <div id="sin-requerimientos" class="estado-vacio" hidden>
-                    <strong>Aún no hay requerimientos</strong>
-                    Registra el primero para empezar a crear actividades.
-                    <div><button type="button" class="boton" data-abrir-requerimiento>+ Nuevo requerimiento</button></div>
+            <section class="panel" aria-labelledby="titulo-requerimientos">
+                <div class="panel-encabezado">
+                    <h2 id="titulo-requerimientos">Requerimientos</h2>
+                    <button type="button" class="boton-texto" data-abrir-requerimiento>Nuevo</button>
                 </div>
+                <div id="lista-requerimientos" class="lista-requerimientos"></div>
             </section>
 
             <section class="panel" aria-live="polite">
                 <div class="panel-encabezado">
                     <div>
-                        <h2 id="titulo-requerimiento">Todas las actividades</h2>
-                        <p id="descripcion-requerimiento" class="texto-suave"></p>
+                        <h2 id="titulo-requerimiento" class="titulo-con-cantidad">Todas las actividades</h2>
+                        <p id="descripcion-requerimiento" class="texto-suave" hidden></p>
                     </div>
-                    <button type="button" id="eliminar-requerimiento" class="boton-peligro boton-pequeno" hidden>Eliminar requerimiento</button>
+                    <button type="button" id="eliminar-requerimiento" class="boton-texto peligro" hidden>Eliminar requerimiento</button>
                 </div>
-                <div class="contenedor-tabla">
-                    <table id="tabla-actividades" class="tabla tabla-clicable" hidden>
-                        <thead>
-                            <tr><th>Código</th><th>Actividad</th><th>Prioridad</th><th>Estado</th><th>Programada</th><th>Estimado</th><th>Operarios</th></tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <div id="encabezado-lista" class="encabezado-lista" aria-hidden="true" hidden>
+                    <span>Actividad</span><span>Prioridad</span><span>Programada</span><span>Operarios</span><span>Estado</span>
                 </div>
+                <ul id="lista-actividades" class="lista-filas" hidden></ul>
                 <div id="sin-actividades" class="estado-vacio" hidden>
-                    <strong>Sin actividades</strong>
-                    Crea una actividad y asígnala a uno o varios operarios.
+                    <strong id="sin-actividades-titulo">Sin actividades</strong>
+                    <span id="sin-actividades-texto">Crea una actividad y asígnala a uno o varios operarios.</span>
                 </div>
             </section>
         </div>
@@ -64,7 +55,7 @@
             <label for="req-titulo">Título</label>
             <input id="req-titulo" name="titulo" maxlength="120" required>
 
-            <label for="req-descripcion">Descripción (opcional)</label>
+            <label for="req-descripcion">Descripción <span class="cantidad">(opcional)</span></label>
             <textarea id="req-descripcion" name="descripcion" rows="3"></textarea>
             <p class="ayuda-campo">Quién lo pidió, para qué y cualquier dato que ayude a planearlo.</p>
 

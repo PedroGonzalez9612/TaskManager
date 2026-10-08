@@ -10,19 +10,23 @@ let actividades = [];
 let operarios = [];
 let requerimientos = [];
 let cargas = {};        // id del operario -> { minutos, porcentaje, sobrecarga } del día visible
+let capacidad = 0;
 
-// Encabezado de cada columna: nombre del operario y su carga del día.
+// Encabezado de cada columna: nombre del operario y medidor de su carga del día.
 function etiquetaDeColumna(info) {
-    const nombre = crearElemento("strong", "columna-nombre", info.resource.title);
-    if (info.resource.id === SIN_ASIGNAR) {
-        return { domNodes: [nombre] };
+    const columna = crearElemento("div", "columna-operario");
+    columna.append(crearElemento("span", "columna-nombre", info.resource.title));
+    if (info.resource.id !== SIN_ASIGNAR) {
+        const jornada = cargas[info.resource.id] || { minutos: 0, porcentaje: 0, sobrecarga: false };
+        const medidor = crearMedidor("Carga", jornada.porcentaje, 100);
+        medidor.querySelector(".cifra").textContent = `${jornada.porcentaje} %`;
+        medidor.title = `${duracionTexto(jornada.minutos)} programados de ${duracionTexto(capacidad)}`;
+        if (jornada.sobrecarga) {
+            medidor.append(crearConIcono("p", "medidor-nota", "circle-alert", "Sobrecarga"));
+        }
+        columna.append(medidor);
     }
-    const jornada = cargas[info.resource.id] || { porcentaje: 0, sobrecarga: false };
-    const carga = jornada.sobrecarga
-        ? crearConIcono("span", "carga cifra carga-sobrecarga", "triangle-alert", `${jornada.porcentaje} %`)
-        : crearElemento("span", "carga cifra", `${jornada.porcentaje} %`);
-    carga.title = "Carga del día respecto a la jornada";
-    return { domNodes: [nombre, carga] };
+    return { domNodes: [columna] };
 }
 
 function columnas() {
@@ -34,14 +38,21 @@ function columnas() {
     return lista;
 }
 
-function pintarAvisoSobrecarga() {
-    const aviso = document.getElementById("aviso-sobrecarga");
+function pintarResumen() {
+    const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
     const sobrecargados = operarios.filter((operario) => cargas[operario.id]?.sobrecarga);
+
+    document.getElementById("resumen").textContent = [
+        plural(operarios.length, "operario", "operarios"),
+        plural(actividades.length, "actividad este día", "actividades este día"),
+    ].join(" · ");
+
+    const aviso = document.getElementById("aviso-sobrecarga");
     aviso.hidden = sobrecargados.length === 0;
     if (sobrecargados.length) {
-        const detalle = sobrecargados.map((o) => `${o.nombre} (${cargas[o.id].porcentaje} %)`).join(", ");
-        aviso.replaceChildren(crearConIcono("span", "", "triangle-alert",
-            `Superan el 100 % de su jornada este día: ${detalle}.`));
+        const nombres = sobrecargados.map((o) => `${o.nombre} (${cargas[o.id].porcentaje} %)`).join(", ");
+        aviso.replaceChildren(crearConIcono("span", "", "circle-alert", ""),
+            `Con más trabajo del que cabe en su jornada: ${nombres}.`);
     }
 }
 
@@ -58,6 +69,7 @@ async function cargar() {
         ]);
         actividades = lista;
         requerimientos = listaRequerimientos;
+        capacidad = carga.capacidad_min;
         operarios = carga.operarios.map((operario) => ({ id: operario.id, nombre: operario.nombre }));
         cargas = Object.fromEntries(carga.operarios.map((operario) => [operario.id, operario.jornadas[0] || null]));
 
@@ -69,7 +81,7 @@ async function cargar() {
             }
             return evento;
         }));
-        pintarAvisoSobrecarga();
+        pintarResumen();
     } catch (error) {
         mostrarAviso(`No se pudo cargar el equipo: ${error.message}`, "advertencia");
     }
@@ -87,8 +99,9 @@ iniciarPaginaProtegida(["ADMINISTRADOR"]).then(() => {
 
     calendario = EventCalendar.create(document.getElementById("calendario"), opcionesCalendario({
         view: "resourceTimeGridDay",
-        headerToolbar: { start: "prev,next today", center: "title", end: "" },
-        height: "40rem",
+        headerToolbar: { start: "title", center: "", end: "today prev,next" },
+        titleFormat: { weekday: "long", day: "numeric", month: "long" },
+        height: "38rem",
         resources: [],
         resourceLabelContent: etiquetaDeColumna,
         datesSet: (info) => {

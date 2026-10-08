@@ -13,25 +13,28 @@
         <div class="encabezado-pagina">
             <div>
                 <h1>Equipo</h1>
-                <p>El día de cada operario y su carga. Toca un espacio libre para programar una actividad.</p>
+                <p id="resumen" class="cifra" aria-live="polite"></p>
             </div>
-            <div class="grupo-controles">
-                <div id="controles"></div>
-                <button type="button" id="nueva-actividad" class="boton">+ Nueva actividad</button>
-            </div>
+            <button type="button" id="nueva-actividad" class="boton">Nueva actividad</button>
         </div>
 
-        <p id="aviso-sobrecarga" class="aviso aviso-advertencia aviso-bloque" role="status" hidden></p>
-
-        <section class="panel panel-calendario">
-            <div id="calendario"></div>
+        <section class="panel" aria-label="Horario del día por operario">
+            <p id="aviso-sobrecarga" class="nota-panel" role="status" hidden></p>
+            <div class="panel-calendario">
+                <div id="calendario"></div>
+            </div>
         </section>
-        <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
+
+        <div class="pie-horario">
+            <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
+            <div id="controles"></div>
+        </div>
     </main>
 
     <script src="/static/js/api.js"></script>
     <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
+    <script src="/static/js/componentes.js"></script>
     <script src="/static/js/actividades-comun.js"></script>
     <script src="/static/js/formulario-actividad.js"></script>
     <script src="/static/vendor/event-calendar/event-calendar.min.js"></script>

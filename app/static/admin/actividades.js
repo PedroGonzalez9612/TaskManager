@@ -7,6 +7,8 @@ let operarios = [];
 let seleccionado = null;    // id del requerimiento elegido; null = todas las actividades
 let formulario = null;
 
+const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
+
 // ---------- Requerimientos ----------
 
 function crearBotonRequerimiento(id, titulo, cantidad) {
@@ -25,10 +27,7 @@ function crearBotonRequerimiento(id, titulo, cantidad) {
 }
 
 function pintarRequerimientos() {
-    const lista = document.getElementById("lista-requerimientos");
-    document.getElementById("sin-requerimientos").hidden = requerimientos.length > 0;
-    lista.hidden = requerimientos.length === 0;
-    lista.replaceChildren(
+    document.getElementById("lista-requerimientos").replaceChildren(
         crearBotonRequerimiento(null, "Todas las actividades", actividades.length),
         ...requerimientos.map((r) => crearBotonRequerimiento(r.id, r.titulo, r.actividades)),
     );
@@ -36,64 +35,89 @@ function pintarRequerimientos() {
 
 // ---------- Actividades ----------
 
+// Celda de dos renglones: el dato principal arriba y uno de apoyo, en gris, debajo.
+function crearDatoDoble(principal, apoyo) {
+    const celda = crearElemento("span", "dato-doble");
+    celda.append(crearElemento("span", "cifra", principal), crearElemento("span", "fila-meta cifra", apoyo));
+    return celda;
+}
+
 function crearFilaActividad(actividad) {
-    const fila = crearElemento("tr");
-    fila.tabIndex = 0;
+    const elemento = crearElemento("li");
+    const fila = crearElemento("button", "fila-actividad-admin");
+    fila.type = "button";
 
-    const celda = (contenido, clase = "") => {
-        const td = crearElemento("td", clase);
-        td.append(contenido);
-        return td;
-    };
-    const fecha = fechaCorta(fechaDesdeTexto(actividad.fecha_programada));
-    const programada = actividad.hora_programada ? `${fecha} · ${actividad.hora_programada}` : fecha;
-
-    const titulo = crearElemento("div");
-    titulo.append(
-        crearElemento("strong", "", actividad.titulo),
-        crearElemento("div", "texto-suave", `${NOMBRE_CATEGORIA[actividad.categoria]} · ${actividad.ubicacion}`),
+    const titulo = crearElemento("span", "dato-doble");
+    const meta = crearElemento("span", "fila-meta");
+    meta.append(
+        crearElemento("span", "codigo", actividad.codigo),
+        ` · ${NOMBRE_CATEGORIA[actividad.categoria]} · ${actividad.ubicacion}`,
     );
+    titulo.append(crearElemento("span", "fila-nombre", actividad.titulo), meta);
+
+    const fecha = fechaCorta(fechaDesdeTexto(actividad.fecha_programada));
+    const nombres = actividad.operarios.map((o) => o.nombre.split(" ")[0]);
+    const operariosTexto = nombres.length ? nombres.slice(0, 2).join(", ") : "Sin asignar";
 
     fila.append(
-        celda(actividad.codigo, "cifra"),
-        celda(titulo, "celda-principal"),
-        celda(crearSenalPrioridad(actividad.prioridad)),
-        celda(crearEtiquetaEstado(actividad.estado)),
-        celda(programada, "cifra"),
-        celda(duracionTexto(actividad.tiempo_estimado_min), "cifra"),
-        celda(actividad.operarios.map((o) => o.nombre).join(", ") || "—"),
+        titulo,
+        crearSenalPrioridad(actividad.prioridad),
+        crearDatoDoble(
+            actividad.hora_programada ? `${fecha} · ${actividad.hora_programada}` : fecha,
+            duracionTexto(actividad.tiempo_estimado_min),
+        ),
+        crearDatoDoble(operariosTexto, nombres.length > 2 ? `y ${nombres.length - 2} más` : ""),
+        crearEtiquetaEstado(actividad.estado),
     );
-
-    const abrir = () => formulario.abrirEdicion(actividad);
-    fila.addEventListener("click", abrir);
-    fila.addEventListener("keydown", (evento) => {
-        if (evento.key === "Enter") {
-            abrir();
-        }
-    });
-    return fila;
+    fila.addEventListener("click", () => formulario.abrirEdicion(actividad));
+    elemento.append(fila);
+    return elemento;
 }
 
 function pintarActividades() {
     const requerimiento = requerimientos.find((r) => r.id === seleccionado);
     const visibles = seleccionado ? actividades.filter((a) => a.requerimiento_id === seleccionado) : actividades;
 
-    document.getElementById("titulo-requerimiento").textContent =
-        requerimiento ? requerimiento.titulo : "Todas las actividades";
-    document.getElementById("descripcion-requerimiento").textContent = requerimiento?.descripcion || "";
+    const titulo = document.getElementById("titulo-requerimiento");
+    titulo.replaceChildren(
+        requerimiento ? requerimiento.titulo : "Todas las actividades",
+        crearElemento("span", "cantidad cifra", visibles.length ? String(visibles.length) : ""),
+    );
+    const descripcion = document.getElementById("descripcion-requerimiento");
+    descripcion.textContent = requerimiento?.descripcion || "";
+    descripcion.hidden = !requerimiento?.descripcion;
 
     const eliminar = document.getElementById("eliminar-requerimiento");
     eliminar.hidden = !requerimiento;
     delete eliminar.dataset.confirmar;
     eliminar.textContent = "Eliminar requerimiento";
 
-    const tabla = document.getElementById("tabla-actividades");
-    tabla.hidden = visibles.length === 0;
+    const lista = document.getElementById("lista-actividades");
+    lista.hidden = visibles.length === 0;
+    document.getElementById("encabezado-lista").hidden = visibles.length === 0;
     document.getElementById("sin-actividades").hidden = visibles.length > 0;
-    tabla.querySelector("tbody").replaceChildren(...ordenarActividades(visibles).map(crearFilaActividad));
+    document.getElementById("sin-actividades-titulo").textContent =
+        requerimientos.length ? "Sin actividades" : "Empieza por un requerimiento";
+    document.getElementById("sin-actividades-texto").textContent = requerimientos.length
+        ? "Crea una actividad y asígnala a uno o varios operarios."
+        : "Registra el primer requerimiento con “Nuevo”; después podrás crearle actividades.";
+    lista.replaceChildren(...ordenarActividades(visibles).map(crearFilaActividad));
+}
+
+function pintarResumen() {
+    const sinAsignar = actividades.filter((a) => a.operarios.length === 0).length;
+    const partes = [
+        plural(requerimientos.length, "requerimiento", "requerimientos"),
+        plural(actividades.length, "actividad", "actividades"),
+    ];
+    if (sinAsignar) {
+        partes.push(`${sinAsignar} sin asignar`);
+    }
+    document.getElementById("resumen").textContent = partes.join(" · ");
 }
 
 function pintar() {
+    pintarResumen();
     pintarRequerimientos();
     pintarActividades();
 }
@@ -139,7 +163,7 @@ function configurarRequerimientos() {
     eliminar.addEventListener("click", async () => {
         if (eliminar.dataset.confirmar !== "si") {
             eliminar.dataset.confirmar = "si";
-            eliminar.textContent = "Se borrarán sus actividades. Toca de nuevo";
+            eliminar.textContent = "Se borrarán sus actividades. Confirmar";
             return;
         }
         try {

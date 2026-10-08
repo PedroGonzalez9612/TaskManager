@@ -739,12 +739,21 @@ body.ancho-angosto {
 }
 
 /* Prioridades: la intensidad del color crece con la urgencia. */
-.etiqueta.prioridad-urgente { background: var(--error);       color: #FFFFFF; }
-.etiqueta.prioridad-alta    { background: var(--alta);        color: #FFFFFF; }
-.etiqueta.prioridad-media   { background: var(--advertencia); color: var(--texto); }
-.etiqueta.prioridad-baja    { background: var(--neutro-suave); color: var(--neutro-texto); }
+.etiqueta.prioridad-urgente { background: var(--error);             color: #FFFFFF; }
+.etiqueta.prioridad-alta    { background: var(--alta-suave);        color: var(--alta-texto); }
+.etiqueta.prioridad-media   { background: var(--advertencia-suave); color: var(--advertencia-texto); }
+.etiqueta.prioridad-baja    { background: transparent; padding-inline: 0; color: var(--texto-secundario); font-weight: var(--peso-normal); }
 
 /* Estados de actividad: sin asignar y por iniciar (gris), en curso (principal), finalizada (verde). */
+/* "Sin asignar" y "Por iniciar" son lo normal: texto gris con su ícono, sin fondo. */
+.etiqueta.estado-pendiente,
+.etiqueta.estado-asignada {
+    background: transparent;
+    padding-inline: 0;
+    color: var(--texto-secundario);
+    font-weight: var(--peso-normal);
+}
+
 .etiqueta.estado-en_ejecucion { background: var(--principal-suave); color: var(--principal-hover); }
 .etiqueta.estado-pausada      { background: var(--advertencia-suave); color: var(--advertencia-texto); }
 .etiqueta.estado-completada   { background: var(--exito-suave); color: var(--exito-texto); }
@@ -814,8 +823,17 @@ body.ancho-angosto {
     gap: 0.6rem;
 }
 
+/* Pie del horario: la leyenda de colores y el control que los cambia van juntos. */
+.pie-horario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
 .leyenda {
-    margin-top: 0.8rem;
+    margin: 0;
 }
 
 .leyenda-grupo {
@@ -1468,7 +1486,13 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 /* ================= Horario (EventCalendar) ================= */
 
 .panel-calendario {
-    padding: 0.8rem;
+    padding: var(--e4) var(--e5) var(--e5);
+}
+
+@media (max-width: 50em) {
+    .panel-calendario {
+        padding: var(--e3);
+    }
 }
 
 /* El calendario toma los colores y las fuentes del sistema. */
@@ -1476,7 +1500,7 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     --ec-bg-color: var(--superficie);
     --ec-text-color: var(--texto);
     --ec-border-color: var(--borde);
-    --ec-today-bg-color: color-mix(in srgb, var(--principal-suave) 45%, white);
+    --ec-today-bg-color: color-mix(in srgb, var(--principal-suave) 25%, white);
     --ec-now-indicator-color: var(--marca);
     --ec-button-bg-color: var(--superficie);
     --ec-button-border-color: var(--borde-control);
@@ -1509,13 +1533,28 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 
 .ec .ec-sidebar,
 .ec .ec-event-time {
-    font-family: var(--fuente-cifras);
+    color: var(--texto-secundario);
     font-size: var(--tamano-etiqueta);
-    font-weight: var(--peso-cifras);
+    font-variant-numeric: tabular-nums;
+}
+
+.ec .ec-day-head,
+.ec .ec-col-head {
+    font-weight: var(--peso-normal);
+}
+
+/* Encabezado de la columna de un operario: nombre y medidor de su carga del día. */
+.columna-operario {
+    width: 100%;
+    padding: var(--e2) var(--e3) var(--e3);
+    text-align: left;
 }
 
 .columna-nombre {
     display: block;
+    margin-bottom: var(--e1);
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
 }
 
 /* Bloque de actividad: fondo suave, barra lateral del color y texto oscuro. */
@@ -1680,7 +1719,7 @@ html[data-color-bloques="categoria"] .ec .bloque-prioridad-urgente {
 
 .maestro-detalle {
     display: grid;
-    grid-template-columns: 18rem minmax(0, 1fr);    /* el 0 evita que la tabla ensanche la página */
+    grid-template-columns: 17rem minmax(0, 1fr);    /* el 0 evita que la tabla ensanche la página */
     align-items: start;
     gap: 0 1.3rem;
 }
@@ -2145,5 +2184,102 @@ html[data-color-bloques="categoria"] .ec .bloque-prioridad-urgente {
         grid-column: 1 / -1;
         grid-template-columns: 1fr;
         gap: var(--e3);
+    }
+}
+
+/* ================= Administrador: actividades como lista ================= */
+
+/* En el panel angosto de requerimientos, el título y su acción van siempre en un renglón. */
+.maestro-detalle > .panel:first-child .panel-encabezado {
+    flex-wrap: nowrap;
+    padding-right: var(--e3);
+}
+
+.fila-actividad-admin {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6rem 9.5rem 7.5rem 6.5rem;
+    align-items: center;
+    gap: var(--e4);
+    width: 100%;
+    padding: var(--e3) var(--e5);
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Las etiquetas ocupan solo su texto, no todo el ancho de su columna. */
+.fila-actividad-admin .etiqueta {
+    justify-self: start;
+}
+
+.fila-actividad-admin:hover {
+    background: var(--fondo);
+}
+
+.fila-actividad-admin:focus-visible {
+    outline-offset: -3px;
+}
+
+.dato-doble > span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.encabezado-lista {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6rem 9.5rem 7.5rem 6.5rem;
+    gap: var(--e4);
+    padding: var(--e3) var(--e5);
+    border-bottom: 1px solid var(--borde);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.boton-texto {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    min-height: 2.4rem;
+    padding: 0 var(--e2);
+    border: none;
+    border-radius: var(--radio-control);
+    background: transparent;
+    color: var(--principal);
+    font-family: inherit;
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.boton-texto:hover {
+    background: var(--principal-suave);
+}
+
+.boton-texto.peligro {
+    color: var(--error-texto);
+}
+
+.boton-texto.peligro:hover {
+    background: var(--error-suave);
+}
+
+@media (max-width: 62em) {
+    .encabezado-lista {
+        display: none;
+    }
+
+    .fila-actividad-admin {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--e2) var(--e4);
+        padding-inline: var(--e4);
+    }
+
+    .fila-actividad-admin > :nth-child(1) {
+        grid-column: 1 / -1;
     }
 }
