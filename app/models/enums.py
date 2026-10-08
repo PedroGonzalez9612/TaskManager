@@ -8,9 +8,26 @@ class Rol(str, Enum):
 
 
 class Prioridad(str, Enum):
-    ALTA = "ALTA"
-    MEDIA = "MEDIA"
     BAJA = "BAJA"
+    MEDIA = "MEDIA"
+    ALTA = "ALTA"
+    URGENTE = "URGENTE"  # Interrumpe la actividad que el operario tenga en curso.
+
+    @property
+    def peso(self) -> int:
+        """Orden numérico de la prioridad: se ordena por este valor, nunca comparando textos."""
+        return _PESO_PRIORIDAD[self.value]
+
+
+_PESO_PRIORIDAD = {"BAJA": 1, "MEDIA": 2, "ALTA": 3, "URGENTE": 4}
+
+
+class Categoria(str, Enum):
+    PRODUCCION = "PRODUCCION"
+    MANTENIMIENTO = "MANTENIMIENTO"
+    CALIDAD = "CALIDAD"
+    LIMPIEZA = "LIMPIEZA"
+    LOGISTICA = "LOGISTICA"
 
 
 class EstadoRequerimiento(str, Enum):

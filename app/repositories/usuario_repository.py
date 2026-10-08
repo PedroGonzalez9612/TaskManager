@@ -8,6 +8,13 @@ class UsuarioRepository(BaseRepository):
     def find_by_empresa(self, empresa_id: str):
         return list(self.collection.find({"empresa_id": empresa_id}))
 
+    def find_by_empresa_y_rol(self, empresa_id: str, rol: str):
+        return list(self.collection.find({"empresa_id": empresa_id, "rol": rol}).sort("nombre", 1))
+
+    def find_by_ids(self, ids: list):
+        oids = [oid for oid in map(self.to_object_id, ids) if oid]
+        return list(self.collection.find({"_id": {"$in": oids}}))
+
     def find_by_correo(self, correo: str):
         return self.collection.find_one({"correo": correo})
 
