@@ -235,6 +235,13 @@ Esta subsección define la propuesta cromática del producto, exigida en la Fase
 6. Todos los colores se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`) para garantizar la consistencia entre pantallas.
 7. El **ámbar base** (`#E3A32B`) es un color claro y tiene dos restricciones: sobre blanco solo alcanza 2,2:1, así que nunca se usa como borde, ícono o texto sobre superficies claras (para eso se usa su texto oscuro `#6B4A0E`, 8,0:1 sobre blanco); y como relleno lleva siempre texto principal oscuro `#1F2A2E` (6,7:1), nunca blanco. Los demás colores base admiten texto blanco como relleno (rojo 6,7:1; naranja 5,2:1; verde 5,1:1; gris 4,8:1).
 
+**Precisiones de la implementación** (valores que el sistema necesitaba y que las tablas anteriores no definían):
+- **Bordes:** el borde de paneles y tablas es decorativo y usa un tinte claro del fondo (`#D3DEDD`). El borde de los controles (campos de formulario y botones secundarios) debe distinguirse como componente, así que usa el gris base `#6B7478` (4,8:1 sobre blanco).
+- **Texto sobre el coral de marca:** la inicial del logo y del avatar se escribe con el texto principal `#1F2A2E` (5,4:1). El coral sigue sin usarse como color de texto.
+- **Ícono de "En curso":** ▶, sobre el fondo principal suave con texto `#0F5563`.
+- **Borde lateral de la tarjeta de actividad:** toma el color base de la prioridad, salvo en Media, donde usa el ámbar oscuro `#6B4A0E` por la regla 7.
+- **Etiquetas de rol** (Administrador, Operario): van en gris neutro, porque el rol no es un estado ni una prioridad y no debe tomar un color con significado.
+
 **Conflictos identificados y cómo se resuelven:**
 - **Coral de marca (9°) frente a rojo de Urgente (4°) y naranja de Alta (25°):** son tonos cálidos cercanos. Se separan por luminosidad (el coral es claro y rosado, el rojo y el naranja son oscuros), por uso (el coral nunca aparece en estados) y porque las prioridades siempre llevan su texto.
 - **Aqua principal (190°) frente a azul de información (217°) y verde de finalizada (116°):** se separan por tono, por forma de uso (el principal es relleno de botón; información y finalizada son fondos suaves) y por el ícono que acompaña a cada estado.
@@ -473,6 +480,7 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico (sin cambio de texto) | Se actualiza Playwright de 1.47.0 a 1.63.0 en `requirements-dev.txt` | La versión 1.47.0 depende de una versión de `greenlet` sin instalador para Python 3.13, que es la que usa el equipo fuera de Docker |
 | 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico | Las capturas pueden tomarse con un navegador Chromium ya instalado (`CAPTURAS_NAVEGADOR`), además del Chromium de Playwright | Evitar la descarga del navegador de Playwright cuando el equipo ya tiene Brave, Edge o Chrome |
 | 2026-10-03 | Ambas | Sección 11 — Trabajo colaborativo | Se listan los archivos que no se versionan (`.env`, configuración personal de Claude Code, capturas, entornos virtuales). `CLAUDE.md` y `.claude/agents/` se mantienen en el repositorio | Se probó dejarlos fuera de Git, pero un cambio de rama los borró del computador y dejaban de compartirse entre los integrantes; se decidió conservarlos versionados |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.3 | Se agrega el bloque "Precisiones de la implementación": colores de borde, texto sobre el coral, ícono de "En curso", borde lateral de la tarjeta en prioridad Media y etiquetas de rol en gris | Al aplicar las Secciones 6.3 y 6.4 a `estilos.css` aparecieron valores que las tablas no definían; se documentan para que el código no tenga colores sin respaldo en el alcance |
 
 ### Texto original de las secciones modificadas (para referencia)
 

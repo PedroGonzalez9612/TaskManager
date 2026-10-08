@@ -44,8 +44,8 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   (un `.html` y su `.js`); compartido en `js/api.js` (llamadas a la API, constantes),
   `js/layout.js` (menú por rol, diálogos, avisos) y `css/estilos.css` (colores y tipografía como variables
   en `:root`, con los valores de las Secciones 6.3 y 6.4 del alcance); archivos de fuentes en `fuentes/`.
-  PENDIENTE: `estilos.css` aún tiene la paleta inicial (`#0f766e`, `system-ui`) y `fuentes/` no existe;
-  borrar esta nota al implementar las Secciones 6.3 y 6.4.
+  Códigos y cifras llevan la clase `cifra` (fuente monoespaciada). Los estados y prioridades usan
+  `etiqueta` más su clase de estado; el ícono lo pone el CSS, no el HTML.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
   Flask las sirve desde el mismo origen. NO se usan plantillas Jinja para generar pantallas.
 - Autenticación con la sesión de Flask (cookie): `/auth/login`, `/auth/logout`, `/auth/sesion`.

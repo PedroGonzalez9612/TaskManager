@@ -6,7 +6,7 @@ function crearFilaUsuario(usuario) {
 
     const nombre = document.createElement("td");
     nombre.textContent = usuario.nombre;
-    nombre.style.fontWeight = "600";
+    nombre.className = "dato-fuerte";
 
     const correo = document.createElement("td");
     correo.className = "texto-suave";
@@ -14,7 +14,7 @@ function crearFilaUsuario(usuario) {
 
     const rol = document.createElement("td");
     const etiqueta = document.createElement("span");
-    etiqueta.className = `etiqueta etiqueta-rol-${usuario.rol.toLowerCase()}`;
+    etiqueta.className = "etiqueta";
     etiqueta.textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
     rol.append(etiqueta);
 

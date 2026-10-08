@@ -4,9 +4,13 @@ const tabla = document.getElementById("tabla-empresas");
 const estadoVacio = document.getElementById("estado-vacio");
 const dialogo = document.getElementById("dialogo-empresa");
 
-function crearCelda(texto) {
+// "esCifra" marca códigos y números, que van en la fuente monoespaciada (alcance, Sección 6.4).
+function crearCelda(texto, esCifra = false) {
     const celda = document.createElement("td");
     celda.textContent = texto;
+    if (esCifra) {
+        celda.className = "cifra";
+    }
     return celda;
 }
 
@@ -34,10 +38,10 @@ function crearFilaEmpresa(empresa) {
     // textContent (no innerHTML) para que un texto con etiquetas no se ejecute como HTML.
     fila.append(
         nombre,
-        crearCelda(empresa.nit),
+        crearCelda(empresa.nit, true),
         crearCelda(empresa.sector),
-        crearCelda(textoCupo(actuales.ADMINISTRADOR || 0, empresa.limite_administradores)),
-        crearCelda(textoCupo(actuales.OPERARIO || 0, empresa.limite_operarios)),
+        crearCelda(textoCupo(actuales.ADMINISTRADOR || 0, empresa.limite_administradores), true),
+        crearCelda(textoCupo(actuales.OPERARIO || 0, empresa.limite_operarios), true),
     );
     return fila;
 }

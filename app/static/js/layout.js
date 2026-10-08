@@ -92,10 +92,21 @@ function construirMenu(usuario) {
 
     const bloqueUsuario = document.createElement("div");
     bloqueUsuario.className = "menu-usuario";
+    // Avatar con la inicial del usuario: junto con el logo, es donde aparece el color de marca.
+    const avatar = document.createElement("span");
+    avatar.className = "avatar";
+    avatar.setAttribute("aria-hidden", "true");
+    avatar.textContent = usuario.nombre.charAt(0).toUpperCase();
     const nombre = document.createElement("strong");
     nombre.textContent = usuario.nombre;
     const rol = document.createElement("span");
+    rol.className = "usuario-rol";
     rol.textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
+    const textos = document.createElement("div");
+    textos.append(nombre, rol);
+    const datos = document.createElement("div");
+    datos.className = "usuario-datos";
+    datos.append(avatar, textos);
     const salir = document.createElement("button");
     salir.type = "button";
     salir.className = "boton-secundario boton-pequeno boton-bloque";
@@ -104,7 +115,7 @@ function construirMenu(usuario) {
         await pedirApi("/auth/logout", { method: "POST" });
         window.location.href = RUTA_LOGIN;
     });
-    bloqueUsuario.append(nombre, rol, salir);
+    bloqueUsuario.append(datos, salir);
 
     menu.append(crearMarca(usuario), opciones, bloqueUsuario);
     return menu;

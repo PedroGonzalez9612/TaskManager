@@ -65,7 +65,7 @@ Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #4).
 
 ## Fase 2 de Diseño de Interfaces — Identidad visual (2026-10-02 y 2026-10-03) 🟡
 
-Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta etapa **definió** la identidad visual y las herramientas para revisarla; todavía **no cambió** cómo se ve la aplicación.
+Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esa rama **definió** la identidad visual y las herramientas para revisarla; la aplicación en pantalla se hizo después (ver "Implementación en la aplicación").
 
 ### Qué quedó definido (en el alcance)
 
@@ -86,9 +86,20 @@ Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta et
 - Los 10 contrastes declarados en la Sección 6.3 se midieron con `contraste.py` y coinciden. La medición mostró que el ámbar base no sirve sobre blanco ni con texto blanco, y se agregó la regla 7.
 - `capturas.py` generó las 10 capturas (5 pantallas × 2 tamaños) con sus variantes, usando Brave.
 
+### Implementación en la aplicación (2026-10-07)
+
+Rama: `feature/identidad-visual`.
+
+- `app/static/css/estilos.css` reescrito con los valores de las Secciones 6.3 y 6.4: todos los colores y la tipografía son variables en `:root`, y los tamaños están en rem sobre una base de 112,5 %.
+- Fuentes Lexend (400 y 600) y Atkinson Hyperlegible Mono (500 y 600) incluidas en `app/static/fuentes/` con su licencia; la aplicación no depende de internet para mostrarlas.
+- Prioridades, estados y avisos se muestran con color, ícono y texto. El ícono lo pone el CSS.
+- NIT y cupos de usuarios usan la fuente monoespaciada (clase `cifra`).
+- Avatar con la inicial del usuario en el menú; junto con el logo, es el único lugar donde aparece el coral de marca.
+- Verificación: 18 pares de color medidos con `contraste.py` sobre las variables del CSS, todos por encima del mínimo; 10 capturas revisadas en celular y escritorio, incluida la versión en grises.
+
 ### Pendientes de esta fase
 
-- **Implementar el color y la tipografía en `app/static/css/estilos.css`**: sigue con la paleta inicial (`#0f766e`) y la fuente del sistema, y la carpeta `app/static/fuentes/` aún no existe.
+- La prioridad Urgente y los estados Pausada y Finalizada ya tienen estilo, pero todavía no se pueden ver con datos reales: el backend aún no tiene la prioridad URGENTE ni las pausas (Etapa 2 en adelante).
 - Validar el diseño de las pantallas con una herramienta externa de diseño.
 - Elaborar el documento de diseño en PDF que pide el enunciado (evolución, usabilidad, Gestalt, color, conclusiones) con las capturas como evidencia.
 
@@ -104,6 +115,6 @@ Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta et
 
 ## Próxima etapa
 
-**Cierre de la Fase 2 de Diseño de Interfaces:** aplicar las Secciones 6.3 y 6.4 a `estilos.css`, validar las pantallas y preparar el documento de diseño.
+**Cierre de la Fase 2 de Diseño de Interfaces:** validar las pantallas y preparar el documento de diseño.
 
 **Etapa 2 — Requerimientos y actividades (Administrador):** menú del Administrador, registro de requerimientos, conversión en actividades con prioridad de 4 niveles, tiempo estimado, fecha programada, categoría y asignación a uno o varios operarios (criterios 2 y 3).

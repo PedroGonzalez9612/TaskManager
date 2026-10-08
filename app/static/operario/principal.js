@@ -24,7 +24,7 @@ function crearTarjeta(actividad) {
     etiqueta.textContent = NOMBRE_PRIORIDAD[prioridad] || prioridad;
 
     const estado = document.createElement("span");
-    estado.className = "estado";
+    estado.className = `etiqueta estado estado-${String(actividad.estado).toLowerCase()}`;
     estado.textContent = NOMBRE_ESTADO[actividad.estado] || actividad.estado;
 
     const titulo = document.createElement("h2");
