@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <title>Semana — GestLab</title>
+    <link rel="stylesheet" href="/static/vendor/event-calendar/event-calendar.min.css">
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <main class="principal">
+        <div class="encabezado-pagina">
+            <div>
+                <h1>Mi semana</h1>
+                <p>Tus actividades en el horario. Toca un bloque para ver el detalle.</p>
+            </div>
+            <div id="controles"></div>
+        </div>
+
+        <section class="panel panel-calendario">
+            <div id="calendario"></div>
+        </section>
+        <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/actividades-comun.js"></script>
+    <script src="/static/vendor/event-calendar/event-calendar.min.js"></script>
+    <script src="/static/operario/operario-comun.js"></script>
+    <script src="/static/operario/semana.js"></script>
+</body>
+</html>

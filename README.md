@@ -58,7 +58,8 @@ python run.py
 
 1. El **Superadmin** registra una empresa (con su logo y sus límites de usuarios) y le crea un Administrador.
 2. El **Administrador** entra con su correo y crea a los Operarios de su empresa.
-3. El **Operario** entra desde el celular y ve sus actividades ordenadas por prioridad.
+3. El **Administrador** registra requerimientos, crea actividades y las asigna en las vistas *Actividades* y *Equipo*.
+4. El **Operario** entra desde el celular y ve su trabajo en tres vistas: *Hoy*, *Semana* y *Resumen*.
 
 Cada rol ve su propia interfaz. Los usuarios de una empresa ven el logo de su empresa en lugar del de GestLab.
 
@@ -75,6 +76,11 @@ Todas las rutas (salvo `/auth/login` y `/health`) requieren sesión iniciada.
 | `GET, PUT /empresas/<id>` | Superadmin (y Administrador, solo lectura de la suya) | Consulta o edita una empresa |
 | `GET, PUT /empresas/<id>/logo` | Ver: usuarios de la empresa · Cambiar: Superadmin | Logo de la empresa (PNG, JPG o WEBP, máx. 512 KB) |
 | `GET, POST /usuarios` | Superadmin, Administrador | Lista y crea usuarios de una empresa |
+| `GET, POST /requerimientos` · `GET, PUT, DELETE /requerimientos/<id>` | Administrador | Requerimientos de su empresa |
+| `GET /actividades` · `GET /actividades/<id>` | Administrador, Operario | Actividades de la empresa (el Operario solo ve las suyas). Filtros: `requerimiento_id`, `fecha_desde`, `fecha_hasta` |
+| `POST /actividades` · `PUT, DELETE /actividades/<id>` | Administrador | Crea, edita (incluida la asignación con `operario_ids`) o elimina |
+| `POST /actividades/<id>/iniciar` · `/finalizar` | Operario | Ejecución de una actividad asignada |
+| `GET /analisis/carga?desde=&hasta=` | Administrador, Operario | Carga por jornada de cada operario |
 | `GET /health` | Público | Verificación del servidor |
 
-Las rutas de requerimientos, actividades, asignaciones, registros de tiempo y análisis existen, pero todavía no exigen sesión; se ajustarán en las próximas etapas (ver [docs/avance.md](docs/avance.md)).
+Las bibliotecas de interfaz (EventCalendar, Chart.js y Lucide) y las fuentes están copiadas dentro de `app/static/`, con sus licencias; la aplicación no descarga nada de internet.

@@ -1,41 +1,39 @@
-// Tabla y formulario de usuarios de una empresa.
+// Lista y formulario de usuarios de una empresa.
 // Lo usan el Superadmin (dentro de una empresa) y el Administrador (en su propia empresa).
+// Necesita componentes.js.
 
 function crearFilaUsuario(usuario) {
-    const fila = document.createElement("tr");
-
-    const nombre = document.createElement("td");
-    nombre.textContent = usuario.nombre;
-    nombre.style.fontWeight = "600";
-
-    const correo = document.createElement("td");
-    correo.className = "texto-suave";
-    correo.textContent = usuario.correo;
-
-    const rol = document.createElement("td");
-    const etiqueta = document.createElement("span");
-    etiqueta.className = `etiqueta etiqueta-rol-${usuario.rol.toLowerCase()}`;
-    etiqueta.textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
-    rol.append(etiqueta);
-
-    // textContent (no innerHTML) para que un texto con etiquetas no se ejecute como HTML.
-    fila.append(nombre, correo, rol);
+    const fila = crearElemento("li", "fila-usuario");
+    const textos = crearElemento("div");
+    textos.append(
+        crearElemento("span", "fila-nombre", usuario.nombre),
+        crearElemento("span", "fila-meta", usuario.correo),
+    );
+    fila.append(
+        crearAvatarNeutro(usuario.nombre),
+        textos,
+        crearElemento("span", "rol", NOMBRE_ROL[usuario.rol] || usuario.rol),
+    );
     return fila;
 }
 
-// Llena la tabla de usuarios o muestra el estado vacío si la empresa no tiene ninguno.
-async function cargarUsuarios(empresaId, tabla, estadoVacio) {
-    const cuerpo = tabla.querySelector("tbody");
+// Llena la lista de usuarios o muestra el estado vacío si la empresa no tiene ninguno.
+// Devuelve los usuarios cargados.
+async function cargarUsuarios(empresaId, lista, estadoVacio) {
     try {
         const usuarios = await pedirApi(`/usuarios?empresa_id=${encodeURIComponent(empresaId)}`);
-        tabla.hidden = usuarios.length === 0;
+        // Primero los administradores y, dentro de cada rol, por nombre.
+        usuarios.sort((a, b) => a.rol.localeCompare(b.rol) || a.nombre.localeCompare(b.nombre, "es"));
+        lista.hidden = usuarios.length === 0;
         estadoVacio.hidden = usuarios.length > 0;
-        cuerpo.replaceChildren(...usuarios.map(crearFilaUsuario));
+        lista.replaceChildren(...usuarios.map(crearFilaUsuario));
+        return usuarios;
     } catch (error) {
-        tabla.hidden = true;
+        lista.hidden = true;
         estadoVacio.hidden = false;
         estadoVacio.textContent = `No se pudieron cargar los usuarios: ${error.message}`;
         estadoVacio.classList.add("mensaje-error");
+        return [];
     }
 }
 
@@ -49,7 +47,7 @@ function validarUsuario(datos) {
     return null;
 }
 
-// Conecta el diálogo de creación de usuario. "alCrear" recarga la tabla después de guardar.
+// Conecta el diálogo de creación de usuario. "alCrear" recarga la lista después de guardar.
 function configurarCreacionUsuario(botonesAbrir, dialogo, empresaId, alCrear) {
     configurarDialogo(botonesAbrir, dialogo);
     dialogo.querySelector("form").addEventListener("submit", (evento) => {

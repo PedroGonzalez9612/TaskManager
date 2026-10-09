@@ -3,37 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <title>Empresas — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
-<body class="cargando">
+<body class="cargando ancho-medio">
     <main class="principal">
         <div class="encabezado-pagina">
             <div>
                 <h1>Empresas</h1>
-                <p>Clientes registrados en GestLab. Entra a una empresa para gestionar sus administradores.</p>
+                <p id="resumen" class="resumen-pagina cifra" aria-live="polite"></p>
             </div>
-            <button type="button" class="boton" data-abrir-dialogo>+ Nueva empresa</button>
+            <button type="button" class="boton" data-abrir-dialogo>Nueva empresa</button>
         </div>
 
-        <section class="panel">
-            <div class="contenedor-tabla">
-                <table id="tabla-empresas" class="tabla" hidden>
-                    <thead>
-                        <tr><th>Empresa</th><th>NIT</th><th>Sector</th><th>Administradores</th><th>Operarios</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+        <div id="herramientas" class="barra-herramientas" hidden>
+            <label class="buscador">
+                <span class="solo-lectores">Buscar empresa</span>
+                <input id="buscar" type="search" placeholder="Buscar por nombre o NIT" autocomplete="off">
+            </label>
+        </div>
+
+        <section class="panel" aria-label="Empresas registradas">
+            <ul id="lista-empresas" class="lista-filas" hidden></ul>
             <div id="estado-vacio" class="estado-vacio" hidden>
                 <strong>Todavía no hay empresas</strong>
                 Registra la primera empresa para empezar.
-                <div><button type="button" class="boton" data-abrir-dialogo>+ Nueva empresa</button></div>
+                <div><button type="button" class="boton" data-abrir-dialogo>Nueva empresa</button></div>
             </div>
+            <p id="sin-resultados" class="estado-vacio" hidden>Ninguna empresa coincide con la búsqueda.</p>
         </section>
     </main>
 
-    <dialog id="dialogo-empresa" class="dialogo" aria-labelledby="titulo-dialogo">
+    <dialog id="dialogo-empresa" class="dialogo dialogo-ancho" aria-labelledby="titulo-dialogo">
         <div class="dialogo-encabezado">
             <h2 id="titulo-dialogo">Nueva empresa</h2>
             <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
@@ -42,17 +44,23 @@
             <label for="nombre">Nombre</label>
             <input id="nombre" name="nombre" required>
 
-            <label for="nit">NIT</label>
-            <input id="nit" name="nit" required>
-
-            <label for="sector">Sector</label>
-            <input id="sector" name="sector" required>
+            <div class="fila-campos">
+                <div class="campo">
+                    <label for="nit">NIT</label>
+                    <input id="nit" name="nit" required>
+                </div>
+                <div class="campo">
+                    <label for="sector">Sector</label>
+                    <input id="sector" name="sector" required>
+                </div>
+            </div>
 
             <label for="direccion">Dirección</label>
             <input id="direccion" name="direccion" required>
 
             <fieldset class="grupo-campos">
                 <legend>Límite de usuarios</legend>
+                <p class="ayuda-campo">Cuántos usuarios de cada rol puede tener la empresa. Se puede cambiar después.</p>
                 <div class="fila-campos">
                     <div class="campo">
                         <label for="limite_administradores">Administradores</label>
@@ -65,12 +73,14 @@
                 </div>
             </fieldset>
 
-            <label for="logo">Logo (opcional)</label>
-            <div class="campo-logo">
-                <img class="vista-previa-logo" alt="Vista previa del logo" hidden>
-                <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp">
-            </div>
-            <p class="ayuda-campo">PNG, JPG o WEBP, máximo 512 KB. Los usuarios de la empresa lo verán en lugar del logo de GestLab.</p>
+            <fieldset class="grupo-campos">
+                <legend>Logo <span class="cantidad">(opcional)</span></legend>
+                <p class="ayuda-campo">Los usuarios de la empresa lo verán en lugar del logo de GestLab. PNG, JPG o WEBP, máximo 512 KB.</p>
+                <div class="campo-logo">
+                    <img class="vista-previa-logo" alt="Vista previa del logo" hidden>
+                    <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Archivo del logo">
+                </div>
+            </fieldset>
 
             <p class="mensaje-formulario" role="alert" hidden></p>
             <div class="dialogo-acciones">
@@ -81,7 +91,9 @@
     </dialog>
 
     <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
+    <script src="/static/js/componentes.js"></script>
     <script src="/static/superadmin/empresas.js"></script>
 </body>
 </html>

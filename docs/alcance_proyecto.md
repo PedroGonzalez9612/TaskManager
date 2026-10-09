@@ -51,10 +51,11 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Conversión y organización de requerimientos en actividades de trabajo.
 - Creación y asignación de actividades a uno o varios operarios.
 - Definición de información clara para cada actividad.
-- Clasificación de actividades por tipo o categoría.
+- Clasificación de actividades por categoría. Las categorías son fijas en esta versión: Producción, Mantenimiento, Calidad, Limpieza y Logística.
+- Cada actividad recibe un código consecutivo por empresa (por ejemplo, `OT-0042`) y registra la ubicación donde se realiza (línea, máquina o área).
 - Definición de prioridad de las actividades en cuatro niveles: Baja, Media, Alta y Urgente. El nivel Urgente indica que la actividad debe interrumpir la tarea que el operario tenga en curso.
 - Definición de tiempo estimado de ejecución. El tiempo estimado corresponde a la actividad completa: si la actividad tiene varios operarios, no se reparte entre ellos (cada uno la suma completa a su carga).
-- Definición de una fecha programada de ejecución para cada actividad.
+- Definición de una fecha programada de ejecución para cada actividad y, de forma opcional, una hora programada. La fecha determina la jornada a la que pertenece la actividad; la hora solo sirve para ubicarla en el horario y no cambia el cálculo de la carga.
 - Consulta del estado y asignación de las actividades.
 - Posibilidad de que un operario registre una actividad solicitada por otra área y la socialice con su administrador.
 - Gestión de la ejecución de actividades, incluyendo inicio, pausa, reanudación y finalización.
@@ -78,7 +79,7 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Visualización de la ocupación actual.
 - Proyección de la ocupación futura a partir de las actividades programadas.
 - Identificación de posibles situaciones de sobrecarga.
-- Capacidad de cada operario por jornada, calculada a partir de su turno: duración del turno menos el tiempo de descanso.
+- Capacidad de cada operario por jornada, calculada a partir de su turno: duración del turno menos el tiempo de descanso. Mientras no existan los turnos (criterio 7 del MVP), se usa una capacidad provisional de 7 horas para todos los operarios.
 - Cálculo de la carga por jornada: suma de los tiempos estimados de las actividades asignadas al operario y programadas para esa jornada.
 - Alerta en pantalla al momento de asignar una actividad, cuando la carga del operario para la jornada programada de esa actividad supere el 100% de su capacidad.
 - Análisis de la distribución de actividades por categoría.
@@ -153,17 +154,29 @@ Cada rol ingresa por la misma pantalla de inicio de sesión y es llevado a su pr
 | Rol | Dispositivo principal | Opciones del menú |
 |---|---|---|
 | Superadmin | Computador | Empresas (lista, registro, detalle con usuarios, edición de datos, límites y logo) |
-| Administrador | Computador (también usable en celular) | Inicio (tablero del día) · Requerimientos y actividades · Usuarios / Operarios · Turnos y asistencia · Indicadores |
-| Operario | Celular | Mis actividades (lista priorizada → detalle → ejecución), marca de entrada y salida |
+| Administrador | Computador (también usable en celular) | **Equipo** (el día de cada operario en columnas, con su carga) · **Actividades** (requerimientos y sus actividades) · **Usuarios**. Pendientes: Turnos y asistencia · Indicadores |
+| Operario | Celular | **Hoy** (actividad en curso, carga del día y agenda) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios). Pendiente: marca de entrada y salida |
 
-Las opciones del menú se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
+Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
+
+**Varias vistas de la misma información.** Las actividades se pueden ver de tres maneras, y cada una responde una pregunta distinta: como **agenda** (qué sigue), como **horario** (cuándo y cuánto ocupa) y como **resumen** (cuánto trabajo hay). El detalle de una actividad se abre en una ventana sobre la vista en la que se esté, sin cambiar de pantalla.
 
 **Decisiones de diseño comunes a todas las vistas:**
-- **Marco común:** menú lateral con las opciones del rol y, al pie, el nombre del usuario, su rol y "Cerrar sesión". En celular el menú se oculta detrás de un botón "Menú".
+- **Marco común:** barra superior con la marca, las vistas del rol como pestañas y, a la derecha, el avatar del usuario con su nombre, su rol y el botón de cerrar sesión. En celular las vistas pasan a una barra fija en la parte inferior, al alcance del pulgar. Reemplaza el menú lateral de la primera versión.
 - **Primero la información:** cada pantalla muestra primero su lista o tabla. Crear o editar es una acción secundaria: un botón ("+ Nueva empresa", "+ Nuevo usuario") abre el formulario en una ventana (diálogo). Al guardar, la ventana se cierra y aparece una confirmación breve.
 - **Estados vacíos y límites explicados:** cuando no hay datos, la pantalla explica qué hacer y ofrece el botón para hacerlo. Cuando una acción no está disponible (por ejemplo, se alcanzó el límite de usuarios), el botón se desactiva y un aviso explica por qué.
 - **Paleta sobria con significado:** fondos casi neutros, un color principal para las acciones y un acento de marca usado solo en elementos de identidad. Los colores fuertes se reservan para lo que tiene significado (prioridades, estados, avisos) y siempre van acompañados de ícono y texto. El sistema de color completo se define en la Sección 6.3.
-- **Tipografía legible:** Lexend para leer y Atkinson Hyperlegible Mono para códigos, tiempos y cifras, con base de 18 px y tamaños en rem. El sistema tipográfico completo se define en la Sección 6.4.
+- **Tipografía legible:** Lexend para todo lo que se lee, incluidas las cifras (con números de ancho fijo), y Atkinson Hyperlegible Mono solo para códigos y para el cronómetro, con base de 18 px y tamaños en rem. El sistema tipográfico completo se define en la Sección 6.4.
+
+**Sistema de composición** (para que la interfaz transmita calma y orden; aplica a todas las pantallas):
+- **Una sola escala de espacios:** todo relleno y toda separación sale de siete pasos (4, 8, 12, 16, 24, 32 y 48 px sobre la base de 16 px; en la interfaz se expresan en rem). No se usan valores sueltos.
+- **Una sola columna alineada:** la barra superior y el contenido comparten el mismo borde izquierdo y derecho. El ancho de la columna depende de lo que se muestra (angosto para leer una lista, medio para fichas y listados, amplio para horarios), nunca del ancho de la pantalla.
+- **Dos pesos de letra:** 600 para lo que identifica (título de la pantalla, nombre de la empresa o de la persona, acción) y 400 para todo lo demás. Los encabezados de tabla y las etiquetas de dato van en 400 y en el color de texto secundario.
+- **Una familia de letra por fila:** las cifras usan la misma fuente del texto; la fuente monoespaciada se reserva para códigos.
+- **Bordes suaves y sin sombras:** los paneles se separan del fondo por el contraste de color y un borde tenue. Los controles (campos y botones secundarios) llevan un borde más marcado, con contraste de al menos 3:1.
+- **Filas de la misma altura:** en una lista, todas las filas miden lo mismo, tengan o no logo, límite o datos opcionales.
+- **Un solo botón principal por pantalla;** las demás acciones son secundarias.
+- **El color solo donde significa algo:** el estado normal no lleva color. Una advertencia se dice con un ícono y una frase, sin franjas de color que ocupen todo el ancho.
 
 **Relación con los principios de usabilidad (6.1) y las heurísticas de Nielsen:**
 - Pocas opciones de menú por rol (Ley de Hick) y patrón de menú lateral más tabla, habitual en sistemas administrativos (Ley de Jakob).
@@ -173,9 +186,9 @@ Las opciones del menú se habilitan a medida que se construye cada pantalla; nun
 - Mensajes de error en lenguaje claro dentro del mismo formulario (Nielsen 9: ayudar a reconocer y corregir errores).
 
 **Leyes de Gestalt aplicadas** (requerimiento 2 de la Fase 2; se listan solo las que ya se evidencian en las pantallas construidas):
-- **Proximidad:** cada etiqueta va pegada a su campo y separada del siguiente; los dos límites de usuarios forman un grupo bajo un mismo título; "Cancelar" y la acción principal van juntos al pie del diálogo; el nombre del usuario, su rol y "Cerrar sesión" forman un bloque al pie del menú. Resuelve la duda de qué dato pertenece a qué control.
+- **Proximidad:** cada etiqueta va pegada a su campo y separada del siguiente; los dos límites de usuarios forman un grupo bajo un mismo título; "Cancelar" y la acción principal van juntos al pie del diálogo; el avatar, el nombre del usuario, su rol y el botón de cerrar sesión forman un bloque en la barra superior; en el horario, cada operario tiene su columna y sus actividades quedan dentro de ella. Resuelve la duda de qué dato pertenece a qué control.
 - **Semejanza:** todos los botones de acción principal comparten relleno y forma, los secundarios comparten borde, las etiquetas de rol y de prioridad comparten la forma de píldora y todos los enlaces comparten color. El usuario aprende un elemento una vez y lo reconoce en las demás pantallas.
-- **Continuidad:** las tablas alinean cada dato en su columna para recorrerlo de arriba abajo; los formularios tienen una sola columna que termina en el botón de acción; las migas de pan ("Empresas / Metalicas SAS") muestran el camino recorrido.
+- **Continuidad:** el horario ordena las actividades de arriba abajo siguiendo las horas del día; las tablas alinean cada dato en su columna para recorrerlo de arriba abajo; los formularios tienen una sola columna que termina en el botón de acción; las migas de pan ("Empresas / Metalicas SAS") muestran el camino recorrido.
 - **Figura y fondo:** los paneles blancos se separan del fondo tintado; al abrir un diálogo o el menú en celular, el resto de la pantalla se oscurece para que solo quede en primer plano lo que se está atendiendo.
 - **Cierre:** todavía no se aplica en las pantallas construidas; se evaluará en la pantalla de ejecución del Operario (por ejemplo, el avance de la jornada).
 
@@ -220,8 +233,8 @@ Esta subsección define la propuesta cromática del producto, exigida en la Fase
 | Normal: prioridad Baja, actividad pendiente, fuera de turno | `#6B7478` | `#ECEFEF` | `#4E5B60` | • / ○ | ISA-101 (lo normal en gris) | 6,1:1 |
 
 **Asignación por elemento de la interfaz:**
-- **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco), Alta (naranja con texto blanco), Media (ámbar con texto oscuro, ver regla 7), Baja (gris). La intensidad del color crece con la urgencia y la etiqueta siempre muestra el nombre del nivel.
-- **Estados de actividad:** Pendiente (gris), En curso (principal aqua), Pausada (ámbar), Finalizada (verde).
+- **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco), Alta (fondo naranja suave con su texto oscuro), Media (fondo ámbar suave con su texto oscuro), Baja (texto gris, sin fondo). Solo lo urgente usa un bloque lleno. La intensidad del color crece con la urgencia y la etiqueta siempre muestra el nombre del nivel.
+- **Estados de actividad:** Sin asignar y Por iniciar (texto gris con su ícono, sin fondo, porque son lo normal), En curso (fondo principal suave), Pausada (ámbar suave), Finalizada (verde suave).
 - **Jornada:** En turno (verde con punto ●), Fuera de turno (gris con texto que lo indica).
 - **Errores:** el error de formulario y la prioridad Urgente comparten el rojo porque significan lo mismo, "algo requiere tu atención", y se diferencian por la forma: el error de formulario es un borde rojo en el campo con el mensaje debajo; la alerta de Urgente pendiente es un bloque rojo lleno con ícono ⚠ y texto.
 - **Información:** avisos que no exigen acción (por ejemplo, la hora de fin de turno), siempre como fondo suave con el ícono "i", nunca como botón lleno, para no confundirse con una acción.
@@ -235,10 +248,31 @@ Esta subsección define la propuesta cromática del producto, exigida en la Fase
 6. Todos los colores se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`) para garantizar la consistencia entre pantallas.
 7. El **ámbar base** (`#E3A32B`) es un color claro y tiene dos restricciones: sobre blanco solo alcanza 2,2:1, así que nunca se usa como borde, ícono o texto sobre superficies claras (para eso se usa su texto oscuro `#6B4A0E`, 8,0:1 sobre blanco); y como relleno lleva siempre texto principal oscuro `#1F2A2E` (6,7:1), nunca blanco. Los demás colores base admiten texto blanco como relleno (rojo 6,7:1; naranja 5,2:1; verde 5,1:1; gris 4,8:1).
 
+**Precisiones de la implementación** (valores que el sistema necesitaba y que las tablas anteriores no definían):
+- **Bordes:** el borde de paneles y tablas es decorativo y usa un tinte claro del fondo (`#D3DEDD`). El borde de los controles (campos de formulario y botones secundarios) debe distinguirse como componente, así que usa el gris base `#6B7478` (4,8:1 sobre blanco).
+- **Texto sobre el coral de marca:** la inicial del logo y del avatar se escribe con el texto principal `#1F2A2E` (5,4:1). El coral sigue sin usarse como color de texto.
+- **Ícono de "En curso":** ▶, sobre el fondo principal suave con texto `#0F5563`.
+- **Borde lateral de la tarjeta de actividad:** toma el color base de la prioridad, salvo en Media, donde usa el ámbar oscuro `#6B4A0E` por la regla 7.
+- **Etiquetas de rol** (Administrador, Operario): van en gris neutro, porque el rol no es un estado ni una prioridad y no debe tomar un color con significado.
+
 **Conflictos identificados y cómo se resuelven:**
 - **Coral de marca (9°) frente a rojo de Urgente (4°) y naranja de Alta (25°):** son tonos cálidos cercanos. Se separan por luminosidad (el coral es claro y rosado, el rojo y el naranja son oscuros), por uso (el coral nunca aparece en estados) y porque las prioridades siempre llevan su texto.
 - **Aqua principal (190°) frente a azul de información (217°) y verde de finalizada (116°):** se separan por tono, por forma de uso (el principal es relleno de botón; información y finalizada son fondos suaves) y por el ícono que acompaña a cada estado.
 - **Ámbar compartido** entre advertencia, prioridad Media, pausada y cambio de prioridad: comparten el significado de "precaución, atención no urgente"; el ícono y el texto indican de cuál se trata.
+
+**Paleta de categorías (solo para el horario).** Los bloques del horario pueden colorearse de dos maneras, a elección del usuario: por **prioridad** (los colores de estado de esta sección; es el modo por defecto) o por **categoría**. La paleta de categorías es un conjunto aparte, de tonos que no coinciden con ningún color de estado, y se usa únicamente en los bloques del horario y en el ícono de la etiqueta de categoría:
+
+| Categoría | Color | Fondo del bloque | Ícono |
+|---|---|---|---|
+| Producción | `#5B4B9A` | `#E8E3F4` | Fábrica |
+| Mantenimiento | `#7A5038` | `#EFE4DB` | Llave |
+| Calidad | `#A33D72` | `#F6E1EC` | Lista de verificación |
+| Limpieza | `#5C6B24` | `#E9EDD3` | Destellos |
+| Logística | `#3D5A6C` | `#DFE8EC` | Camión |
+
+El texto de los bloques es siempre el texto principal `#1F2A2E` (al menos 11,7:1 sobre cada fondo) y cada color supera 5,8:1 sobre blanco. Las reglas 1 y 2 se mantienen: la categoría siempre lleva ícono y nombre, la prioridad sigue visible por su ícono dentro del bloque, y una actividad Urgente conserva un borde rojo también en el modo categoría.
+
+**Íconos.** Los íconos de prioridad, estado, categoría y navegación son de la colección Lucide (trazo uniforme, licencia ISC) y reemplazan los símbolos de texto de la tabla de estados: Urgente (triángulo de alerta), Alta (flecha hacia arriba), Media (círculo de alerta), Baja (guion), En curso (reproducir), Finalizada (visto bueno), Pendiente (círculo).
 
 **Relación con la marca blanca (Sección 4):** cuando una empresa carga su logo, este reemplaza la marca GestLab, pero el sistema de color no cambia. Los colores de estado deben significar lo mismo en todas las empresas para no perder la consistencia ni la accesibilidad.
 
@@ -260,9 +294,9 @@ Esta subsección define el sistema tipográfico del producto como parte de la id
 | Fuente | Función | Motivo |
 |---|---|---|
 | **Lexend** | Todo lo que se *lee*: títulos, textos, botones, etiquetas, tablas y menús | Fuente sin serifas diseñada para facilitar la fluidez de lectura; formas redondeadas que dan una apariencia amable y moderna para un público amplio, sin perder seriedad |
-| **Atkinson Hyperlegible Mono** | Todo lo que se *identifica carácter por carácter*: cronómetro, códigos de actividad, referencias de equipos y cifras | Diseñada por el Braille Institute para mejorar la legibilidad en personas con baja visión, con formas que diferencian cada carácter (la `l` con cola, el `1` con gancho, el `0` con barra). Al ser monoespaciada, todos los dígitos ocupan el mismo ancho y el cronómetro no "salta" mientras corre |
+| **Atkinson Hyperlegible Mono** | Solo lo que se *identifica carácter por carácter*: el cronómetro, los códigos de actividad y el NIT | Diseñada por el Braille Institute para mejorar la legibilidad en personas con baja visión, con formas que diferencian cada carácter (la `l` con cola, el `1` con gancho, el `0` con barra). Al ser monoespaciada, todos los dígitos ocupan el mismo ancho y el cronómetro no "salta" mientras corre |
 
-**Conflicto identificado y cómo se resuelve:** en Lexend, la `I` mayúscula y la `l` minúscula se parecen. Por eso el contenido donde una confusión de caracteres causaría un error real (códigos, referencias, tiempos y cifras) se escribe siempre en Atkinson Hyperlegible Mono.
+**Conflicto identificado y cómo se resuelve:** en Lexend, la `I` mayúscula y la `l` minúscula se parecen. Por eso el contenido donde una confusión de caracteres causaría un error real (códigos de actividad y NIT) se escribe en Atkinson Hyperlegible Mono. Las cifras (cantidades, porcentajes, duraciones y horas) no tienen ese riesgo y se quedan en Lexend, con números de ancho fijo (`tabular-nums`) para que se alineen en columnas.
 
 **Escala tipográfica:** proporción 1,2 (tercera menor) sobre una base de 18 px. Cada nivel es 1,2 veces el anterior (15 → 18 → 22 → 26 → 31 px), lo que da una jerarquía clara sin saltos bruscos en pantallas pequeñas.
 
@@ -277,7 +311,8 @@ Esta subsección define el sistema tipográfico del producto como parte de la id
 | Etiquetas y estados | Lexend | 15 px (0,833 rem) | 600 | 1,2 | Etiquetas de prioridad, estado y jornada (siempre con ícono y color, ver 6.3) |
 | Botones | Lexend | 18 px (1 rem) | 600 | — | Todos los botones |
 | Cronómetro | Atkinson Hyperlegible Mono | 44 px (2,444 rem) | 600 | — | Tiempo en ejecución de la actividad |
-| Códigos y cifras | Atkinson Hyperlegible Mono | 16 px (0,889 rem) | 500 | — | Códigos de actividad, referencias de equipos, porcentajes y horas en tablas |
+| Códigos | Atkinson Hyperlegible Mono | 92 % del texto que acompaña | 500 | — | Códigos de actividad y NIT |
+| Cifras | Lexend, números de ancho fijo | El del texto que acompaña | 400 | — | Cantidades, porcentajes, duraciones y horas |
 
 Los valores en rem se calculan sobre una base de 18 px. Esa base se declara en la raíz del documento como `112,5 %` del tamaño del navegador (16 px por defecto), no como 18 px fijos, para que respete el tamaño de letra que cada usuario tenga configurado en su dispositivo.
 
@@ -286,7 +321,7 @@ Los valores en rem se calculan sobre una base de 18 px. Esa base se declara en l
 2. **Ningún texto por debajo de 15 px;** ese mínimo se reserva para etiquetas cortas en negrita. El texto corrido nunca baja de 16 px.
 3. **Tamaños en rem, no en px fijos:** si el usuario agranda la letra en su dispositivo, toda la interfaz crece en proporción sin romperse (WCAG 2.1, criterio 1.4.4, cambio de tamaño del texto hasta 200 %).
 4. **El diseño soporta ajustes de espaciado del usuario** (interlineado 1,5, espacio entre párrafos de 2 veces el tamaño, espaciado entre letras de 0,12 y entre palabras de 0,16) sin perder contenido (WCAG 2.1, criterio 1.4.12).
-5. **Códigos, referencias, tiempos y cifras siempre en Atkinson Hyperlegible Mono.**
+5. **Los códigos van en Atkinson Hyperlegible Mono; las cifras, en Lexend con números de ancho fijo.** Nunca se mezclan dos familias de letra para escribir un mismo dato.
 6. **Texto alineado a la izquierda,** sin justificar, para mantener espacios regulares entre palabras.
 7. Todos los estilos se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`), igual que el color.
 
@@ -305,6 +340,7 @@ Los valores en rem se calculan sobre una base de 18 px. Esa base se declara en l
 - Flask como framework para el desarrollo de la aplicación web.
 - MongoDB como sistema de persistencia de datos.
 - HTML, CSS y JavaScript para la interfaz web. La interfaz funciona como un cliente en el navegador que consume la API REST del sistema (intercambio de datos en JSON). Los archivos de la interfaz los entrega el mismo servidor Flask (mismo origen), y la autenticación se maneja con la sesión de Flask mediante cookie.
+- Bibliotecas de interfaz, todas de licencia libre y copiadas dentro del proyecto (carpeta `app/static/vendor/`) para no depender de internet ni de un proceso de compilación: **EventCalendar** (MIT) para el horario por día, por semana, en lista y por operario; **Chart.js** (MIT) para las gráficas; e íconos de **Lucide** (ISC).
 - Programación Orientada a Objetos como paradigma principal para el diseño de la lógica del sistema.
 - Arquitectura en capas, manteniendo separadas la presentación, la lógica de negocio y la persistencia.
 - Git y un repositorio remoto para el control de versiones y trabajo colaborativo.
@@ -473,6 +509,15 @@ La definición detallada de clases, relaciones y patrones de diseño se realizar
 | 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico (sin cambio de texto) | Se actualiza Playwright de 1.47.0 a 1.63.0 en `requirements-dev.txt` | La versión 1.47.0 depende de una versión de `greenlet` sin instalador para Python 3.13, que es la que usa el equipo fuera de Docker |
 | 2026-10-03 | Diseño de Interfaces | Sección 7 — Alcance técnico | Las capturas pueden tomarse con un navegador Chromium ya instalado (`CAPTURAS_NAVEGADOR`), además del Chromium de Playwright | Evitar la descarga del navegador de Playwright cuando el equipo ya tiene Brave, Edge o Chrome |
 | 2026-10-03 | Ambas | Sección 11 — Trabajo colaborativo | Se listan los archivos que no se versionan (`.env`, configuración personal de Claude Code, capturas, entornos virtuales). `CLAUDE.md` y `.claude/agents/` se mantienen en el repositorio | Se probó dejarlos fuera de Git, pero un cambio de rama los borró del computador y dejaban de compartirse entre los integrantes; se decidió conservarlos versionados |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.3 | Se agrega el bloque "Precisiones de la implementación": colores de borde, texto sobre el coral, ícono de "En curso", borde lateral de la tarjeta en prioridad Media y etiquetas de rol en gris | Al aplicar las Secciones 6.3 y 6.4 a `estilos.css` aparecieron valores que las tablas no definían; se documentan para que el código no tenga colores sin respaldo en el alcance |
+| 2026-10-07 | POO | Sección 5.1 | Se agregan a la actividad el código consecutivo por empresa, la ubicación, la hora programada opcional y la lista fija de cinco categorías | Necesarios para construir la creación de actividades y las vistas de horario. La hora es opcional y no altera el cálculo de la carga, que sigue siendo por jornada |
+| 2026-10-07 | POO | Sección 5.2 | Capacidad provisional de 7 horas por jornada mientras no existan los turnos | La alerta de sobrecarga y las vistas de carga se construyeron antes que los turnos; se evita bloquearlas con un valor provisional y documentado |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.2 | Se reemplaza el menú lateral por una barra superior con pestañas (barra inferior en celular), se definen las vistas reales de cada rol (Equipo, Actividades y Usuarios; Hoy, Semana y Resumen) y el principio de "varias vistas de la misma información" | La estructura anterior (menú lateral, tablas y tarjetas) se veía genérica y sin identidad propia. El equipo tomó como referencia aplicaciones de agenda con vistas de lista, horario y resumen |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.3 | Se agrega la paleta de categorías (solo para los bloques del horario, como modo alterno al color por prioridad) y se adoptan los íconos de Lucide en lugar de símbolos de texto | El horario por bloques se lee mejor con color; se resolvió con una paleta aparte y un modo elegible para no romper la regla de que cada color de estado tiene un solo significado |
+| 2026-10-07 | Ambas | Sección 7 — Alcance técnico | Se incorporan EventCalendar, Chart.js y Lucide, copiados dentro del proyecto | Se descartó FullCalendar (las vistas por recurso son de pago), ApexCharts (licencia con restricción por ingresos) y los marcos Bootstrap, Material y Tailwind (traen un aspecto propio o exigen compilación) |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.2 | Se agrega el "Sistema de composición": escala única de espacios, columna alineada con la barra superior, dos pesos de letra, bordes suaves, filas de igual altura, un botón principal por pantalla y color solo donde significa algo. Primera aplicación: pantallas del Superadmin | La interfaz usaba los colores y las fuentes definidos, pero se veía desordenada e improvisada: la barra y el contenido no estaban alineados, casi todo iba en negrita y los espacios no seguían una regla |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.4 (regla 5 y tabla) y 6.2 | La fuente monoespaciada se limita a códigos y cronómetro; las cifras pasan a Lexend con números de ancho fijo | En las tablas, la fuente monoespaciada tan espaciada cortaba la lectura (tres tipos de letra en una misma fila). El riesgo de confundir caracteres solo existe en los códigos |
+| 2026-10-07 | Diseño de Interfaces | Sección 6.3 — Asignación por elemento | Las etiquetas de prioridad Alta y Media pasan de bloque lleno a fondo suave; Baja y los estados normales (Sin asignar, Por iniciar) quedan como texto gris con ícono, sin fondo. Solo Urgente conserva el bloque lleno | En una lista de muchas actividades, tantos bloques de color lleno competían entre sí y restaban calma. Se aplica la regla 3: el color intenso se reserva para lo que exige atención inmediata |
 
 ### Texto original de las secciones modificadas (para referencia)
 

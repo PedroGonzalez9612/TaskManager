@@ -1,36 +1,134 @@
 /* Estilos de GestLab.
-   Paleta sobria: fondos neutros y un solo color de acento. Los colores fuertes se reservan
-   para lo que tiene significado (prioridades, avisos) y siempre van acompañados de texto. */
+   Los colores y la tipografía son los de las Secciones 6.3 y 6.4 de docs/alcance_proyecto.md.
+   Todos se definen una sola vez, como variables en :root; si un valor cambia, se cambia primero
+   en el alcance y después aquí. */
+
+/* ================= Fuentes (incluidas en el proyecto, sin depender de internet) ================= */
+
+@font-face {
+    font-family: "Lexend";
+    src: url("/static/fuentes/lexend-400.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Lexend";
+    src: url("/static/fuentes/lexend-600.woff2") format("woff2");
+    font-weight: 600;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono";
+    src: url("/static/fuentes/atkinson-hyperlegible-mono-500.woff2") format("woff2");
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Atkinson Hyperlegible Mono";
+    src: url("/static/fuentes/atkinson-hyperlegible-mono-600.woff2") format("woff2");
+    font-weight: 600;
+    font-display: swap;
+}
 
 :root {
-    --fondo: #f5f6f8;
-    --superficie: #ffffff;
-    --borde: #e3e6eb;
-    --texto: #18212f;
-    --texto-suave: #5b6676;
+    /* ---- Color: base e identidad (6.3) ---- */
+    --fondo: #EEF5F4;
+    --superficie: #FFFFFF;
+    --principal: #16697A;
+    --principal-hover: #0F5563;
+    --principal-suave: #E0EFF0;
+    --marca: #E9806E;               /* Coral: solo identidad (logo, avatar). Nunca texto ni estados. */
+    --texto: #1F2A2E;
+    --texto-secundario: #4E5B60;
 
-    --acento: #0f766e;
-    --acento-hover: #0b5f58;
-    --acento-suave: #e6f4f2;
+    /* ---- Color: estados (6.3). Base para rellenos, suave para fondos, texto para escribir encima ---- */
+    --error: #A8322A;               /* Error y prioridad Urgente */
+    --error-suave: #FBE9E7;
+    --error-texto: #8A2620;
+    --alta: #B34F0B;                /* Prioridad Alta */
+    --alta-suave: #FDEBDD;
+    --alta-texto: #8A3D08;
+    --advertencia: #E3A32B;         /* Ámbar. Regla 7: solo como relleno y con texto oscuro. */
+    --advertencia-suave: #FBF1D9;
+    --advertencia-texto: #6B4A0E;
+    --exito: #3E7B3A;               /* Confirmación, finalizada, en turno */
+    --exito-suave: #E6F0E2;
+    --exito-texto: #2F5F2C;
+    --info: #2F5DA8;                /* Información: nunca en texto pequeño ni como relleno de botón */
+    --info-suave: #E6EDF8;
+    --info-texto: #24498A;
+    --neutro: #6B7478;              /* Lo normal va en gris: prioridad Baja, pendiente, fuera de turno */
+    --neutro-suave: #ECEFEF;
+    --neutro-texto: #4E5B60;
 
-    --error: #b42318;
-    --error-suave: #fdecea;
-    --exito: #166534;
-    --exito-suave: #e7f6ec;
+    /* Bordes: el de los paneles es decorativo; el de los controles debe verse (3:1 sobre blanco). */
+    --borde: #DCE5E4;
+    --borde-control: #869295;        /* 3,1:1 sobre blanco: se distingue sin pesar */
 
-    /* Prioridades: fondo suave + texto oscuro, legibles y distinguibles también por su texto. */
-    --urgente: #9b1c1c;
-    --urgente-suave: #fde8e8;
-    --alta: #9a3412;
-    --alta-suave: #fdeee3;
-    --media: #854d0e;
-    --media-suave: #fdf6d8;
-    --baja: #4b5563;
-    --baja-suave: #eef0f3;
+    /* ---- Tipografía (6.4). Los rem se calculan sobre la base de 18 px declarada en html ---- */
+    --fuente-texto: "Lexend", system-ui, sans-serif;
+    --fuente-cifras: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+    --peso-normal: 400;
+    --peso-fuerte: 600;
+    --peso-cifras: 500;
 
-    --radio: 10px;
-    --sombra: 0 1px 2px rgba(16, 24, 40, 0.06);
-    --ancho-menu: 240px;
+    --tamano-h1: 1.444rem;          /* 26 px en celular; 31 px en escritorio (ver media query) */
+    --tamano-h2: 1.222rem;          /* 22 px */
+    --tamano-h3: 1rem;              /* 18 px */
+    --tamano-texto: 1rem;           /* 18 px */
+    --tamano-secundario: 0.889rem;  /* 16 px */
+    --tamano-etiqueta: 0.833rem;    /* 15 px: el mínimo, solo para etiquetas cortas en negrita */
+    --tamano-cronometro: 2.444rem;  /* 44 px */
+
+    --interlineado-h1: 1.25;
+    --interlineado-h2: 1.3;
+    --interlineado-h3: 1.35;
+    --interlineado-texto: 1.5;
+    --interlineado-secundario: 1.45;
+    --interlineado-etiqueta: 1.2;
+
+    /* ---- Categorías de actividad: solo para los bloques del horario y el ícono de su etiqueta ---- */
+    --cat-produccion: #5B4B9A;
+    --cat-produccion-suave: #E8E3F4;
+    --cat-mantenimiento: #7A5038;
+    --cat-mantenimiento-suave: #EFE4DB;
+    --cat-calidad: #A33D72;
+    --cat-calidad-suave: #F6E1EC;
+    --cat-limpieza: #5C6B24;
+    --cat-limpieza-suave: #E9EDD3;
+    --cat-logistica: #3D5A6C;
+    --cat-logistica-suave: #DFE8EC;
+
+    /* ---- Íconos de los mensajes (Lucide), como máscara para que tomen el color del texto ---- */
+    --icono-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+    --icono-aviso: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E");
+
+    /* ---- Espacios: una sola escala. Todo relleno y toda separación sale de estos seis pasos ---- */
+    --e1: 0.25rem;
+    --e2: 0.5rem;
+    --e3: 0.75rem;
+    --e4: 1rem;
+    --e5: 1.5rem;
+    --e6: 2rem;
+    --e7: 3rem;
+
+    /* ---- Columna de contenido: la barra superior y la página comparten ancho y márgenes ---- */
+    --ancho-contenido: 76rem;
+    --margen: var(--e6);
+
+    /* ---- Forma ---- */
+    --radio: 0.75rem;
+    --radio-control: 0.5rem;
+    --sombra: none;
+    --alto-control: 2.75rem;        /* Al menos 44 px: fácil de tocar en celular (Ley de Fitts) */
+}
+
+/* 112,5 % del tamaño que el usuario tenga en su navegador (18 px si no lo ha cambiado). */
+html {
+    font-size: 112.5%;
 }
 
 * {
@@ -39,11 +137,28 @@
 
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    font-size: 15px;
-    line-height: 1.45;
+    font-family: var(--fuente-texto);
+    font-size: var(--tamano-texto);
+    font-weight: var(--peso-normal);
+    line-height: var(--interlineado-texto);
+    text-align: left;
     color: var(--texto);
     background: var(--fondo);
+}
+
+/* Lo oculto se queda oculto, aunque otra regla le ponga display (por ejemplo, un aviso en flex). */
+[hidden] {
+    display: none !important;
+}
+
+/* Texto solo para lectores de pantalla (por ejemplo, la etiqueta de un buscador con ícono). */
+.solo-lectores {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 /* Mientras se comprueba la sesión no se muestra nada, para que no "parpadee" una pantalla ajena. */
@@ -51,60 +166,99 @@ body.cargando {
     visibility: hidden;
 }
 
-h1, h2, h3 {
-    line-height: 1.25;
+h1, h2, h3, strong, th, legend {
+    font-weight: var(--peso-fuerte);
+}
+
+h1 {
+    font-size: var(--tamano-h1);
+    line-height: var(--interlineado-h1);
+}
+
+h2 {
+    font-size: var(--tamano-h2);
+    line-height: var(--interlineado-h2);
+}
+
+h3 {
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
 }
 
 a {
-    color: var(--acento);
+    color: var(--principal);
 }
 
 :focus-visible {
-    outline: 3px solid var(--acento);
+    outline: 3px solid var(--principal);
     outline-offset: 2px;
 }
 
-/* ================= Marco general: menú lateral + contenido ================= */
+/* Cifras (cantidades, porcentajes, tiempos): la fuente de texto con números de ancho fijo,
+   para que se alineen en columnas sin cambiar de letra a mitad de una fila. */
+.cifra {
+    font-variant-numeric: tabular-nums;
+}
 
-.menu-lateral {
-    position: fixed;
-    inset: 0 auto 0 0;
-    width: var(--ancho-menu);
-    display: flex;
-    flex-direction: column;
-    background: var(--superficie);
-    border-right: 1px solid var(--borde);
+/* Códigos que se leen carácter por carácter (NIT, orden de trabajo): fuente monoespaciada. */
+.codigo {
+    font-family: var(--fuente-cifras);
+    font-size: 0.92em;
+    font-weight: var(--peso-cifras);
+    letter-spacing: -0.01em;
+}
+
+/* ================= Marco general: barra superior + vistas ================= */
+
+.barra-superior {
+    position: sticky;
+    top: 0;
     z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: var(--e5);
+    min-height: 3.75rem;
+    /* Mismo borde izquierdo y derecho que la columna de contenido de la página. */
+    padding-inline: max(var(--margen), calc((100% - var(--ancho-contenido)) / 2 + var(--margen)));
+    background: var(--superficie);
+    border-bottom: 1px solid var(--borde);
 }
 
 .marca {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 20px;
-    font-weight: 800;
-    font-size: 1.1rem;
+    gap: 0.6rem;
+    min-width: 0;
+    font-weight: var(--peso-fuerte);
     color: var(--texto);
     text-decoration: none;
 }
 
-.marca-icono {
+/* Identidad: el coral de marca solo aparece aquí, en el avatar y en la barra de la jornada. */
+.marca-icono,
+.avatar {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    background: var(--acento);
-    color: #ffffff;
-    font-size: 0.95rem;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    background: var(--marca);
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
+    font-size: var(--tamano-secundario);
+}
+
+.avatar {
+    border-radius: 50%;
 }
 
 /* Logo de la empresa (marca blanca): se ajusta sin deformarse. */
 .marca-logo {
-    max-width: 44px;
-    max-height: 36px;
+    max-width: 2.6rem;
+    max-height: 2.1rem;
     object-fit: contain;
-    border-radius: 6px;
+    border-radius: 0.35rem;
 }
 
 .marca-nombre {
@@ -113,106 +267,158 @@ a {
     white-space: nowrap;
 }
 
-.menu-opciones {
-    list-style: none;
-    margin: 0;
-    padding: 8px 12px;
-    flex: 1;
+/* Íconos de Lucide: toman el color y el tamaño del texto que acompañan. */
+.icono {
+    width: 1.15em;
+    height: 1.15em;
+    flex-shrink: 0;
 }
 
-.menu-opciones a {
+/* Vistas del rol: pestañas arriba en computador, barra fija abajo en celular. */
+.navegacion {
+    display: flex;
+    flex: 1;
+    align-self: stretch;
+    gap: 0.2rem;
+}
+
+.navegacion a {
     display: flex;
     align-items: center;
-    gap: 10px;
-    min-height: 42px;
-    padding: 0 12px;
-    border-radius: 8px;
-    color: var(--texto-suave);
-    font-weight: 600;
+    gap: 0.45rem;
+    padding: 0 0.9rem;
+    border-block: 3px solid transparent;
+    color: var(--texto-secundario);
+    font-weight: var(--peso-fuerte);
     text-decoration: none;
 }
 
-.menu-opciones a:hover {
+.navegacion a:hover {
     background: var(--fondo);
     color: var(--texto);
 }
 
-.menu-opciones a[aria-current="page"] {
-    background: var(--acento-suave);
-    color: var(--acento);
+.navegacion a[aria-current="page"] {
+    border-bottom-color: var(--principal);
+    color: var(--principal-hover);
 }
 
-.menu-opciones svg {
-    width: 18px;
-    height: 18px;
-    flex-shrink: 0;
+.navegacion .icono {
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
-.menu-usuario {
-    padding: 16px 20px;
-    border-top: 1px solid var(--borde);
+.usuario {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
-.menu-usuario strong {
+.usuario-textos strong {
     display: block;
-    overflow-wrap: anywhere;
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-etiqueta);
 }
 
-.menu-usuario span {
+.usuario-rol {
     display: block;
-    margin-bottom: 10px;
-    color: var(--texto-suave);
-    font-size: 0.85rem;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+    line-height: var(--interlineado-etiqueta);
 }
 
-.barra-movil {
-    display: none;
+.boton-icono {
+    display: grid;
+    place-items: center;
+    width: var(--alto-control);
+    height: var(--alto-control);
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--texto-secundario);
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.boton-icono:hover {
+    background: var(--fondo);
+    color: var(--texto);
 }
 
 .principal {
-    margin-left: var(--ancho-menu);
-    padding: 32px;
-    max-width: calc(1100px + var(--ancho-menu));
+    max-width: var(--ancho-contenido);
+    margin: 0 auto;
+    padding: var(--e6) var(--margen) var(--e7);
 }
 
-/* En celular el menú lateral se oculta y se abre con el botón "Menú". */
-@media (max-width: 800px) {
-    .barra-movil {
-        position: sticky;
-        top: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 16px;
-        background: var(--superficie);
-        border-bottom: 1px solid var(--borde);
-        z-index: 10;
+/* Ancho de la columna según lo que muestra la página. Va en <body> para que la barra superior
+   se alinee con el mismo ancho. */
+body.ancho-medio {
+    --ancho-contenido: 60rem;
+}
+
+body.ancho-angosto {
+    --ancho-contenido: 46rem;
+}
+
+@media (max-width: 50em) {
+    :root {
+        --margen: var(--e4);
     }
 
-    .barra-movil .marca {
-        padding: 0;
+    .barra-superior {
+        gap: var(--e3);
+        min-height: 3.25rem;
     }
 
-    .menu-lateral {
-        transform: translateX(-100%);
-        transition: transform 0.2s ease;
-        box-shadow: 0 0 40px rgba(16, 24, 40, 0.2);
+    .marca {
+        flex: 1;
     }
 
-    body.menu-abierto .menu-lateral {
-        transform: translateX(0);
+    .usuario-textos {
+        display: none;
     }
 
-    .fondo-menu {
+    .navegacion {
         position: fixed;
-        inset: 0;
-        background: rgba(16, 24, 40, 0.35);
-        z-index: 15;
+        inset: auto 0 0 0;
+        z-index: 20;
+        flex: none;
+        gap: 0;
+        height: 3.8rem;
+        padding-bottom: env(safe-area-inset-bottom);
+        background: var(--superficie);
+        border-top: 1px solid var(--borde);
+    }
+
+    .navegacion a {
+        flex: 1;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.1rem;
+        padding: 0;
+        font-size: var(--tamano-etiqueta);
+    }
+
+    .navegacion a[aria-current="page"] {
+        border-bottom-color: transparent;
+        border-top-color: var(--principal);
+    }
+
+    /* Con una sola vista no hace falta la barra inferior. */
+    .navegacion:has(a:only-child) {
+        display: none;
     }
 
     .principal {
-        margin-left: 0;
-        padding: 20px 16px;
+        padding: var(--e5) var(--margen) 5.5rem;
+    }
+}
+
+/* El título de pantalla crece en escritorio: 31 px (6.4). */
+@media (min-width: 50.01em) {
+    :root {
+        --tamano-h1: 1.722rem;
     }
 }
 
@@ -221,26 +427,25 @@ a {
 .encabezado-pagina {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: var(--e4);
+    margin-bottom: var(--e5);
 }
 
 .encabezado-pagina h1 {
     margin: 0;
-    font-size: 1.6rem;
 }
 
 .encabezado-pagina p {
-    margin: 4px 0 0;
-    color: var(--texto-suave);
+    margin: var(--e1) 0 0;
+    color: var(--texto-secundario);
 }
 
 .migas {
-    margin-bottom: 6px;
-    font-size: 0.9rem;
-    color: var(--texto-suave);
+    margin-bottom: var(--e4);
+    font-size: var(--tamano-secundario);
+    color: var(--texto-secundario);
 }
 
 .migas a {
@@ -254,28 +459,31 @@ a {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    min-height: 44px;
-    padding: 0 18px;
-    border-radius: 8px;
-    font: inherit;
-    font-weight: 700;
+    gap: 0.35rem;
+    min-height: var(--alto-control);
+    padding: 0 var(--e5);
+    border-radius: var(--radio-control);
+    font-family: inherit;
+    font-size: var(--tamano-texto);
+    font-weight: var(--peso-fuerte);
     cursor: pointer;
     text-decoration: none;
 }
 
+/* Acción principal: el único relleno con el color principal. */
 .boton {
-    border: 1px solid var(--acento);
-    background: var(--acento);
-    color: #ffffff;
+    border: 1px solid var(--principal);
+    background: var(--principal);
+    color: #FFFFFF;
 }
 
 .boton:hover {
-    background: var(--acento-hover);
+    border-color: var(--principal-hover);
+    background: var(--principal-hover);
 }
 
 .boton-secundario {
-    border: 1px solid var(--borde);
+    border: 1px solid var(--borde-control);
     background: var(--superficie);
     color: var(--texto);
 }
@@ -286,7 +494,7 @@ a {
 
 .boton:disabled,
 .boton-secundario:disabled {
-    opacity: 0.6;
+    opacity: 0.55;
     cursor: not-allowed;
 }
 
@@ -295,9 +503,8 @@ a {
 }
 
 .boton-pequeno {
-    min-height: 36px;
-    padding: 0 12px;
-    font-size: 0.9rem;
+    min-height: 2.4rem;
+    padding: 0 0.8rem;
 }
 
 /* ================= Paneles, tablas y listas ================= */
@@ -306,45 +513,43 @@ a {
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
-    box-shadow: var(--sombra);
-    margin-bottom: 24px;
+    margin-bottom: var(--e5);
 }
 
 .panel-encabezado {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 16px 20px;
+    gap: var(--e3);
+    padding: var(--e4) var(--e5);
     border-bottom: 1px solid var(--borde);
 }
 
 .panel-encabezado h2 {
     margin: 0;
-    font-size: 1.05rem;
 }
 
 .panel-cuerpo {
-    padding: 20px;
+    padding: var(--e5);
 }
 
 .datos-empresa {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.9rem;
     margin: 0;
 }
 
 .datos-empresa dt {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--texto-suave);
+    font-size: var(--tamano-etiqueta);
+    font-weight: var(--peso-fuerte);
+    line-height: var(--interlineado-etiqueta);
+    color: var(--texto-secundario);
 }
 
 .datos-empresa dd {
-    margin: 2px 0 0;
+    margin: 0.15rem 0 0;
     overflow-wrap: anywhere;
 }
 
@@ -356,23 +561,23 @@ a {
 .tabla {
     width: 100%;
     border-collapse: collapse;
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
 }
 
 .tabla th {
-    padding: 10px 20px;
+    padding: var(--e3) var(--e5);
     text-align: left;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--texto-suave);
-    background: #fafbfc;
+    font-size: var(--tamano-etiqueta);
+    font-weight: var(--peso-normal);
+    line-height: var(--interlineado-etiqueta);
+    color: var(--texto-secundario);
     border-bottom: 1px solid var(--borde);
     white-space: nowrap;
 }
 
 .tabla td {
-    padding: 14px 20px;
+    padding: var(--e4) var(--e5);
     border-bottom: 1px solid var(--borde);
 }
 
@@ -381,11 +586,11 @@ a {
 }
 
 .tabla tbody tr:hover {
-    background: #fafbfc;
+    background: var(--fondo);
 }
 
 .tabla .enlace-fila {
-    font-weight: 700;
+    font-weight: var(--peso-fuerte);
     text-decoration: none;
 }
 
@@ -394,111 +599,266 @@ a {
 }
 
 .texto-suave {
-    color: var(--texto-suave);
+    color: var(--texto-secundario);
+}
+
+.dato-fuerte {
+    font-weight: var(--peso-fuerte);
 }
 
 /* Estado vacío: explica qué pasa y qué hacer (Nielsen: ayuda y documentación). */
 .estado-vacio {
-    padding: 40px 20px;
+    padding: var(--e7) var(--e5);
     text-align: center;
-    color: var(--texto-suave);
+    color: var(--texto-secundario);
 }
 
 .estado-vacio strong {
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 0.2rem;
     color: var(--texto);
-    font-size: 1.05rem;
 }
 
 .estado-vacio .boton {
-    margin-top: 16px;
+    margin-top: 0.9rem;
 }
 
 .mensaje-error {
-    color: var(--error);
+    color: var(--error-texto);
 }
 
 .celda-empresa {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.6rem;
 }
 
 .logo-miniatura {
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
     object-fit: contain;
     border: 1px solid var(--borde);
-    border-radius: 6px;
-    background: #ffffff;
+    border-radius: 0.35rem;
+    background: var(--superficie);
 }
 
 .titulo-con-logo {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 0.8rem;
 }
 
 .logo-encabezado {
-    width: 56px;
-    height: 56px;
+    width: 3.2rem;
+    height: 3.2rem;
     object-fit: contain;
     border: 1px solid var(--borde);
-    border-radius: 10px;
-    background: #ffffff;
+    border-radius: var(--radio);
+    background: var(--superficie);
 }
 
 .cupos {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 24px;
-    padding: 14px 20px;
+    gap: 0.4rem 1.4rem;
+    padding: 0.8rem 1.1rem;
     border-bottom: 1px solid var(--borde);
-    color: var(--texto-suave);
+    font-size: var(--tamano-secundario);
+    color: var(--texto-secundario);
 }
 
 .cupos strong {
     color: var(--texto);
 }
 
+/* ================= Avisos y etiquetas: siempre color + ícono + texto (6.3, regla 1) ================= */
+
+.aviso {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.8rem 0 0;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
+.aviso .icono {
+    margin-top: 0.15em;
+}
+
+.aviso > span {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+/* Advertencia que no es urgente: fondo ámbar suave con su texto oscuro. */
+.aviso-advertencia,
+.aviso-cupo {
+    background: var(--advertencia-suave);
+    color: var(--advertencia-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.aviso-bloque {
+    margin: 0 0 1rem;
+}
+
 .aviso-cupo {
     margin: 0;
-    padding: 12px 20px;
+    padding: 0.7rem 1.1rem;
     border-bottom: 1px solid var(--borde);
-    background: var(--media-suave);
-    color: var(--media);
-    font-weight: 600;
+    font-size: var(--tamano-secundario);
 }
 
-/* ================= Etiquetas ================= */
+.aviso-cupo::before {
+    -webkit-mask-image: var(--icono-aviso);
+    mask-image: var(--icono-aviso);
+}
 
 .etiqueta {
-    display: inline-block;
-    padding: 2px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.6rem;
     border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 700;
+    font-size: var(--tamano-etiqueta);
+    font-weight: var(--peso-fuerte);
+    line-height: var(--interlineado-etiqueta);
     white-space: nowrap;
-    background: var(--baja-suave);
-    color: var(--baja);
+    background: var(--neutro-suave);
+    color: var(--neutro-texto);
 }
 
-.etiqueta-rol-administrador { background: var(--acento-suave); color: var(--acento); }
-.etiqueta-rol-operario      { background: var(--baja-suave);   color: var(--baja); }
+.senales {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+/* Prioridades: la intensidad del color crece con la urgencia. */
+.etiqueta.prioridad-urgente { background: var(--error);             color: #FFFFFF; }
+.etiqueta.prioridad-alta    { background: var(--alta-suave);        color: var(--alta-texto); }
+.etiqueta.prioridad-media   { background: var(--advertencia-suave); color: var(--advertencia-texto); }
+.etiqueta.prioridad-baja    { background: transparent; padding-inline: 0; color: var(--texto-secundario); font-weight: var(--peso-normal); }
+
+/* Estados de actividad: sin asignar y por iniciar (gris), en curso (principal), finalizada (verde). */
+/* "Sin asignar" y "Por iniciar" son lo normal: texto gris con su ícono, sin fondo. */
+.etiqueta.estado-pendiente,
+.etiqueta.estado-asignada {
+    background: transparent;
+    padding-inline: 0;
+    color: var(--texto-secundario);
+    font-weight: var(--peso-normal);
+}
+
+.etiqueta.estado-en_ejecucion { background: var(--principal-suave); color: var(--principal-hover); }
+.etiqueta.estado-pausada      { background: var(--advertencia-suave); color: var(--advertencia-texto); }
+.etiqueta.estado-completada   { background: var(--exito-suave); color: var(--exito-texto); }
+
+/* Categorías: etiqueta blanca con borde; el color de la categoría va solo en su ícono. */
+.etiqueta.categoria {
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    color: var(--texto);
+}
+
+.categoria-produccion .icono    { color: var(--cat-produccion); }
+.categoria-mantenimiento .icono { color: var(--cat-mantenimiento); }
+.categoria-calidad .icono       { color: var(--cat-calidad); }
+.categoria-limpieza .icono      { color: var(--cat-limpieza); }
+.categoria-logistica .icono     { color: var(--cat-logistica); }
+
+.carga {
+    color: var(--texto-secundario);
+}
+
+.carga-sobrecarga {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--error-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+/* Control de dos opciones (por ejemplo, el color de los bloques del horario). */
+.conmutador {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.conmutador-titulo {
+    margin-right: 0.3rem;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.conmutador button {
+    min-height: 2.4rem;
+    padding: 0 0.8rem;
+    border: 1px solid var(--borde-control);
+    border-radius: 0.5rem;
+    background: var(--superficie);
+    color: var(--texto);
+    font-family: inherit;
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.conmutador button[aria-pressed="true"] {
+    border-color: var(--principal);
+    background: var(--principal-suave);
+    color: var(--principal-hover);
+}
+
+.grupo-controles,
+.grupo-botones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Pie del horario: la leyenda de colores y el control que los cambia van juntos. */
+.pie-horario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
+.leyenda {
+    margin: 0;
+}
+
+.leyenda-grupo {
+    display: none;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+html[data-color-bloques="prioridad"] .leyenda-prioridad,
+html[data-color-bloques="categoria"] .leyenda-categoria {
+    display: flex;
+}
 
 /* ================= Formularios y diálogos ================= */
 
 .formulario {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--e2);
 }
 
 .formulario label {
-    margin-top: 10px;
-    font-weight: 600;
-    font-size: 0.9rem;
+    margin-top: var(--e4);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
 }
 
 .formulario label:first-of-type {
@@ -507,129 +867,175 @@ a {
 
 .ayuda-campo {
     margin: 0;
-    font-size: 0.82rem;
-    color: var(--texto-suave);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+    color: var(--texto-secundario);
 }
 
-/* Controles de al menos 44px de alto: fáciles de tocar en celular (Ley de Fitts). */
 .formulario input,
 .formulario select {
-    min-height: 44px;
-    padding: 8px 12px;
-    border: 1px solid #cfd4dc;
-    border-radius: 8px;
-    font: inherit;
-    background: #ffffff;
+    min-height: var(--alto-control);
+    padding: var(--e2) var(--e3);
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    font-family: inherit;
+    font-size: var(--tamano-texto);
+    color: var(--texto);
+    background: var(--superficie);
+}
+
+.formulario input[type="number"] {
+    font-variant-numeric: tabular-nums;
 }
 
 .formulario input:focus,
 .formulario select:focus {
-    outline: 3px solid var(--acento-suave);
-    border-color: var(--acento);
+    outline: 3px solid var(--principal-suave);
+    border-color: var(--principal);
+}
+
+/* Error de formulario: borde rojo en el campo y el mensaje debajo (6.3). */
+.formulario input:user-invalid,
+.formulario select:user-invalid {
+    border: 2px solid var(--error);
 }
 
 .grupo-campos {
-    margin: 14px 0 0;
-    padding: 0;
+    margin: var(--e5) 0 0;
+    padding: var(--e4) 0 0;
     border: none;
+    border-top: 1px solid var(--borde);
 }
 
 .grupo-campos legend {
+    float: left;
+    width: 100%;
+    margin-bottom: var(--e1);
     padding: 0;
-    font-weight: 700;
-    font-size: 0.9rem;
+    font-weight: var(--peso-fuerte);
 }
 
 .fila-campos {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0 var(--e4);
+    clear: both;
 }
 
 .campo {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: var(--e2);
+    min-width: 0;
 }
 
 .campo label {
-    margin-top: 8px;
-    font-weight: 500;
-    color: var(--texto-suave);
+    margin-top: var(--e4);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
 }
 
 .campo-logo {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.7rem;
+}
+
+/* El campo de archivo toma el aspecto de un botón secundario. */
+.formulario input[type="file"] {
+    min-height: 0;
+    padding: 0;
+    border: none;
+    color: var(--texto-secundario);
+}
+
+.formulario input[type="file"]::file-selector-button {
+    min-height: var(--alto-control);
+    margin-right: var(--e3);
+    padding: 0 var(--e4);
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    background: var(--superficie);
+    color: var(--texto);
+    font-family: inherit;
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.campo-logo {
+    margin-top: var(--e3);
 }
 
 .campo-logo input[type="file"] {
     flex: 1;
     min-width: 0;
-    padding: 10px;
+    font-size: var(--tamano-secundario);
 }
 
 .vista-previa-logo {
-    width: 56px;
-    height: 56px;
+    width: 3.2rem;
+    height: 3.2rem;
     flex-shrink: 0;
     object-fit: contain;
     border: 1px solid var(--borde);
-    border-radius: 8px;
-    background: #ffffff;
-}
-
-/* Diálogos largos: se desplaza el contenido, no se corta en pantallas bajas. */
-.dialogo[open] {
-    max-height: calc(100vh - 32px);
-    overflow-y: auto;
+    border-radius: 0.5rem;
+    background: var(--superficie);
 }
 
 .mensaje-formulario {
-    margin: 12px 0 0;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: var(--error);
+    margin: 0.7rem 0 0;
+    padding: 0.6rem 0.7rem;
+    border-radius: 0.5rem;
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+    color: var(--error-texto);
     background: var(--error-suave);
 }
 
 .dialogo {
-    width: min(480px, calc(100vw - 32px));
+    width: min(30rem, calc(100vw - 1.8rem));
     padding: 0;
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(16, 24, 40, 0.25);
+    border-radius: 0.7rem;
+    box-shadow: 0 20px 50px rgba(31, 42, 46, 0.3);
     color: var(--texto);
 }
 
+/* Diálogos largos: se desplaza el contenido, no se corta en pantallas bajas. */
+.dialogo[open] {
+    max-height: calc(100vh - 1.8rem);
+    overflow-y: auto;
+}
+
+/* Figura y fondo: lo que está detrás del diálogo se oscurece. */
 .dialogo::backdrop {
-    background: rgba(16, 24, 40, 0.45);
+    background: rgba(31, 42, 46, 0.5);
 }
 
 .dialogo-encabezado {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 18px 20px;
+    padding: var(--e4) var(--e4) var(--e4) var(--e5);
     border-bottom: 1px solid var(--borde);
 }
 
 .dialogo-encabezado h2 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
 }
 
 .boton-cerrar {
-    width: 36px;
-    height: 36px;
+    width: var(--alto-control);
+    height: var(--alto-control);
     border: none;
-    border-radius: 8px;
+    border-radius: 0.5rem;
     background: transparent;
-    font-size: 1.4rem;
+    font-size: var(--tamano-h1);
     line-height: 1;
-    color: var(--texto-suave);
+    color: var(--texto-secundario);
     cursor: pointer;
 }
 
@@ -638,29 +1044,163 @@ a {
 }
 
 .dialogo .formulario {
-    padding: 20px;
+    padding: var(--e5);
 }
 
 .dialogo-acciones {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 18px;
+    gap: var(--e3);
+    margin-top: var(--e5);
 }
 
 /* Confirmación breve después de guardar (visibilidad del estado del sistema). */
 .aviso-flotante {
     position: fixed;
-    right: 24px;
-    bottom: 24px;
-    max-width: calc(100vw - 48px);
-    padding: 12px 16px;
-    border-radius: 8px;
+    right: 1.3rem;
+    bottom: 1.3rem;
+    max-width: calc(100vw - 2.6rem);
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.5rem;
     background: var(--exito);
-    color: #ffffff;
-    font-weight: 600;
-    box-shadow: 0 10px 30px rgba(16, 24, 40, 0.2);
+    color: #FFFFFF;
+    font-weight: var(--peso-fuerte);
+    box-shadow: 0 10px 30px rgba(31, 42, 46, 0.25);
     z-index: 50;
+}
+
+/* ---------- Formulario de actividad y detalle ---------- */
+
+.campo-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+    margin-top: 0.6rem;
+}
+
+.formulario .campo-formulario label {
+    margin-top: 0;
+}
+
+.formulario > .campo-formulario:first-child {
+    margin-top: 0;
+}
+
+.formulario textarea {
+    padding: var(--e2) var(--e3);
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    font-family: inherit;
+    font-size: var(--tamano-texto);
+    line-height: var(--interlineado-texto);
+    color: var(--texto);
+    background: var(--superficie);
+    resize: vertical;
+}
+
+.formulario textarea:focus {
+    outline: 3px solid var(--principal-suave);
+    border-color: var(--principal);
+}
+
+.lista-opciones {
+    display: flex;
+    flex-direction: column;
+    max-height: 12rem;
+    margin-top: 0.35rem;
+    padding: 0.3rem;
+    border: 1px solid var(--borde);
+    border-radius: 0.5rem;
+    overflow-y: auto;
+}
+
+.formulario .opcion {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: var(--alto-control);
+    margin: 0;
+    padding: 0 0.5rem;
+    border-radius: 0.4rem;
+    font-weight: var(--peso-normal);
+    cursor: pointer;
+}
+
+.opcion:hover {
+    background: var(--fondo);
+}
+
+.formulario .opcion input {
+    width: 1.2rem;
+    height: 1.2rem;
+    min-height: 0;
+    accent-color: var(--principal);
+}
+
+.opcion-texto {
+    flex: 1;
+}
+
+.boton-peligro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--alto-control);
+    margin-right: auto;
+    padding: 0 1rem;
+    border: 1px solid var(--error);
+    border-radius: 0.5rem;
+    background: var(--superficie);
+    color: var(--error-texto);
+    font-family: inherit;
+    font-size: var(--tamano-texto);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.boton-peligro:hover {
+    background: var(--error-suave);
+}
+
+.dialogo-ancho {
+    width: min(40rem, calc(100vw - 1.8rem));
+}
+
+.detalle-cuerpo {
+    padding: 1.1rem;
+}
+
+.detalle-titulo {
+    margin: 0.7rem 0;
+}
+
+.detalle-datos {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.4rem 1.1rem;
+    margin: 0;
+    padding: 0.8rem 0;
+    border-block: 1px solid var(--borde);
+}
+
+.detalle-datos dt {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.detalle-datos dd {
+    margin: 0;
+}
+
+.detalle-subtitulo {
+    margin: 0.9rem 0 0.2rem;
+}
+
+.detalle-descripcion {
+    margin: 0;
+    white-space: pre-line;
 }
 
 /* ================= Login ================= */
@@ -670,95 +1210,1076 @@ a {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: 0.9rem;
 }
 
 .tarjeta-login {
     width: 100%;
-    max-width: 400px;
-    padding: 32px 28px;
+    max-width: 24rem;
+    padding: 1.8rem 1.5rem;
     background: var(--superficie);
     border: 1px solid var(--borde);
-    border-radius: 14px;
+    border-radius: 0.8rem;
     box-shadow: var(--sombra);
 }
 
 .tarjeta-login .marca {
-    padding: 0 0 20px;
+    padding: 0 0 1.1rem;
 }
 
 .tarjeta-login h1 {
     margin: 0;
-    font-size: 1.4rem;
+    font-size: 1.444rem;
 }
 
 .tarjeta-login .subtitulo {
-    margin: 4px 0 24px;
-    color: var(--texto-suave);
+    margin: 0.2rem 0 1.3rem;
+    color: var(--texto-secundario);
 }
 
 .tarjeta-login .boton {
-    margin-top: 18px;
+    margin-top: 1rem;
 }
 
-/* ================= Operario: actividades ================= */
+/* ================= Operario: vista "Hoy" ================= */
 
-.aviso-urgente {
-    margin-bottom: 16px;
-    padding: 12px 16px;
-    border: 1px solid var(--urgente);
+.resumen-dia {
+    margin-bottom: 0.9rem;
+    padding: 0.9rem 1.1rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
     border-radius: var(--radio);
-    background: var(--urgente-suave);
-    color: var(--urgente);
-    font-weight: 700;
 }
 
-.lista-actividades {
+.resumen-texto,
+.resumen-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.3rem 0.8rem;
+    margin: 0;
+}
+
+.resumen-pie {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+/* Avance de la jornada: uno de los tres lugares donde aparece el coral de marca. */
+.barra-jornada {
+    height: 0.6rem;
+    margin: 0.6rem 0 0.4rem;
+    border-radius: 999px;
+    background: var(--neutro-suave);
+    overflow: hidden;
+}
+
+.barra-jornada-relleno {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--marca);
+}
+
+/* Urgente pendiente: bloque rojo lleno con ícono y texto. Exige atención inmediata. */
+.aviso-urgente {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radio);
+    background: var(--error);
+    color: #FFFFFF;
+    font-weight: var(--peso-fuerte);
+}
+
+.aviso-urgente-texto {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Actividad en curso: el bloque que domina la pantalla. */
+.ahora {
+    margin-bottom: 0.9rem;
+    padding: 1.1rem;
+    border-radius: var(--radio);
+    background: var(--principal);
+    color: #FFFFFF;
+}
+
+.ahora-cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: var(--tamano-secundario);
+}
+
+.ahora-rotulo {
+    font-weight: var(--peso-fuerte);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ahora-titulo {
+    margin: 0.4rem 0 0;
+}
+
+.cronometro {
+    margin: 0.2rem 0 0.4rem;
+    font-family: var(--fuente-cifras);
+    font-size: var(--tamano-cronometro);
+    font-weight: var(--peso-fuerte);
+    line-height: 1.1;
+}
+
+.ahora-lugar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: var(--tamano-secundario);
+}
+
+.ahora-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.9rem;
+}
+
+.ahora-acciones .boton,
+.boton-claro {
+    border: 1px solid #FFFFFF;
+    background: #FFFFFF;
+    color: var(--texto);
+}
+
+.boton-claro {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.4rem;
+    padding: 0 0.9rem;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: var(--tamano-texto);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.ahora-acciones .boton:hover,
+.boton-claro:hover {
+    background: var(--principal-suave);
+}
+
+.ahora-acciones .boton-secundario {
+    border-color: #FFFFFF;
+    background: transparent;
+    color: #FFFFFF;
+}
+
+.ahora-acciones .boton-secundario:hover {
+    background: var(--principal-hover);
+}
+
+.ahora-acciones button {
+    flex: 1;
+}
+
+.grupo-dia-titulo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.3rem 0 0.5rem;
+}
+
+.grupo-dia-cantidad {
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    background: var(--neutro-suave);
+    color: var(--neutro-texto);
+    font-size: var(--tamano-etiqueta);
+}
+
+.lista-agenda {
+    display: flex;
+    flex-direction: column;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    overflow: hidden;
+}
+
+/* Toda la fila es tocable: objetivo grande (Ley de Fitts). */
+.fila-actividad {
+    display: grid;
+    grid-template-columns: 4.2rem 1fr auto;
+    align-items: center;
+    gap: 0.3rem 0.8rem;
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 0.7rem;
+    border: none;
+    border-bottom: 1px solid var(--borde);
+    border-left: 0.3rem solid var(--neutro);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fila-actividad:last-child {
+    border-bottom: none;
+}
+
+.fila-actividad:hover {
+    background: var(--fondo);
+}
+
+/* Borde según la prioridad. En Media va el ámbar oscuro: el ámbar base no alcanza
+   contraste como borde sobre blanco (6.3, regla 7). */
+.fila-actividad.prioridad-urgente { border-left-color: var(--error); }
+.fila-actividad.prioridad-alta    { border-left-color: var(--alta); }
+.fila-actividad.prioridad-media   { border-left-color: var(--advertencia-texto); }
+.fila-actividad.prioridad-baja    { border-left-color: var(--neutro); }
+
+.fila-hora {
+    color: var(--texto-secundario);
+}
+
+.fila-titulo,
+.fila-detalle {
+    display: block;
+}
+
+.fila-detalle {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
+.fila-actividad .senales {
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.fila-finalizada .fila-titulo {
+    color: var(--texto-secundario);
+    text-decoration: line-through;
+}
+
+@media (max-width: 50em) {
+    .fila-actividad {
+        grid-template-columns: 3.6rem 1fr;
+    }
+
+    .fila-actividad .senales {
+        grid-column: 2;
+        flex-direction: row;
+    }
+}
+
+/* ================= Horario (EventCalendar) ================= */
+
+.panel-calendario {
+    padding: var(--e4) var(--e5) var(--e5);
+}
+
+@media (max-width: 50em) {
+    .panel-calendario {
+        padding: var(--e3);
+    }
+}
+
+/* El calendario toma los colores y las fuentes del sistema. */
+.ec {
+    --ec-bg-color: var(--superficie);
+    --ec-text-color: var(--texto);
+    --ec-border-color: var(--borde);
+    --ec-today-bg-color: color-mix(in srgb, var(--principal-suave) 25%, white);
+    --ec-now-indicator-color: var(--marca);
+    --ec-button-bg-color: var(--superficie);
+    --ec-button-border-color: var(--borde-control);
+    --ec-button-text-color: var(--texto);
+    --ec-button-active-bg-color: var(--principal-suave);
+    --ec-button-active-border-color: var(--principal);
+    --ec-button-active-text-color: var(--principal-hover);
+    --ec-event-bg-color: var(--neutro-suave);
+    --ec-event-text-color: var(--texto);
+    font-family: var(--fuente-texto);
+    font-size: var(--tamano-secundario);
+}
+
+.ec .ec-toolbar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.ec .ec-title {
+    font-size: var(--tamano-h2);
+    font-weight: var(--peso-fuerte);
+}
+
+.ec .ec-button {
+    min-height: 2.4rem;
+    font-family: inherit;
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+.ec .ec-sidebar,
+.ec .ec-event-time {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+    font-variant-numeric: tabular-nums;
+}
+
+.ec .ec-day-head,
+.ec .ec-col-head {
+    font-weight: var(--peso-normal);
+}
+
+/* Encabezado de la columna de un operario: nombre y medidor de su carga del día. */
+.columna-operario {
+    width: 100%;
+    padding: var(--e2) var(--e3) var(--e3);
+    text-align: left;
+}
+
+.columna-nombre {
+    display: block;
+    margin-bottom: var(--e1);
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
+}
+
+/* Bloque de actividad: fondo suave, barra lateral del color y texto oscuro. */
+.ec .bloque {
+    border-left: 0.25rem solid var(--neutro);
+    border-radius: 0.35rem;
+    box-shadow: none;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* Título arriba y código debajo; lo que no quepa en el bloque se recorta, no se sale. */
+.ec .bloque .ec-event-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.bloque-titulo {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.25rem;
+    font-size: var(--tamano-etiqueta);
+    line-height: var(--interlineado-etiqueta);
+}
+
+.bloque-detalle {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--tamano-etiqueta);
+    opacity: 0.9;
+}
+
+.bloque-lugar {
+    font-family: var(--fuente-texto);
+    font-weight: var(--peso-normal);
+}
+
+/* Modo "prioridad": los colores de estado del sistema (6.3). */
+html[data-color-bloques="prioridad"] .ec .bloque-prioridad-urgente {
+    background: var(--error); color: #FFFFFF; border-left-color: var(--error-texto);
+}
+html[data-color-bloques="prioridad"] .ec .bloque-prioridad-alta {
+    background: var(--alta-suave); color: var(--alta-texto); border-left-color: var(--alta);
+}
+html[data-color-bloques="prioridad"] .ec .bloque-prioridad-media {
+    background: var(--advertencia-suave); color: var(--advertencia-texto); border-left-color: var(--advertencia-texto);
+}
+html[data-color-bloques="prioridad"] .ec .bloque-prioridad-baja {
+    background: var(--neutro-suave); color: var(--neutro-texto); border-left-color: var(--neutro);
+}
+
+/* Modo "categoría": paleta propia de categorías, solo para los bloques del horario. */
+html[data-color-bloques="categoria"] .ec .bloque-categoria-produccion {
+    background: var(--cat-produccion-suave); color: var(--texto); border-left-color: var(--cat-produccion);
+}
+html[data-color-bloques="categoria"] .ec .bloque-categoria-mantenimiento {
+    background: var(--cat-mantenimiento-suave); color: var(--texto); border-left-color: var(--cat-mantenimiento);
+}
+html[data-color-bloques="categoria"] .ec .bloque-categoria-calidad {
+    background: var(--cat-calidad-suave); color: var(--texto); border-left-color: var(--cat-calidad);
+}
+html[data-color-bloques="categoria"] .ec .bloque-categoria-limpieza {
+    background: var(--cat-limpieza-suave); color: var(--texto); border-left-color: var(--cat-limpieza);
+}
+html[data-color-bloques="categoria"] .ec .bloque-categoria-logistica {
+    background: var(--cat-logistica-suave); color: var(--texto); border-left-color: var(--cat-logistica);
+}
+
+/* En modo categoría lo urgente sigue destacando: borde rojo además de su ícono. */
+html[data-color-bloques="categoria"] .ec .bloque-prioridad-urgente {
+    box-shadow: inset 0 0 0 2px var(--error);
+}
+
+.ec .bloque-estado-en_ejecucion {
+    outline: 2px solid var(--principal);
+    outline-offset: 1px;
+}
+
+.ec .bloque-estado-completada {
+    opacity: 0.55;
+}
+
+/* ================= Resumen: indicadores y gráfica ================= */
+
+.indicadores {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.9rem;
+    margin-bottom: 1.3rem;
+}
+
+.indicador {
+    padding: 0.9rem 1.1rem;
+    background: var(--superficie);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+}
+
+.indicador p {
+    margin: 0;
+}
+
+.indicador-titulo,
+.indicador-detalle {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.indicador-valor {
+    font-size: 1.722rem;
+    font-weight: var(--peso-fuerte);
+    line-height: 1.3;
+}
+
+.grafica {
+    position: relative;
+    height: 18rem;
+}
+
+.tabla-datos {
+    margin-top: 0.8rem;
+}
+
+.tabla-datos summary {
+    color: var(--principal);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.dos-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 0 1.3rem;
+}
+
+.lista-conteos {
+    list-style: none;
+    margin: 0;
+    padding: 0.3rem 1.1rem;
+}
+
+.lista-conteos li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--borde);
+}
+
+.lista-conteos li:last-child {
+    border-bottom: none;
+}
+
+/* ================= Administrador: requerimientos y actividades ================= */
+
+.maestro-detalle {
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);    /* el 0 evita que la tabla ensanche la página */
+    align-items: start;
+    gap: 0 1.3rem;
+}
+
+@media (max-width: 62em) {
+    .maestro-detalle {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.lista-requerimientos {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.4rem;
+}
+
+.requerimiento {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    min-height: var(--alto-control);
+    padding: 0.4rem 0.7rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--texto);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.requerimiento:hover {
+    background: var(--fondo);
+}
+
+.requerimiento[aria-pressed="true"] {
+    background: var(--principal-suave);
+    color: var(--principal-hover);
+    font-weight: var(--peso-fuerte);
+}
+
+.requerimiento-cantidad {
+    color: var(--texto-secundario);
+}
+
+.tabla-clicable tbody tr {
+    cursor: pointer;
+}
+
+/* Códigos, fechas y tiempos no se parten en dos renglones. */
+.tabla td.cifra {
+    white-space: nowrap;
+}
+
+.tabla .celda-principal {
+    min-width: 14rem;
+}
+
+.panel-encabezado p {
+    margin: 0.15rem 0 0;
+    font-size: var(--tamano-secundario);
+}
+
+/* ================= Ícono de los mensajes de error y de aviso ================= */
+
+.mensaje-error::before,
+.mensaje-formulario::before,
+.aviso-cupo::before {
+    content: "";
+    display: inline-block;
+    width: 1.1em;
+    height: 1.1em;
+    margin-right: 0.4rem;
+    vertical-align: -0.18em;
+    background: currentColor;
+    -webkit-mask: var(--icono-alerta) center / contain no-repeat;
+    mask: var(--icono-alerta) center / contain no-repeat;
+}
+
+.aviso-cupo::before {
+    -webkit-mask-image: var(--icono-aviso);
+    mask-image: var(--icono-aviso);
+}
+
+/* ================= Aviso flotante ================= */
+
+.aviso-flotante {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.aviso-flotante-advertencia {
+    background: var(--advertencia);
+    color: var(--texto);
+}
+
+@media (max-width: 50em) {
+    .aviso-flotante {
+        right: 0.9rem;
+        bottom: 4.6rem;
+        max-width: calc(100vw - 1.8rem);
+    }
+}
+
+/* ================= Listas de filas (empresas, usuarios) ================= */
+
+.barra-herramientas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+    margin-bottom: var(--e4);
+}
+
+.buscador {
+    position: relative;
+    flex: 1;
+    max-width: 22rem;
+}
+
+.buscador .icono {
+    position: absolute;
+    top: 50%;
+    left: var(--e3);
+    transform: translateY(-50%);
+    color: var(--texto-secundario);
+    pointer-events: none;
+}
+
+.buscador input {
+    width: 100%;
+    min-height: var(--alto-control);
+    padding: 0 var(--e3) 0 2.5rem;
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    background: var(--superficie);
+    color: var(--texto);
+    font-family: inherit;
+    font-size: var(--tamano-texto);
+}
+
+.buscador input:focus {
+    outline: 3px solid var(--principal-suave);
+    border-color: var(--principal);
+}
+
+.lista-filas {
     list-style: none;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 680px;
 }
 
-/* Toda la tarjeta es tocable: objetivo grande (Ley de Fitts). */
-.tarjeta-actividad {
-    display: block;
-    padding: 16px;
-    background: var(--superficie);
+.lista-filas > li {
+    border-bottom: 1px solid var(--borde);
+}
+
+.lista-filas > li:last-child {
+    border-bottom: none;
+}
+
+/* Cuadro del logo. Sin logo muestra la inicial en gris: el coral queda solo para la marca. */
+.logo-cuadro {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
     border: 1px solid var(--borde);
-    border-left: 4px solid var(--baja);
-    border-radius: var(--radio);
-    box-shadow: var(--sombra);
+    border-radius: var(--radio-control);
+    background: var(--superficie);
+    color: var(--texto-secundario);
+    font-weight: var(--peso-fuerte);
+    overflow: hidden;
+}
+
+.logo-cuadro.sin-logo {
+    border-color: transparent;
+    background: var(--neutro-suave);
+}
+
+.logo-cuadro img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.logo-cuadro-grande {
+    width: 4rem;
+    height: 4rem;
+    font-size: var(--tamano-h2);
+}
+
+.avatar-neutro {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: var(--neutro-suave);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+.fila-nombre {
+    display: block;
+    font-weight: var(--peso-fuerte);
+    overflow-wrap: anywhere;
+}
+
+.fila-meta {
+    display: block;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+    overflow-wrap: anywhere;
+}
+
+/* Fila de empresa: toda la fila es un enlace. Todas miden lo mismo, tengan logo o no. */
+.fila-empresa {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr) 11rem 11rem 1.25rem;
+    align-items: center;
+    gap: var(--e5);
+    padding: var(--e4) var(--e5);
     color: inherit;
     text-decoration: none;
 }
 
-.tarjeta-actividad h2 {
-    margin: 8px 0 4px;
-    font-size: 1.05rem;
+.fila-empresa:hover {
+    background: var(--fondo);
 }
 
-.tarjeta-actividad p {
+.fila-empresa:focus-visible {
+    outline-offset: -3px;
+}
+
+.fila-empresa > .icono {
+    color: var(--texto-secundario);
+}
+
+.fila-usuario {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--e4);
+    padding: var(--e3) var(--e5);
+}
+
+.fila-usuario .rol {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+/* Medidor de cupo: cuánto se ha usado de un límite. */
+.medidor {
+    min-width: 0;
+}
+
+.medidor-texto {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--e2);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
+.medidor-texto > * {
+    white-space: nowrap;
+}
+
+.medidor-nombre {
+    color: var(--texto-secundario);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Sin límite definido no hay barra: una nota ocupa su lugar para que todas las filas midan igual. */
+.medidor-sin-limite {
+    display: block;
+    margin-top: var(--e1);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+    line-height: 0.3rem;
+}
+
+.medidor-barra {
+    height: 0.3rem;
+    margin-top: var(--e1);
+    border-radius: 999px;
+    background: var(--neutro-suave);
+    overflow: hidden;
+}
+
+.medidor-relleno {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--principal);
+}
+
+/* Cupo lleno: se dice con ícono y texto en el ámbar oscuro de advertencia; la barra no cambia. */
+.medidor-nota {
+    display: flex;
+    align-items: center;
+    gap: var(--e1);
+    margin: var(--e2) 0 0;
+    color: var(--advertencia-texto);
+    font-size: var(--tamano-etiqueta);
+}
+
+.medidor-grande .medidor-texto {
+    font-size: var(--tamano-texto);
+}
+
+.medidor-grande .medidor-barra {
+    height: 0.4rem;
+    margin-top: var(--e2);
+}
+
+.medidor-grande + .medidor-grande {
+    margin-top: var(--e5);
+}
+
+/* ================= Ficha de empresa ================= */
+
+.cabecera-ficha {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e4);
+    margin-bottom: var(--e6);
+}
+
+.cabecera-ficha-textos {
+    flex: 1;
+    min-width: 12rem;
+}
+
+.cabecera-ficha h1 {
     margin: 0;
-    color: var(--texto-suave);
-    font-size: 0.9rem;
 }
 
-.estado {
-    margin-left: 8px;
-    font-size: 0.82rem;
-    color: var(--texto-suave);
+.cabecera-ficha p {
+    margin: var(--e1) 0 0;
+    color: var(--texto-secundario);
 }
 
-.prioridad-urgente { border-left-color: var(--urgente); }
-.prioridad-alta    { border-left-color: var(--alta); }
-.prioridad-media   { border-left-color: var(--media); }
-.prioridad-baja    { border-left-color: var(--baja); }
+.rejilla-ficha {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 19rem;
+    align-items: start;
+    gap: 0 var(--e5);
+}
 
-.prioridad-urgente .etiqueta { background: var(--urgente-suave); color: var(--urgente); }
-.prioridad-alta .etiqueta    { background: var(--alta-suave);    color: var(--alta); }
-.prioridad-media .etiqueta   { background: var(--media-suave);   color: var(--media); }
-.prioridad-baja .etiqueta    { background: var(--baja-suave);    color: var(--baja); }
+.titulo-con-cantidad {
+    display: flex;
+    align-items: baseline;
+    gap: var(--e2);
+    margin: 0;
+}
+
+.cantidad {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-normal);
+}
+
+.nota-panel {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+    margin: 0;
+    padding: var(--e3) var(--e5);
+    border-bottom: 1px solid var(--borde);
+    color: var(--advertencia-texto);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
+.nota-panel .icono {
+    margin-top: 0.15em;
+}
+
+.datos-ficha {
+    margin: 0;
+}
+
+.datos-ficha dt {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.datos-ficha dd {
+    margin: 0 0 var(--e4);
+    overflow-wrap: anywhere;
+}
+
+.datos-ficha dd:last-child {
+    margin-bottom: 0;
+}
+
+.seccion-formulario {
+    margin: var(--e5) 0 0;
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+    font-size: var(--tamano-texto);
+}
+
+@media (max-width: 50em) {
+    .fila-empresa {
+        grid-template-columns: 2.75rem minmax(0, 1fr) 1.25rem;
+        gap: var(--e3) var(--e4);
+        padding: var(--e4);
+    }
+
+    .fila-empresa .medidores {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .rejilla-ficha {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* En celular el rol baja a un tercer renglón para no apretar el correo. */
+    .fila-usuario {
+        grid-template-columns: 2.5rem minmax(0, 1fr);
+        gap: 0 var(--e3);
+        padding-inline: var(--e4);
+    }
+
+    .fila-usuario .rol {
+        grid-column: 2;
+    }
+
+    .panel-encabezado,
+    .nota-panel {
+        padding-inline: var(--e4);
+    }
+
+    .panel-cuerpo {
+        padding: var(--e4);
+    }
+}
+
+/* En computador los dos medidores de la fila van uno al lado del otro. */
+.fila-empresa .medidores {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column: 3 / 5;
+    gap: var(--e5);
+}
+
+@media (max-width: 50em) {
+    .fila-empresa .medidores {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
+        gap: var(--e3);
+    }
+}
+
+/* ================= Administrador: actividades como lista ================= */
+
+/* En el panel angosto de requerimientos, el título y su acción van siempre en un renglón. */
+.maestro-detalle > .panel:first-child .panel-encabezado {
+    flex-wrap: nowrap;
+    padding-right: var(--e3);
+}
+
+.fila-actividad-admin {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6rem 9.5rem 7.5rem 6.5rem;
+    align-items: center;
+    gap: var(--e4);
+    width: 100%;
+    padding: var(--e3) var(--e5);
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Las etiquetas ocupan solo su texto, no todo el ancho de su columna. */
+.fila-actividad-admin .etiqueta {
+    justify-self: start;
+}
+
+.fila-actividad-admin:hover {
+    background: var(--fondo);
+}
+
+.fila-actividad-admin:focus-visible {
+    outline-offset: -3px;
+}
+
+.dato-doble > span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.encabezado-lista {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 6rem 9.5rem 7.5rem 6.5rem;
+    gap: var(--e4);
+    padding: var(--e3) var(--e5);
+    border-bottom: 1px solid var(--borde);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.boton-texto {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    min-height: 2.4rem;
+    padding: 0 var(--e2);
+    border: none;
+    border-radius: var(--radio-control);
+    background: transparent;
+    color: var(--principal);
+    font-family: inherit;
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.boton-texto:hover {
+    background: var(--principal-suave);
+}
+
+.boton-texto.peligro {
+    color: var(--error-texto);
+}
+
+.boton-texto.peligro:hover {
+    background: var(--error-suave);
+}
+
+@media (max-width: 62em) {
+    .encabezado-lista {
+        display: none;
+    }
+
+    .fila-actividad-admin {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--e2) var(--e4);
+        padding-inline: var(--e4);
+    }
+
+    .fila-actividad-admin > :nth-child(1) {
+        grid-column: 1 / -1;
+    }
+}

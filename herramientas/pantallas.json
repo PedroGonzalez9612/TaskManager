@@ -20,13 +20,36 @@
         },
         {
             "rol": "administrador",
+            "nombre": "equipo",
+            "ruta": "/static/admin/equipo.html",
+            "esperar": ".ec-toolbar"
+        },
+        {
+            "rol": "administrador",
+            "nombre": "actividades",
+            "ruta": "/static/admin/actividades.html"
+        },
+        {
+            "rol": "administrador",
             "nombre": "usuarios",
             "ruta": "/static/admin/usuarios.html"
         },
         {
             "rol": "operario",
-            "nombre": "mis-actividades",
+            "nombre": "hoy",
             "ruta": "/static/operario/index.html"
+        },
+        {
+            "rol": "operario",
+            "nombre": "semana",
+            "ruta": "/static/operario/semana.html",
+            "esperar": ".ec-toolbar"
+        },
+        {
+            "rol": "operario",
+            "nombre": "resumen",
+            "ruta": "/static/operario/resumen.html",
+            "esperar": "#indicadores .indicador"
         }
     ]
 }

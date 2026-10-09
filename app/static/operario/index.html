@@ -3,25 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mis actividades — GestLab</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <title>Hoy — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
-<body class="cargando">
+<body class="cargando ancho-angosto">
     <main class="principal">
         <div class="encabezado-pagina">
             <div>
-                <h1>Mis actividades</h1>
-                <p>Ordenadas de la más a la menos prioritaria.</p>
+                <h1 id="saludo">Hola</h1>
+                <p id="fecha-hoy"></p>
             </div>
         </div>
 
+        <section id="resumen-dia" class="resumen-dia" aria-live="polite" hidden></section>
         <div id="aviso-urgente" class="aviso-urgente" role="alert" hidden></div>
+        <section id="ahora" class="ahora" aria-label="Actividad en curso" hidden></section>
+
         <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando actividades…</p>
-        <ul id="lista-actividades" class="lista-actividades"></ul>
+        <div id="agenda"></div>
     </main>
 
     <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
-    <script src="/static/operario/principal.js"></script>
+    <script src="/static/js/actividades-comun.js"></script>
+    <script src="/static/operario/operario-comun.js"></script>
+    <script src="/static/operario/hoy.js"></script>
 </body>
 </html>

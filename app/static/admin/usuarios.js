@@ -2,13 +2,9 @@
 // dentro de los límites que el Superadmin definió.
 
 function pintarCupos(empresa) {
-    const actuales = empresa.usuarios_actuales;
-    document.getElementById("cupo-operarios").textContent =
-        textoCupo(actuales.OPERARIO || 0, empresa.limite_operarios);
-    document.getElementById("cupo-administradores").textContent =
-        textoCupo(actuales.ADMINISTRADOR || 0, empresa.limite_administradores);
+    document.getElementById("cupos").replaceChildren(...crearMedidoresEmpresa(empresa, true).reverse());
 
-    // Los roles sin cupo no se ofrecen en el formulario (prevención de errores, Nielsen #5).
+    // Los roles sin cupo no se ofrecen en el formulario (prevención de errores, Nielsen 5).
     const selectorRol = document.getElementById("rol");
     for (const opcion of selectorRol.options) {
         const lleno = cupoLleno(empresa, opcion.value);
@@ -24,7 +20,10 @@ function pintarCupos(empresa) {
         }
     }
 
-    document.getElementById("aviso-cupo").hidden = Boolean(disponible);
+    const aviso = document.getElementById("aviso-cupo");
+    aviso.hidden = Boolean(disponible);
+    aviso.replaceChildren(crearConIcono("span", "", "circle-alert", ""),
+        "Tu empresa alcanzó el límite de usuarios. Para crear más, pide al Superadmin que lo amplíe.");
     for (const boton of document.querySelectorAll("[data-abrir-dialogo]")) {
         boton.disabled = !disponible;
     }
@@ -32,18 +31,18 @@ function pintarCupos(empresa) {
 
 async function iniciarPantalla() {
     const usuario = await iniciarPaginaProtegida(["ADMINISTRADOR"]);
-    const tabla = document.getElementById("tabla-usuarios");
+    const lista = document.getElementById("lista-usuarios");
     const estadoVacio = document.getElementById("estado-vacio");
 
-    const cargarEmpresa = async () => {
-        const empresa = await pedirApi(`/empresas/${encodeURIComponent(usuario.empresa_id)}`);
-        document.getElementById("subtitulo").textContent = `Operarios y administradores de ${empresa.nombre}.`;
-        pintarCupos(empresa);
-    };
-
     const recargar = async () => {
-        await cargarUsuarios(usuario.empresa_id, tabla, estadoVacio);
-        await cargarEmpresa();
+        const usuarios = await cargarUsuarios(usuario.empresa_id, lista, estadoVacio);
+        const contar = (rol) => usuarios.filter((u) => u.rol === rol).length;
+        const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
+        document.getElementById("subtitulo").textContent = [
+            plural(contar("OPERARIO"), "operario", "operarios"),
+            plural(contar("ADMINISTRADOR"), "administrador", "administradores"),
+        ].join(" · ");
+        pintarCupos(await pedirApi(`/empresas/${encodeURIComponent(usuario.empresa_id)}`));
     };
     configurarCreacionUsuario(
         document.querySelectorAll("[data-abrir-dialogo]"),

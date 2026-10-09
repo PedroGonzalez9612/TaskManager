@@ -9,11 +9,11 @@ Leyenda: ✅ terminado · 🟡 parcial · ⬜ pendiente
 | # | Criterio | Estado | Observaciones |
 |---|---|---|---|
 | 1 | Empresa y usuarios (tres roles, cada uno con su interfaz) | ✅ | Además: límites de usuarios por empresa y marca blanca |
-| 2 | Requerimiento → Actividad | ⬜ | Existe API básica sin sesión; falta la interfaz del Administrador |
-| 3 | Asignación y prioridad | ⬜ | El código tiene 3 prioridades (faltan URGENTE), una sola persona por actividad, sin fecha programada ni tiempo estimado |
-| 4 | Ejecución (iniciar, pausar, reanudar, finalizar) | ⬜ | Existe iniciar/finalizar sin pausas; falta resolver a quién pertenece la ejecución |
+| 2 | Requerimiento → Actividad | ✅ | El Administrador registra requerimientos y les crea actividades |
+| 3 | Asignación y prioridad | ✅ | Uno o varios operarios, cuatro prioridades, tiempo estimado, fecha y hora programada, con alerta de sobrecarga |
+| 4 | Ejecución (iniciar, pausar, reanudar, finalizar) | 🟡 | Iniciar y finalizar funcionan, con una sola actividad en curso por operario. Faltan pausar y reanudar |
 | 5 | Registro de tiempo | ⬜ | |
-| 6 | Análisis de carga laboral | ⬜ | |
+| 6 | Análisis de carga laboral | 🟡 | Carga por jornada de cada operario y alerta al superar el 100 %. La capacidad es provisional (7 h) hasta que existan los turnos |
 | 7 | Turnos y asistencia | ⬜ | |
 | 8 | Indicadores de cumplimiento | ⬜ | |
 
@@ -58,14 +58,64 @@ Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #4).
 
 ### Pendientes conocidos de esta etapa
 
-- Las rutas de requerimientos, actividades, asignaciones, registros de tiempo y análisis **todavía no exigen sesión**. Se protegerán al construir cada una.
+- ~~Las rutas de requerimientos, actividades, asignaciones, registros de tiempo y análisis no exigían sesión.~~ Resuelto en la Etapa 2.
 - No hay pruebas automatizadas en el repositorio (las verificaciones se hicieron manualmente).
 - No existe todavía cambio de contraseña ni recuperación de contraseña.
 - Usuarios creados antes de esta etapa (con campo `email` y sin contraseña) no son compatibles: hay que borrar la base de datos de desarrollo (`docker compose down -v`).
 
+## Etapa 2 — Actividades y vistas (2026-10-07) ✅
+
+Rama: `feature/actividades-y-vistas`.
+
+### Qué se puede hacer
+
+- **Administrador, vista "Actividades":** registrar requerimientos, crearles actividades (categoría, prioridad, ubicación, fecha, hora opcional, tiempo estimado) y asignarlas a uno o varios operarios. Editar y eliminar.
+- **Administrador, vista "Equipo":** ver el día de cada operario en columnas, con su carga de la jornada. Un clic en un espacio libre abre una actividad nueva con la fecha, la hora y el operario ya puestos.
+- **Alerta de sobrecarga:** el formulario muestra la carga de cada operario antes de asignar; al guardar, avisa quién supera el 100 %, y la vista "Equipo" lo mantiene visible.
+- **Operario, vista "Hoy":** actividad en curso con cronómetro, carga del día, aviso de actividad urgente y agenda agrupada por día (con las atrasadas arriba).
+- **Operario, vista "Semana":** sus actividades en un horario por día, por semana o en lista.
+- **Operario, vista "Resumen":** actividades y tiempo programado de la semana, gráfica de carga por día y reparto por estado y por categoría.
+- **Ejecución:** el Operario inicia y finaliza sus actividades desde el detalle; la hora la pone el servidor.
+- **Color de los bloques:** por prioridad o por categoría, a elección del usuario (se recuerda en el navegador).
+
+### Reglas que aplica el servidor
+
+- Todas las rutas exigen sesión y rol. Cada consulta se limita a la empresa del usuario; el Operario solo ve y ejecuta las actividades que tiene asignadas.
+- Prioridad en cuatro niveles (Baja, Media, Alta, Urgente) con un peso numérico para ordenar.
+- Solo se asigna a usuarios con rol Operario de la misma empresa.
+- El tiempo estimado se suma completo a la carga de cada operario asignado (no se divide).
+- Un operario no puede iniciar una actividad si ya tiene otra en curso, ni reiniciar una finalizada.
+- El código de cada actividad es un consecutivo por empresa que no se repite aunque se creen dos a la vez.
+- Al eliminar un requerimiento se eliminan sus actividades, asignaciones y ejecuciones.
+
+### Cambios técnicos principales
+
+| Capa | Cambio |
+|---|---|
+| Modelos | `Prioridad` con URGENTE y propiedad `peso`. Nuevo enum `Categoria`. `Actividad` con código, empresa, categoría, ubicación, tiempo estimado, fecha y hora programadas. |
+| Repositorios | Búsqueda de actividades por empresa, fechas e identificadores. `AsignacionRepository` admite varias asignaciones por actividad. Consecutivo atómico en `EmpresaRepository`. |
+| Servicios | `ActividadService` y `RequerimientoService` reescritos con permisos por empresa. Nuevo `CargaService` (carga por jornada y sobrecargas). `EjecucionService` valida la asignación y la actividad en curso. |
+| Rutas | `/requerimientos`, `/actividades` y `/analisis/carga` protegidas con `requiere_rol`. |
+| Eliminado | Rutas y código de asignaciones sueltas, registros de tiempo manuales y análisis antiguo: no pedían sesión, mezclaban empresas y registraban horas a mano, contra lo que pide el alcance. |
+| Interfaz | Marco nuevo (barra superior con pestañas, barra inferior en celular). Piezas compartidas en `js/actividades-comun.js` y `js/formulario-actividad.js`. Bibliotecas en `app/static/vendor/`: EventCalendar, Chart.js y Lucide. |
+
+### Cómo se verificó
+
+- 36 pruebas contra la API: permisos por rol, validaciones de cada campo, URGENTE, varios operarios, consecutivos, alerta de sobrecarga, carga por jornada y reglas de ejecución. Todas con el resultado esperado.
+- Recorrido en navegador (Brave automatizado) de las siete pantallas en computador y celular, y de los flujos: crear una actividad que sobrecarga, cambiar el modo de color, editar, abrir el detalle, iniciar y finalizar. Sin errores de JavaScript.
+- Contraste de la paleta de categorías medido con `herramientas/contraste.py`.
+
+### Pendientes conocidos de esta etapa
+
+- **Pausar y reanudar** una actividad, con motivo e historial de pausas (criterio 4). Depende de la decisión abierta sobre a quién pertenece la ejecución.
+- La **capacidad de la jornada** es un valor fijo de 7 horas; pasará a calcularse desde el turno de cada operario (criterio 7).
+- Las **categorías** son una lista fija; no se administran por empresa.
+- El Operario todavía no puede **reportar una actividad de otra área**.
+- No hay pruebas automatizadas en el repositorio.
+
 ## Fase 2 de Diseño de Interfaces — Identidad visual (2026-10-02 y 2026-10-03) 🟡
 
-Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta etapa **definió** la identidad visual y las herramientas para revisarla; todavía **no cambió** cómo se ve la aplicación.
+Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esa rama **definió** la identidad visual y las herramientas para revisarla; la aplicación en pantalla se hizo después (ver "Implementación en la aplicación").
 
 ### Qué quedó definido (en el alcance)
 
@@ -86,16 +136,41 @@ Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta et
 - Los 10 contrastes declarados en la Sección 6.3 se midieron con `contraste.py` y coinciden. La medición mostró que el ámbar base no sirve sobre blanco ni con texto blanco, y se agregó la regla 7.
 - `capturas.py` generó las 10 capturas (5 pantallas × 2 tamaños) con sus variantes, usando Brave.
 
+### Implementación en la aplicación (2026-10-07)
+
+Rama: `feature/identidad-visual`.
+
+- `app/static/css/estilos.css` reescrito con los valores de las Secciones 6.3 y 6.4: todos los colores y la tipografía son variables en `:root`, y los tamaños están en rem sobre una base de 112,5 %.
+- Fuentes Lexend (400 y 600) y Atkinson Hyperlegible Mono (500 y 600) incluidas en `app/static/fuentes/` con su licencia; la aplicación no depende de internet para mostrarlas.
+- Prioridades, estados y avisos se muestran con color, ícono y texto. El ícono lo pone el CSS.
+- NIT y cupos de usuarios usan la fuente monoespaciada (clase `cifra`).
+- Avatar con la inicial del usuario en el menú; junto con el logo, es el único lugar donde aparece el coral de marca.
+- Verificación: 18 pares de color medidos con `contraste.py` sobre las variables del CSS, todos por encima del mínimo; 10 capturas revisadas en celular y escritorio, incluida la versión en grises.
+
 ### Pendientes de esta fase
 
-- **Implementar el color y la tipografía en `app/static/css/estilos.css`**: sigue con la paleta inicial (`#0f766e`) y la fuente del sistema, y la carpeta `app/static/fuentes/` aún no existe.
+- La prioridad Urgente y los estados Pausada y Finalizada ya tienen estilo, pero todavía no se pueden ver con datos reales: el backend aún no tiene la prioridad URGENTE ni las pausas (Etapa 2 en adelante).
 - Validar el diseño de las pantallas con una herramienta externa de diseño.
 - Elaborar el documento de diseño en PDF que pide el enunciado (evolución, usabilidad, Gestalt, color, conclusiones) con las capturas como evidencia.
 
-## Estado del repositorio (2026-10-03)
+## Rediseño por pantallas (en curso, 2026-10-07) 🟡
 
-- `main` contiene la Etapa 1 y la Fase 2. `develop` está atrasada respecto a `main` y debe sincronizarse (Pull Request `main` → `develop`) antes de abrir la siguiente rama.
-- `CLAUDE.md` y `.claude/agents/` se versionan en el repositorio (Sección 11 del alcance).
+Ramas: `feature/diseno-superadmin` y `feature/diseno-administrador`. La interfaz usaba los colores y fuentes definidos, pero se veía desordenada. Se definió un **sistema de composición** (alcance, Sección 6.2) y se aplica pantalla por pantalla.
+
+| Pantallas | Estado |
+|---|---|
+| Bases compartidas: escala de espacios, barra superior alineada con el contenido, cifras en la fuente del texto, formularios | ✅ |
+| Superadmin: lista de empresas, ficha de empresa y sus formularios | ✅ Aprobado por el equipo |
+| Administrador: Equipo, Actividades y Usuarios | ✅ Pendiente del visto bueno del equipo |
+| Operario: Hoy, Semana y Resumen | ⬜ Heredan las bases; falta su rediseño |
+| Inicio de sesión | ⬜ |
+
+Verificación de las pantallas del Superadmin: la marca y el título comparten el borde izquierdo, y el usuario y el contenido el derecho (medido en el navegador); todas las filas de la lista miden lo mismo; sin desbordes a 1440, 1024 y 390 px; sin errores de JavaScript.
+
+## Estado del repositorio (2026-10-07)
+
+- `main` contiene la Etapa 1 y la definición de la Fase 2. Faltan por integrar cuatro ramas, cada una incluye a la anterior: `feature/identidad-visual`, `feature/actividades-y-vistas`, `feature/diseno-superadmin` y `feature/diseno-administrador`.
+- `develop` está atrasada respecto a `main` y debe sincronizarse (Pull Request `main` → `develop`).
 
 ## Decisiones abiertas
 
@@ -104,6 +179,8 @@ Rama: `feature/interfaz-operario`, integrada a `main` (Pull Request #5). Esta et
 
 ## Próxima etapa
 
-**Cierre de la Fase 2 de Diseño de Interfaces:** aplicar las Secciones 6.3 y 6.4 a `estilos.css`, validar las pantallas y preparar el documento de diseño.
+**Cierre de la Fase 2 de Diseño de Interfaces:** documento de diseño en PDF con las capturas como evidencia.
 
-**Etapa 2 — Requerimientos y actividades (Administrador):** menú del Administrador, registro de requerimientos, conversión en actividades con prioridad de 4 niveles, tiempo estimado, fecha programada, categoría y asignación a uno o varios operarios (criterios 2 y 3).
+**Etapa 3 — Ejecución completa:** resolver a quién pertenece la ejecución, y agregar pausar y reanudar con motivo, historial de pausas y observación al finalizar (criterios 4 y 5).
+
+**Etapa 4 — Turnos y asistencia** (criterio 7), de la que depende la capacidad real de cada jornada.

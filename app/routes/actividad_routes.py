@@ -1,15 +1,16 @@
 from flask import Blueprint, jsonify, request
 
+from app.models.enums import Rol
 from app.repositories.actividad_repository import ActividadRepository
 from app.repositories.asignacion_repository import AsignacionRepository
 from app.repositories.ejecucion_repository import EjecucionRepository
-from app.repositories.registro_tiempo_repository import RegistroTiempoRepository
+from app.repositories.empresa_repository import EmpresaRepository
 from app.repositories.requerimiento_repository import RequerimientoRepository
-from app.services.actividad_service import ActividadService
-from app.services.asignacion_service import AsignacionService
-from app.services.ejecucion_service import EjecucionService
-from app.services.registro_tiempo_service import RegistroTiempoService
 from app.repositories.usuario_repository import UsuarioRepository
+from app.services.actividad_service import ActividadService
+from app.services.carga_service import CargaService
+from app.services.ejecucion_service import EjecucionService
+from app.utils.seguridad import requiere_rol, usuario_actual
 
 
 def create_blueprint(db):
@@ -17,71 +18,56 @@ def create_blueprint(db):
     actividad_repository = ActividadRepository(db)
     asignacion_repository = AsignacionRepository(db)
     ejecucion_repository = EjecucionRepository(db)
-    registro_tiempo_repository = RegistroTiempoRepository(db)
+    usuario_repository = UsuarioRepository(db)
 
-    service = ActividadService(actividad_repository, RequerimientoRepository(db))
-    asignacion_service = AsignacionService(asignacion_repository, actividad_repository, UsuarioRepository(db))
-    ejecucion_service = EjecucionService(ejecucion_repository, actividad_repository, asignacion_repository)
-    registro_tiempo_service = RegistroTiempoService(
-        registro_tiempo_repository, actividad_repository, UsuarioRepository(db)
+    carga_service = CargaService(actividad_repository, asignacion_repository, usuario_repository)
+    service = ActividadService(
+        actividad_repository, RequerimientoRepository(db), asignacion_repository,
+        usuario_repository, ejecucion_repository, EmpresaRepository(db), carga_service,
     )
+    ejecucion_service = EjecucionService(ejecucion_repository, actividad_repository, asignacion_repository)
 
     @bp.post("")
+    @requiere_rol(Rol.ADMINISTRADOR)
     def crear_actividad():
-        actividad = service.crear_actividad(request.get_json(force=True, silent=True) or {})
-        return jsonify(actividad), 201
+        data = request.get_json(force=True, silent=True) or {}
+        return jsonify(service.crear_actividad(data, usuario_actual())), 201
 
     @bp.get("")
+    @requiere_rol(Rol.ADMINISTRADOR, Rol.OPERARIO)
     def listar_actividades():
-        requerimiento_id = request.args.get("requerimiento_id")
-        return jsonify(service.listar_actividades(requerimiento_id)), 200
+        filtros = {
+            "requerimiento_id": request.args.get("requerimiento_id"),
+            "fecha_desde": request.args.get("fecha_desde"),
+            "fecha_hasta": request.args.get("fecha_hasta"),
+        }
+        return jsonify(service.listar_actividades(filtros, usuario_actual())), 200
 
     @bp.get("/<actividad_id>")
+    @requiere_rol(Rol.ADMINISTRADOR, Rol.OPERARIO)
     def obtener_actividad(actividad_id):
-        return jsonify(service.obtener_actividad(actividad_id)), 200
+        return jsonify(service.obtener_actividad(actividad_id, usuario_actual())), 200
 
     @bp.put("/<actividad_id>")
+    @requiere_rol(Rol.ADMINISTRADOR)
     def actualizar_actividad(actividad_id):
-        actividad = service.actualizar_actividad(actividad_id, request.get_json(force=True, silent=True) or {})
-        return jsonify(actividad), 200
+        data = request.get_json(force=True, silent=True) or {}
+        return jsonify(service.actualizar_actividad(actividad_id, data, usuario_actual())), 200
 
     @bp.delete("/<actividad_id>")
+    @requiere_rol(Rol.ADMINISTRADOR)
     def eliminar_actividad(actividad_id):
-        service.eliminar_actividad(actividad_id)
+        service.eliminar_actividad(actividad_id, usuario_actual())
         return "", 204
 
-    @bp.post("/<actividad_id>/asignar")
-    def asignar_actividad(actividad_id):
-        data = request.get_json(force=True, silent=True) or {}
-        data["actividad_id"] = actividad_id
-        asignacion = asignacion_service.asignar(data)
-        return jsonify(asignacion), 200
-
-    @bp.get("/<actividad_id>/asignacion")
-    def obtener_asignacion(actividad_id):
-        return jsonify(asignacion_service.obtener_por_actividad(actividad_id)), 200
-
     @bp.post("/<actividad_id>/iniciar")
+    @requiere_rol(Rol.OPERARIO)
     def iniciar_ejecucion(actividad_id):
-        return jsonify(ejecucion_service.iniciar(actividad_id)), 200
+        return jsonify(ejecucion_service.iniciar(actividad_id, usuario_actual())), 200
 
     @bp.post("/<actividad_id>/finalizar")
+    @requiere_rol(Rol.OPERARIO)
     def finalizar_ejecucion(actividad_id):
-        return jsonify(ejecucion_service.finalizar(actividad_id)), 200
-
-    @bp.get("/<actividad_id>/ejecucion")
-    def obtener_ejecucion(actividad_id):
-        return jsonify(ejecucion_service.obtener_por_actividad(actividad_id)), 200
-
-    @bp.post("/<actividad_id>/registros-tiempo")
-    def registrar_tiempo(actividad_id):
-        data = request.get_json(force=True, silent=True) or {}
-        data["actividad_id"] = actividad_id
-        registro = registro_tiempo_service.registrar_tiempo(data)
-        return jsonify(registro), 201
-
-    @bp.get("/<actividad_id>/registros-tiempo")
-    def listar_registros_tiempo(actividad_id):
-        return jsonify(registro_tiempo_service.listar_por_actividad(actividad_id)), 200
+        return jsonify(ejecucion_service.finalizar(actividad_id, usuario_actual())), 200
 
     return bp

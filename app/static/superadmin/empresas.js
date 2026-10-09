@@ -1,53 +1,61 @@
 // Superadmin: lista de empresas; desde aquí registra nuevas o entra a cada una.
 
-const tabla = document.getElementById("tabla-empresas");
-const estadoVacio = document.getElementById("estado-vacio");
-const dialogo = document.getElementById("dialogo-empresa");
+const BUSCADOR_DESDE = 6;   // Con pocas empresas el buscador sobra: aparece desde esta cantidad.
 
-function crearCelda(texto) {
-    const celda = document.createElement("td");
-    celda.textContent = texto;
-    return celda;
-}
+const lista = document.getElementById("lista-empresas");
+const estadoVacio = document.getElementById("estado-vacio");
+const sinResultados = document.getElementById("sin-resultados");
+const buscar = document.getElementById("buscar");
+const dialogo = document.getElementById("dialogo-empresa");
+let empresas = [];
 
 function crearFilaEmpresa(empresa) {
-    const fila = document.createElement("tr");
+    const elemento = crearElemento("li");
+    const fila = crearElemento("a", "fila-empresa");
+    fila.href = `/static/superadmin/empresa.html?id=${encodeURIComponent(empresa.id)}`;
 
-    const nombre = document.createElement("td");
-    const contenido = document.createElement("div");
-    contenido.className = "celda-empresa";
-    if (empresa.tiene_logo) {
-        const logo = document.createElement("img");
-        logo.className = "logo-miniatura";
-        logo.src = urlLogo(empresa.id);
-        logo.alt = "";
-        contenido.append(logo);
-    }
-    const enlace = document.createElement("a");
-    enlace.className = "enlace-fila";
-    enlace.href = `/static/superadmin/empresa.html?id=${encodeURIComponent(empresa.id)}`;
-    enlace.textContent = empresa.nombre;
-    contenido.append(enlace);
-    nombre.append(contenido);
+    const textos = crearElemento("span");
+    const meta = crearElemento("span", "fila-meta");
+    meta.append(crearElemento("span", "codigo", empresa.nit), ` · ${empresa.sector}`);
+    textos.append(crearElemento("span", "fila-nombre", empresa.nombre), meta);
 
-    const actuales = empresa.usuarios_actuales;
-    // textContent (no innerHTML) para que un texto con etiquetas no se ejecute como HTML.
-    fila.append(
-        nombre,
-        crearCelda(empresa.nit),
-        crearCelda(empresa.sector),
-        crearCelda(textoCupo(actuales.ADMINISTRADOR || 0, empresa.limite_administradores)),
-        crearCelda(textoCupo(actuales.OPERARIO || 0, empresa.limite_operarios)),
-    );
-    return fila;
+    const medidores = crearElemento("span", "medidores");
+    medidores.append(...crearMedidoresEmpresa(empresa));
+
+    fila.append(crearLogoCuadro(empresa), textos, medidores);
+    fila.insertAdjacentHTML("beforeend", icono("chevron-right"));
+    elemento.append(fila);
+    return elemento;
+}
+
+function pintarResumen() {
+    const sumar = (rol) => empresas.reduce((total, empresa) => total + (empresa.usuarios_actuales[rol] || 0), 0);
+    const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
+    document.getElementById("resumen").textContent = [
+        plural(empresas.length, "empresa", "empresas"),
+        plural(sumar("ADMINISTRADOR"), "administrador", "administradores"),
+        plural(sumar("OPERARIO"), "operario", "operarios"),
+    ].join(" · ");
+}
+
+function pintarLista() {
+    const texto = buscar.value.trim().toLowerCase();
+    const visibles = empresas.filter((empresa) =>
+        empresa.nombre.toLowerCase().includes(texto) || empresa.nit.toLowerCase().includes(texto));
+
+    estadoVacio.hidden = empresas.length > 0;
+    sinResultados.hidden = empresas.length === 0 || visibles.length > 0;
+    lista.hidden = visibles.length === 0;
+    lista.replaceChildren(...visibles.map(crearFilaEmpresa));
 }
 
 async function cargarEmpresas() {
     try {
-        const empresas = await pedirApi("/empresas");
-        tabla.hidden = empresas.length === 0;
-        estadoVacio.hidden = empresas.length > 0;
-        tabla.querySelector("tbody").replaceChildren(...empresas.map(crearFilaEmpresa));
+        empresas = await pedirApi("/empresas");
+        empresas.sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+        document.getElementById("herramientas").hidden = empresas.length < BUSCADOR_DESDE;
+        pintarResumen();
+        pintarLista();
     } catch (error) {
         estadoVacio.hidden = false;
         estadoVacio.textContent = `No se pudieron cargar las empresas: ${error.message}`;
@@ -69,6 +77,9 @@ function validarEmpresa(datos) {
     }
     return validarArchivoLogo(campoLogo.archivo());
 }
+
+document.querySelector(".buscador").insertAdjacentHTML("afterbegin", icono("search"));
+buscar.addEventListener("input", pintarLista);
 
 configurarDialogo(document.querySelectorAll("[data-abrir-dialogo]"), dialogo);
 dialogo.querySelector("form").addEventListener("submit", (evento) => {

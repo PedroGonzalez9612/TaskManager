@@ -17,8 +17,6 @@ def create_app(config_class=Config):
     from app.routes.usuario_routes import create_blueprint as usuario_bp
     from app.routes.requerimiento_routes import create_blueprint as requerimiento_bp
     from app.routes.actividad_routes import create_blueprint as actividad_bp
-    from app.routes.asignacion_routes import create_blueprint as asignacion_bp
-    from app.routes.registro_tiempo_routes import create_blueprint as registro_tiempo_bp
     from app.routes.analisis_routes import create_blueprint as analisis_bp
 
     app.register_blueprint(auth_bp(db))
@@ -26,8 +24,6 @@ def create_app(config_class=Config):
     app.register_blueprint(usuario_bp(db))
     app.register_blueprint(requerimiento_bp(db))
     app.register_blueprint(actividad_bp(db))
-    app.register_blueprint(asignacion_bp(db))
-    app.register_blueprint(registro_tiempo_bp(db))
     app.register_blueprint(analisis_bp(db))
 
     @app.errorhandler(ErrorApi)

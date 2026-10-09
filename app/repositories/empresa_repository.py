@@ -1,3 +1,5 @@
+from pymongo import ReturnDocument
+
 from app.repositories.base_repository import BaseRepository
 
 # El logo puede pesar cientos de KB: las consultas normales no lo traen.
@@ -19,6 +21,17 @@ class EmpresaRepository(BaseRepository):
 
     def find_by_nit(self, nit: str):
         return self.collection.find_one({"nit": nit}, SIN_LOGO)
+
+    def siguiente_consecutivo_actividad(self, id_str: str) -> int:
+        """Suma uno al consecutivo de actividades de la empresa y lo devuelve.
+        Es una sola operación en MongoDB, así dos actividades creadas a la vez no repiten número."""
+        doc = self.collection.find_one_and_update(
+            {"_id": self.to_object_id(id_str)},
+            {"$inc": {"consecutivo_actividad": 1}},
+            projection={"consecutivo_actividad": 1},
+            return_document=ReturnDocument.AFTER,
+        )
+        return doc["consecutivo_actividad"]
 
     def find_logo(self, id_str: str):
         oid = self.to_object_id(id_str)

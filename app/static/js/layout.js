@@ -1,144 +1,120 @@
-// Marco común de las pantallas con sesión: menú lateral según el rol, diálogos y avisos.
+// Marco común de las pantallas con sesión: barra superior, navegación por vistas, diálogos y avisos.
+// Necesita que antes se carguen api.js y vendor/lucide/iconos.js.
 
-const ICONOS = {
-    empresas: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h1M14 9h1M9 13h1M14 13h1M10 21v-4h4v4"/></svg>',
-    usuarios: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14.2c2.1.7 3.5 2.8 3.5 5.8"/></svg>',
-    actividades: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2"/></svg>',
-};
-
-// Opciones del menú de cada rol. "rutas" indica en qué páginas se marca como activa
-// (por ejemplo, el detalle de una empresa pertenece a la opción "Empresas").
-// Se agregan opciones a medida que se construyen sus pantallas.
-const MENU_POR_ROL = {
+// Vistas de cada rol. "rutas" indica en qué páginas se marca como activa (por ejemplo, el detalle
+// de una empresa pertenece a "Empresas"). Una vista se agrega aquí solo cuando su pantalla existe.
+const VISTAS_POR_ROL = {
     SUPERADMIN: [
         {
             texto: "Empresas",
-            icono: "empresas",
+            icono: "factory",
             destino: "/static/superadmin/empresas.html",
             rutas: ["/static/superadmin/empresas.html", "/static/superadmin/empresa.html"],
         },
     ],
     ADMINISTRADOR: [
-        {
-            texto: "Usuarios",
-            icono: "usuarios",
-            destino: "/static/admin/usuarios.html",
-            rutas: ["/static/admin/usuarios.html"],
-        },
+        { texto: "Equipo", icono: "calendar-days", destino: "/static/admin/equipo.html", rutas: ["/static/admin/equipo.html"] },
+        { texto: "Actividades", icono: "clipboard-check", destino: "/static/admin/actividades.html", rutas: ["/static/admin/actividades.html"] },
+        { texto: "Usuarios", icono: "users", destino: "/static/admin/usuarios.html", rutas: ["/static/admin/usuarios.html"] },
     ],
     OPERARIO: [
-        {
-            texto: "Mis actividades",
-            icono: "actividades",
-            destino: "/static/operario/index.html",
-            rutas: ["/static/operario/index.html"],
-        },
+        { texto: "Hoy", icono: "list-checks", destino: "/static/operario/index.html", rutas: ["/static/operario/index.html"] },
+        { texto: "Semana", icono: "calendar-days", destino: "/static/operario/semana.html", rutas: ["/static/operario/semana.html"] },
+        { texto: "Resumen", icono: "chart-column", destino: "/static/operario/resumen.html", rutas: ["/static/operario/resumen.html"] },
     ],
 };
 
-// Marca del menú. Los usuarios de una empresa ven el logo y el nombre de SU empresa (marca blanca);
-// el Superadmin, que no pertenece a ninguna, ve la marca de GestLab.
+// Crea un elemento con su clase y su texto. El texto siempre entra con textContent,
+// así un dato con etiquetas HTML nunca se ejecuta.
+function crearElemento(etiqueta, clase = "", texto = "") {
+    const elemento = document.createElement(etiqueta);
+    if (clase) {
+        elemento.className = clase;
+    }
+    if (texto !== "" && texto != null) {
+        elemento.textContent = texto;
+    }
+    return elemento;
+}
+
+// Elemento con un ícono de Lucide delante del texto. El SVG es fijo (viene de iconos.js).
+function crearConIcono(etiqueta, clase, nombreIcono, texto) {
+    const elemento = crearElemento(etiqueta, clase);
+    elemento.insertAdjacentHTML("afterbegin", icono(nombreIcono));
+    if (texto) {
+        elemento.append(crearElemento("span", "", texto));
+    }
+    return elemento;
+}
+
+// Marca de la barra superior. Los usuarios de una empresa ven el logo y el nombre de SU empresa
+// (marca blanca); el Superadmin, que no pertenece a ninguna, ve la marca de GestLab.
 function crearMarca(usuario) {
-    const marca = document.createElement("a");
-    marca.className = "marca";
+    const marca = crearElemento("a", "marca");
     marca.href = "/";
 
     if (!usuario.empresa) {
-        marca.innerHTML = '<span class="marca-icono" aria-hidden="true">G</span>GestLab';
+        marca.append(crearElemento("span", "marca-icono", "G"), crearElemento("span", "marca-nombre", "GestLab"));
         return marca;
     }
 
-    const nombre = document.createElement("span");
-    nombre.className = "marca-nombre";
-    nombre.textContent = usuario.empresa.nombre;
-
     if (usuario.empresa.tiene_logo) {
-        const logo = document.createElement("img");
-        logo.className = "marca-logo";
+        const logo = crearElemento("img", "marca-logo");
         logo.src = urlLogo(usuario.empresa_id);
         logo.alt = `Logo de ${usuario.empresa.nombre}`;
-        marca.append(logo, nombre);
+        marca.append(logo);
     } else {
-        const inicial = document.createElement("span");
-        inicial.className = "marca-icono";
-        inicial.setAttribute("aria-hidden", "true");
-        inicial.textContent = usuario.empresa.nombre.charAt(0).toUpperCase();
-        marca.append(inicial, nombre);
+        marca.append(crearElemento("span", "marca-icono", usuario.empresa.nombre.charAt(0).toUpperCase()));
     }
+    marca.append(crearElemento("span", "marca-nombre", usuario.empresa.nombre));
     return marca;
 }
 
-function construirMenu(usuario) {
-    const menu = document.createElement("nav");
-    menu.className = "menu-lateral";
-    menu.id = "menu-lateral";
-    menu.setAttribute("aria-label", "Menú principal");
+// Navegación entre vistas: pestañas arriba en computador y barra fija abajo en celular (lo decide el CSS).
+function construirNavegacion(usuario) {
+    const navegacion = crearElemento("nav", "navegacion");
+    navegacion.setAttribute("aria-label", "Vistas");
 
-    const opciones = document.createElement("ul");
-    opciones.className = "menu-opciones";
-    for (const opcion of MENU_POR_ROL[usuario.rol] || []) {
-        const item = document.createElement("li");
-        const enlace = document.createElement("a");
-        enlace.href = opcion.destino;
-        // El icono es un texto fijo del código; el nombre va con textContent.
-        enlace.innerHTML = ICONOS[opcion.icono] || "";
-        enlace.append(opcion.texto);
-        if (opcion.rutas.includes(window.location.pathname)) {
+    for (const vista of VISTAS_POR_ROL[usuario.rol] || []) {
+        const enlace = crearConIcono("a", "", vista.icono, vista.texto);
+        enlace.href = vista.destino;
+        if (vista.rutas.includes(window.location.pathname)) {
             enlace.setAttribute("aria-current", "page");
         }
-        item.append(enlace);
-        opciones.append(item);
+        navegacion.append(enlace);
+    }
+    return navegacion;
+}
+
+function construirBloqueUsuario(usuario) {
+    const bloque = crearElemento("div", "usuario");
+
+    // Avatar con la inicial: junto con el logo, es donde aparece el color de marca.
+    const avatar = crearElemento("span", "avatar", usuario.nombre.charAt(0).toUpperCase());
+    avatar.setAttribute("aria-hidden", "true");
+
+    const textos = crearElemento("div", "usuario-textos");
+    const rol = NOMBRE_ROL[usuario.rol] || usuario.rol;
+    textos.append(crearElemento("strong", "", usuario.nombre));
+    // Si el nombre ya dice el rol (el Superadmin inicial se llama "Superadmin"), no se repite.
+    if (rol.toLowerCase() !== usuario.nombre.trim().toLowerCase()) {
+        textos.append(crearElemento("span", "usuario-rol", rol));
     }
 
-    const bloqueUsuario = document.createElement("div");
-    bloqueUsuario.className = "menu-usuario";
-    const nombre = document.createElement("strong");
-    nombre.textContent = usuario.nombre;
-    const rol = document.createElement("span");
-    rol.textContent = NOMBRE_ROL[usuario.rol] || usuario.rol;
-    const salir = document.createElement("button");
+    const salir = crearConIcono("button", "boton-icono", "log-out", "");
     salir.type = "button";
-    salir.className = "boton-secundario boton-pequeno boton-bloque";
-    salir.textContent = "Cerrar sesión";
+    salir.title = "Cerrar sesión";
+    salir.setAttribute("aria-label", "Cerrar sesión");
     salir.addEventListener("click", async () => {
         await pedirApi("/auth/logout", { method: "POST" });
         window.location.href = RUTA_LOGIN;
     });
-    bloqueUsuario.append(nombre, rol, salir);
 
-    menu.append(crearMarca(usuario), opciones, bloqueUsuario);
-    return menu;
+    bloque.append(avatar, textos, salir);
+    return bloque;
 }
 
-// Barra superior que solo aparece en celular, con el botón para abrir el menú.
-function construirBarraMovil(usuario) {
-    const barra = document.createElement("header");
-    barra.className = "barra-movil";
-
-    const botonMenu = document.createElement("button");
-    botonMenu.type = "button";
-    botonMenu.className = "boton-secundario boton-pequeno";
-    botonMenu.textContent = "Menú";
-    botonMenu.setAttribute("aria-controls", "menu-lateral");
-    botonMenu.setAttribute("aria-expanded", "false");
-
-    const fondo = document.createElement("div");
-    fondo.className = "fondo-menu";
-    fondo.hidden = true;
-
-    const alternar = (abrir) => {
-        document.body.classList.toggle("menu-abierto", abrir);
-        botonMenu.setAttribute("aria-expanded", String(abrir));
-        fondo.hidden = !abrir;
-    };
-    botonMenu.addEventListener("click", () => alternar(!document.body.classList.contains("menu-abierto")));
-    fondo.addEventListener("click", () => alternar(false));
-
-    barra.append(crearMarca(usuario), botonMenu);
-    return [barra, fondo];
-}
-
-// Protege una página: comprueba la sesión y el rol, arma el menú y devuelve el usuario.
+// Protege una página: comprueba la sesión y el rol, arma el marco y devuelve el usuario.
 async function iniciarPaginaProtegida(rolesPermitidos) {
     const usuario = await pedirApi("/auth/sesion");
 
@@ -147,8 +123,9 @@ async function iniciarPaginaProtegida(rolesPermitidos) {
         throw new Error("Rol sin acceso a esta página");
     }
 
-    const [barraMovil, fondoMenu] = construirBarraMovil(usuario);
-    document.body.prepend(barraMovil, construirMenu(usuario), fondoMenu);
+    const barra = crearElemento("header", "barra-superior");
+    barra.append(crearMarca(usuario), construirNavegacion(usuario), construirBloqueUsuario(usuario));
+    document.body.prepend(barra);
     document.body.classList.remove("cargando");
     return usuario;
 }
@@ -162,14 +139,14 @@ function configurarDialogo(botonesAbrir, dialogo) {
     for (const boton of botonesAbrir) {
         boton.addEventListener("click", () => {
             dialogo.showModal();
-            formulario.querySelector("input, select")?.focus();
+            formulario?.querySelector("input:not([type=hidden]), select, textarea")?.focus();
         });
     }
     for (const cerrar of dialogo.querySelectorAll("[data-cerrar]")) {
         cerrar.addEventListener("click", () => dialogo.close());
     }
     dialogo.addEventListener("close", () => {
-        formulario.reset();
+        formulario?.reset();
         if (mensaje) {
             mensaje.hidden = true;
         }
@@ -207,18 +184,20 @@ function mostrarErrorFormulario(mensaje, texto) {
     mensaje.hidden = false;
 }
 
-// Confirmación breve que desaparece sola (visibilidad del estado del sistema).
-function mostrarAviso(texto) {
-    const aviso = document.createElement("div");
-    aviso.className = "aviso-flotante";
-    aviso.setAttribute("role", "status");
-    aviso.textContent = texto;
+// Aviso breve que desaparece solo (visibilidad del estado del sistema).
+// tipo "exito" confirma una acción; "advertencia" avisa algo que conviene revisar y dura más.
+function mostrarAviso(texto, tipo = "exito") {
+    const aviso = crearConIcono(
+        "div", `aviso-flotante aviso-flotante-${tipo}`, tipo === "exito" ? "check" : "circle-alert", texto,
+    );
+    aviso.setAttribute("role", tipo === "exito" ? "status" : "alert");
     document.body.append(aviso);
-    setTimeout(() => aviso.remove(), 4000);
+    setTimeout(() => aviso.remove(), tipo === "exito" ? 4000 : 9000);
 }
 
 // Envía un formulario de un diálogo: valida, desactiva el botón mientras guarda,
 // muestra el error dentro del diálogo o lo cierra si todo salió bien.
+// "guardar" devuelve el texto de confirmación, o { texto, tipo } para avisar con otro tono.
 async function enviarFormularioDialogo(dialogo, validar, guardar) {
     const formulario = dialogo.querySelector("form");
     const mensaje = dialogo.querySelector(".mensaje-formulario");
@@ -233,9 +212,13 @@ async function enviarFormularioDialogo(dialogo, validar, guardar) {
     const boton = formulario.querySelector('button[type="submit"]');
     boton.disabled = true;
     try {
-        const textoExito = await guardar(datos);
+        const resultado = await guardar(datos);
         dialogo.close();
-        mostrarAviso(textoExito);
+        if (typeof resultado === "string") {
+            mostrarAviso(resultado);
+        } else {
+            mostrarAviso(resultado.texto, resultado.tipo);
+        }
     } catch (error) {
         mostrarErrorFormulario(mensaje, error.message);
     } finally {

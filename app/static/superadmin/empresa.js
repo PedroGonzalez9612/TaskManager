@@ -1,34 +1,29 @@
 // Superadmin dentro de una empresa: ve sus datos y cupos, la edita y crea sus administradores.
 
 const empresaId = new URLSearchParams(window.location.search).get("id");
-const tabla = document.getElementById("tabla-usuarios");
+const lista = document.getElementById("lista-usuarios");
 const estadoVacio = document.getElementById("estado-vacio");
 const dialogoEditar = document.getElementById("dialogo-editar");
 let empresa = null;
 
 function pintarEmpresa() {
-    const actuales = empresa.usuarios_actuales;
     document.getElementById("nombre-empresa").textContent = empresa.nombre;
     document.getElementById("migas-empresa").textContent = empresa.nombre;
+    document.getElementById("meta-empresa").textContent = empresa.sector;
     document.getElementById("dato-nit").textContent = empresa.nit;
     document.getElementById("dato-sector").textContent = empresa.sector;
     document.getElementById("dato-direccion").textContent = empresa.direccion;
-    document.getElementById("dato-administradores").textContent =
-        textoCupo(actuales.ADMINISTRADOR || 0, empresa.limite_administradores);
-    document.getElementById("dato-operarios").textContent =
-        textoCupo(actuales.OPERARIO || 0, empresa.limite_operarios);
     document.title = `${empresa.nombre} — GestLab`;
 
-    const logo = document.getElementById("logo-empresa");
-    logo.hidden = !empresa.tiene_logo;
-    if (empresa.tiene_logo) {
-        logo.src = urlLogo(empresa.id);
-        logo.alt = `Logo de ${empresa.nombre}`;
-    }
+    document.getElementById("logo-empresa").replaceChildren(crearLogoCuadro(empresa, true));
+    document.getElementById("cupos").replaceChildren(...crearMedidoresEmpresa(empresa, true));
 
-    // Si ya no hay cupo, el botón se desactiva y se explica por qué (prevención de errores, Nielsen #5).
+    // Sin cupo, el botón se desactiva y una nota explica por qué (prevención de errores, Nielsen 5).
     const lleno = cupoLleno(empresa, "ADMINISTRADOR");
-    document.getElementById("aviso-cupo").hidden = !lleno;
+    const aviso = document.getElementById("aviso-cupo");
+    aviso.hidden = !lleno;
+    aviso.replaceChildren(crearConIcono("span", "", "circle-alert", ""),
+        "Se alcanzó el límite de administradores. Para crear otro, amplía el límite en “Editar empresa”.");
     for (const boton of document.querySelectorAll("[data-abrir-dialogo]")) {
         boton.disabled = lleno;
     }
@@ -37,6 +32,11 @@ function pintarEmpresa() {
 async function cargarEmpresa() {
     empresa = await pedirApi(`/empresas/${encodeURIComponent(empresaId)}`);
     pintarEmpresa();
+}
+
+async function cargarListaUsuarios() {
+    const usuarios = await cargarUsuarios(empresaId, lista, estadoVacio);
+    document.getElementById("cantidad-usuarios").textContent = usuarios.length || "";
 }
 
 function configurarEdicion() {
@@ -92,22 +92,21 @@ async function iniciarPantalla() {
         await cargarEmpresa();
     } catch (error) {
         document.getElementById("nombre-empresa").textContent = "No se pudo abrir la empresa";
-        mostrarAviso(error.message);
+        mostrarAviso(error.message, "advertencia");
         return;
     }
 
     configurarEdicion();
-    const recargar = async () => {
-        await cargarUsuarios(empresaId, tabla, estadoVacio);
-        await cargarEmpresa();
-    };
     configurarCreacionUsuario(
         document.querySelectorAll("[data-abrir-dialogo]"),
         document.getElementById("dialogo-usuario"),
         empresaId,
-        recargar,
+        async () => {
+            await cargarListaUsuarios();
+            await cargarEmpresa();
+        },
     );
-    await cargarUsuarios(empresaId, tabla, estadoVacio);
+    await cargarListaUsuarios();
 }
 
 iniciarPantalla();
