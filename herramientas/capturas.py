@@ -84,6 +84,8 @@ def iniciar_sesion(contexto, url_base, credenciales):
     respuesta = contexto.request.post(
         f"{url_base}/auth/login",
         data={"correo": correo, "contraseña": contrasena},
+        # El servidor exige este encabezado en toda petición que cambia datos (protección contra CSRF).
+        headers={"X-Requested-With": "GestLab"},
     )
     if not respuesta.ok:
         raise RuntimeError(f"El inicio de sesión respondió {respuesta.status}.")

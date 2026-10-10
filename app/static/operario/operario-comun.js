@@ -1,5 +1,5 @@
 // Lo que comparten las vistas del Operario: abrir el detalle de una actividad con las acciones
-// que él puede hacer (iniciar o finalizar).
+// que él puede hacer (iniciar, reanudar o finalizar).
 
 function actividadEnCurso(actividades) {
     return actividades.find((actividad) => actividad.estado === "EN_EJECUCION") || null;
@@ -16,7 +16,7 @@ function abrirDetalleOperario(actividad, actividades, alCambiar) {
         // Una sola actividad en ejecución a la vez: el botón se desactiva y se explica por qué.
         const bloqueada = enCurso && enCurso.id !== actividad.id;
         if (bloqueada) {
-            aviso = `Ya tienes una actividad en curso (${enCurso.codigo}). Finalízala para iniciar esta.`;
+            aviso = `Ya tienes una actividad en curso (${enCurso.codigo}). Termínala antes de iniciar esta.`;
         }
         acciones.push({
             texto: "Iniciar actividad",
@@ -25,6 +25,21 @@ function abrirDetalleOperario(actividad, actividades, alCambiar) {
                 await pedirApi(`/actividades/${actividad.id}/iniciar`, { method: "POST" });
                 await alCambiar();
                 mostrarAviso(`${actividad.codigo} iniciada.`);
+            },
+        });
+    } else if (actividad.estado === "PAUSADA") {
+        // Quedó pausada (por ejemplo, al terminar la jornada): se retoma donde iba.
+        const bloqueada = enCurso && enCurso.id !== actividad.id;
+        if (bloqueada) {
+            aviso = `Ya tienes una actividad en curso (${enCurso.codigo}). Termínala antes de reanudar esta.`;
+        }
+        acciones.push({
+            texto: "Reanudar actividad",
+            desactivada: bloqueada,
+            alHacer: async () => {
+                await pedirApi(`/actividades/${actividad.id}/reanudar`, { method: "POST" });
+                await alCambiar();
+                mostrarAviso(`${actividad.codigo} reanudada.`);
             },
         });
     } else if (actividad.estado === "EN_EJECUCION") {

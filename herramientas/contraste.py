@@ -32,7 +32,8 @@ UMBRALES = {
 }
 
 PATRON_HEX = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
-PATRON_VARIABLE = re.compile(r"--([\w-]+)\s*:\s*([^;]+);")
+# El valor se captura con sus espacios y se limpia después: dos \s* seguidos hacían lento el patrón.
+PATRON_VARIABLE = re.compile(r"--([\w-]+)\s*:([^;]+);")
 PATRON_REFERENCIA = re.compile(r"^var\(\s*--([\w-]+)\s*(?:,[^)]*)?\)$")
 
 

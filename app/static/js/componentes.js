@@ -23,8 +23,8 @@ function crearAvatarNeutro(nombre) {
     return avatar;
 }
 
-// Medidor de un cupo: "Operarios  3 de 10" con una barra. Si no hay límite, solo la cantidad.
-// Cuando el cupo está lleno lo dice con ícono y texto, no solo con el color de la barra.
+// Medidor de un límite: "Operarios  3 de 10" con una barra. Si no hay límite, solo la cantidad.
+// Cuando el límite se alcanza lo dice con ícono y texto, no solo con el color de la barra.
 function crearMedidor(nombre, actuales, limite, grande = false) {
     const lleno = limite != null && actuales >= limite;
     const medidor = crearElemento("div", "medidor");

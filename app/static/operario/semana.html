@@ -13,15 +13,20 @@
         <div class="encabezado-pagina">
             <div>
                 <h1>Mi semana</h1>
-                <p>Tus actividades en el horario. Toca un bloque para ver el detalle.</p>
+                <p>Tus actividades en el horario. Selecciona un bloque para ver el detalle.</p>
             </div>
-            <div id="controles"></div>
         </div>
 
-        <section class="panel panel-calendario">
-            <div id="calendario"></div>
+        <section class="panel panel-horario" aria-label="Horario de tus actividades">
+            <!-- Proximidad: el significado de los colores y el control que los cambia van juntos, con el horario. -->
+            <div class="barra-horario">
+                <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
+                <div id="controles"></div>
+            </div>
+            <div class="panel-calendario">
+                <div id="calendario"></div>
+            </div>
         </section>
-        <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
     </main>
 
     <script src="/static/js/api.js"></script>

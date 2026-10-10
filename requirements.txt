@@ -2,3 +2,5 @@ Flask==3.0.3
 pymongo==4.8.0
 python-dotenv==1.0.1
 bcrypt==4.2.0
+# Zonas horarias (la imagen de Docker y Windows no las traen): las usa app/utils/reloj.py
+tzdata==2024.2

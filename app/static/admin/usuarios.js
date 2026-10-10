@@ -1,13 +1,13 @@
 // Administrador: ve y crea los usuarios (operarios y administradores) de su propia empresa,
 // dentro de los límites que el Superadmin definió.
 
-function pintarCupos(empresa) {
-    document.getElementById("cupos").replaceChildren(...crearMedidoresEmpresa(empresa, true).reverse());
+function pintarLimites(empresa) {
+    document.getElementById("limites").replaceChildren(...crearMedidoresEmpresa(empresa, true).reverse());
 
-    // Los roles sin cupo no se ofrecen en el formulario (prevención de errores, Nielsen 5).
+    // Los roles que alcanzaron su límite no se ofrecen en el formulario (prevención de errores, Nielsen 5).
     const selectorRol = document.getElementById("rol");
     for (const opcion of selectorRol.options) {
-        const lleno = cupoLleno(empresa, opcion.value);
+        const lleno = limiteAlcanzado(empresa, opcion.value);
         opcion.disabled = lleno;
         opcion.textContent = `${NOMBRE_ROL[opcion.value]}${lleno ? " (límite alcanzado)" : ""}`;
     }
@@ -20,7 +20,7 @@ function pintarCupos(empresa) {
         }
     }
 
-    const aviso = document.getElementById("aviso-cupo");
+    const aviso = document.getElementById("aviso-limite");
     aviso.hidden = Boolean(disponible);
     aviso.replaceChildren(crearConIcono("span", "", "circle-alert", ""),
         "Tu empresa alcanzó el límite de usuarios. Para crear más, pide al Superadmin que lo amplíe.");
@@ -35,14 +35,15 @@ async function iniciarPantalla() {
     const estadoVacio = document.getElementById("estado-vacio");
 
     const recargar = async () => {
-        const usuarios = await cargarUsuarios(usuario.empresa_id, lista, estadoVacio);
+        const usuarios = await cargarUsuarios(usuario.empresa_id, lista, estadoVacio, abrirAsignarTurno);
+        await Promise.all([cargarTurnos(), cargarAsistencia()]);
         const contar = (rol) => usuarios.filter((u) => u.rol === rol).length;
         const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
         document.getElementById("subtitulo").textContent = [
             plural(contar("OPERARIO"), "operario", "operarios"),
             plural(contar("ADMINISTRADOR"), "administrador", "administradores"),
         ].join(" · ");
-        pintarCupos(await pedirApi(`/empresas/${encodeURIComponent(usuario.empresa_id)}`));
+        pintarLimites(await pedirApi(`/empresas/${encodeURIComponent(usuario.empresa_id)}`));
     };
     configurarCreacionUsuario(
         document.querySelectorAll("[data-abrir-dialogo]"),
@@ -50,6 +51,7 @@ async function iniciarPantalla() {
         usuario.empresa_id,
         recargar,
     );
+    configurarTurnosYAsistencia(recargar);
     await recargar();
 }
 

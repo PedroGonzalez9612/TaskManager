@@ -1,31 +1,16 @@
 from flask import Blueprint, jsonify, request
 
 from app.models.enums import Rol
-from app.repositories.actividad_repository import ActividadRepository
-from app.repositories.asignacion_repository import AsignacionRepository
-from app.repositories.ejecucion_repository import EjecucionRepository
-from app.repositories.empresa_repository import EmpresaRepository
-from app.repositories.requerimiento_repository import RequerimientoRepository
-from app.repositories.usuario_repository import UsuarioRepository
-from app.services.actividad_service import ActividadService
-from app.services.carga_service import CargaService
-from app.services.ejecucion_service import EjecucionService
+from app.services.composicion import construir_servicios
 from app.utils.seguridad import requiere_rol, usuario_actual
 
 
-def create_blueprint(db):
+def create_blueprint(db, reloj=None):
+    """Con "reloj" las pruebas controlan la hora; sin él, los servicios usan la del servidor."""
     bp = Blueprint("actividades", __name__, url_prefix="/actividades")
-    actividad_repository = ActividadRepository(db)
-    asignacion_repository = AsignacionRepository(db)
-    ejecucion_repository = EjecucionRepository(db)
-    usuario_repository = UsuarioRepository(db)
-
-    carga_service = CargaService(actividad_repository, asignacion_repository, usuario_repository)
-    service = ActividadService(
-        actividad_repository, RequerimientoRepository(db), asignacion_repository,
-        usuario_repository, ejecucion_repository, EmpresaRepository(db), carga_service,
-    )
-    ejecucion_service = EjecucionService(ejecucion_repository, actividad_repository, asignacion_repository)
+    servicios = construir_servicios(db, reloj=reloj)
+    service = servicios.actividades
+    ejecucion_service = servicios.ejecucion
 
     @bp.post("")
     @requiere_rol(Rol.ADMINISTRADOR)
@@ -40,6 +25,9 @@ def create_blueprint(db):
             "requerimiento_id": request.args.get("requerimiento_id"),
             "fecha_desde": request.args.get("fecha_desde"),
             "fecha_hasta": request.args.get("fecha_hasta"),
+            "proyecto_id": request.args.get("proyecto_id"),
+            "independientes": request.args.get("independientes") in ("1", "true"),
+            "sin_asignar": request.args.get("sin_asignar") in ("1", "true"),
         }
         return jsonify(service.listar_actividades(filtros, usuario_actual())), 200
 
@@ -60,14 +48,52 @@ def create_blueprint(db):
         service.eliminar_actividad(actividad_id, usuario_actual())
         return "", 204
 
+    @bp.post("/<actividad_id>/cancelar")
+    @requiere_rol(Rol.ADMINISTRADOR)
+    def cancelar_actividad(actividad_id):
+        data = _cuerpo_json()
+        return jsonify(service.cancelar(actividad_id, usuario_actual(), data.get("motivo"), data.get("detalle"))), 200
+
+    # Ejecución del operario que tiene la sesión. Las cuatro rutas devuelven la actividad como la
+    # ve ese operario (la misma forma de GET /actividades/<id>).
+
     @bp.post("/<actividad_id>/iniciar")
     @requiere_rol(Rol.OPERARIO)
     def iniciar_ejecucion(actividad_id):
         return jsonify(ejecucion_service.iniciar(actividad_id, usuario_actual())), 200
 
+    @bp.post("/<actividad_id>/pausar")
+    @requiere_rol(Rol.OPERARIO)
+    def pausar_ejecucion(actividad_id):
+        data = _cuerpo_json()
+        return jsonify(ejecucion_service.pausar(
+            actividad_id, usuario_actual(), data.get("motivo"), data.get("detalle"),
+        )), 200
+
+    @bp.post("/<actividad_id>/reanudar")
+    @requiere_rol(Rol.OPERARIO)
+    def reanudar_ejecucion(actividad_id):
+        return jsonify(ejecucion_service.reanudar(actividad_id, usuario_actual())), 200
+
     @bp.post("/<actividad_id>/finalizar")
     @requiere_rol(Rol.OPERARIO)
     def finalizar_ejecucion(actividad_id):
-        return jsonify(ejecucion_service.finalizar(actividad_id, usuario_actual())), 200
+        data = _cuerpo_json()    # El cuerpo es opcional: se puede finalizar sin observación.
+        return jsonify(ejecucion_service.finalizar(actividad_id, usuario_actual(), data.get("observacion"))), 200
+
+    @bp.post("/<actividad_id>/devolver")
+    @requiere_rol(Rol.OPERARIO)
+    def devolver_actividad(actividad_id):
+        # Quien devuelve deja de ver la actividad: la respuesta es la constancia de la devolución.
+        data = _cuerpo_json()
+        return jsonify(ejecucion_service.devolver(
+            actividad_id, usuario_actual(), data.get("motivo"), data.get("detalle"),
+        )), 200
 
     return bp
+
+
+def _cuerpo_json() -> dict:
+    """El cuerpo de la petición como diccionario; vacío si no viene o no es un objeto JSON."""
+    data = request.get_json(force=True, silent=True)
+    return data if isinstance(data, dict) else {}

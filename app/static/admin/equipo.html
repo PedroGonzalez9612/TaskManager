@@ -18,17 +18,17 @@
             <button type="button" id="nueva-actividad" class="boton">Nueva actividad</button>
         </div>
 
-        <section class="panel" aria-label="Horario del día por operario">
-            <p id="aviso-sobrecarga" class="nota-panel" role="status" hidden></p>
+        <section class="panel panel-horario" aria-label="Horario del día por operario">
+            <output id="aviso-sobrecarga" class="nota-panel" hidden></output>
+            <!-- Proximidad: el significado de los colores y el control que los cambia van juntos, con el horario. -->
+            <div class="barra-horario">
+                <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
+                <div id="controles"></div>
+            </div>
             <div class="panel-calendario">
                 <div id="calendario"></div>
             </div>
         </section>
-
-        <div class="pie-horario">
-            <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
-            <div id="controles"></div>
-        </div>
     </main>
 
     <script src="/static/js/api.js"></script>

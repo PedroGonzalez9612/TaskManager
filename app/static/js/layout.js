@@ -47,14 +47,24 @@ function crearConIcono(etiqueta, clase, nombreIcono, texto) {
     return elemento;
 }
 
+// Logo de GestLab: el tablero del turno (tres barras y la marca coral de "Ahora").
+// El dibujo vive en un solo archivo, favicon.svg; aquí y en el login solo se muestra.
+function crearLogoGestLab() {
+    const logo = crearElemento("img", "marca-icono");
+    logo.src = "/static/favicon.svg";
+    logo.alt = "";
+    return logo;
+}
+
 // Marca de la barra superior. Los usuarios de una empresa ven el logo y el nombre de SU empresa
 // (marca blanca); el Superadmin, que no pertenece a ninguna, ve la marca de GestLab.
+// Una empresa sin logo propio muestra el del tablero junto a su nombre.
 function crearMarca(usuario) {
     const marca = crearElemento("a", "marca");
     marca.href = "/";
 
     if (!usuario.empresa) {
-        marca.append(crearElemento("span", "marca-icono", "G"), crearElemento("span", "marca-nombre", "GestLab"));
+        marca.append(crearLogoGestLab(), crearElemento("span", "marca-nombre", "GestLab"));
         return marca;
     }
 
@@ -64,7 +74,7 @@ function crearMarca(usuario) {
         logo.alt = `Logo de ${usuario.empresa.nombre}`;
         marca.append(logo);
     } else {
-        marca.append(crearElemento("span", "marca-icono", usuario.empresa.nombre.charAt(0).toUpperCase()));
+        marca.append(crearLogoGestLab());
     }
     marca.append(crearElemento("span", "marca-nombre", usuario.empresa.nombre));
     return marca;

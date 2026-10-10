@@ -8,9 +8,11 @@ LONGITUD_MINIMA_CONTRASEÑA = 8
 
 
 class UsuarioService:
-    def __init__(self, usuario_repository, empresa_repository):
+    def __init__(self, usuario_repository, empresa_repository, turno_service=None):
         self.usuario_repository = usuario_repository
         self.empresa_repository = empresa_repository
+        # Opcional: con él, la lista de usuarios trae el turno vigente hoy de cada operario.
+        self.turno_service = turno_service
 
     def crear_usuario(self, data: dict, solicitante: dict) -> dict:
         nombre = (data.get("nombre") or "").strip()
@@ -28,7 +30,7 @@ class UsuarioService:
         empresa = self.empresa_repository.find_by_id(empresa_id)
         if not empresa:
             raise NotFoundError(f"Empresa {empresa_id} no encontrada")
-        self._verificar_cupo(empresa, empresa_id, rol)
+        self._verificar_limite(empresa, empresa_id, rol)
         if self.usuario_repository.find_by_correo(correo):
             raise ValidationError(f"Ya existe un usuario con el correo {correo}")
 
@@ -59,7 +61,7 @@ class UsuarioService:
 
         raise ProhibidoError("No tienes permiso para crear usuarios")
 
-    def _verificar_cupo(self, empresa: dict, empresa_id: str, rol: str) -> None:
+    def _verificar_limite(self, empresa: dict, empresa_id: str, rol: str) -> None:
         """Impide superar el límite de usuarios de ese rol que el Superadmin definió para la empresa."""
         limite = empresa.get(CAMPO_LIMITE_POR_ROL[rol])
         if limite is None:
@@ -84,7 +86,17 @@ class UsuarioService:
         if not empresa_id:
             raise ValidationError("empresa_id es obligatorio")
         self._verificar_acceso_empresa(solicitante, empresa_id)
-        return [Usuario.from_doc(doc) for doc in self.usuario_repository.find_by_empresa(empresa_id)]
+        usuarios = [Usuario.from_doc(doc) for doc in self.usuario_repository.find_by_empresa(empresa_id)]
+        return self._con_turno_de_hoy(empresa_id, usuarios)
+
+    def _con_turno_de_hoy(self, empresa_id: str, usuarios: list) -> list:
+        """Agrega a cada operario su turno vigente hoy ("turno", o None si no tiene), leyendo los
+        turnos de todos de una vez."""
+        operario_ids = [u["id"] for u in usuarios if u["rol"] == Rol.OPERARIO.value]
+        if self.turno_service is None or not operario_ids:
+            return usuarios
+        turnos = self.turno_service.turnos_de_hoy(empresa_id, operario_ids)
+        return [{**u, "turno": turnos[u["id"]]} if u["id"] in turnos else u for u in usuarios]
 
     def actualizar_usuario(self, usuario_id: str, data: dict, solicitante: dict) -> dict:
         self.obtener_usuario(usuario_id, solicitante)

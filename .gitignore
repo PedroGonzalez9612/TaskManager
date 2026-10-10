@@ -13,3 +13,8 @@ venv/
 
 # Capturas de pantalla para revisar el diseño (herramientas/capturas.py)
 herramientas/capturas/
+
+# Análisis de SonarQube y reporte de cobertura de las pruebas
+.scannerwork/
+.coverage
+coverage.xml

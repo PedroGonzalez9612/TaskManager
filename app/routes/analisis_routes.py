@@ -1,16 +1,14 @@
 from flask import Blueprint, jsonify, request
 
 from app.models.enums import Rol
-from app.repositories.actividad_repository import ActividadRepository
-from app.repositories.asignacion_repository import AsignacionRepository
-from app.repositories.usuario_repository import UsuarioRepository
-from app.services.carga_service import CargaService
+from app.services.composicion import construir_servicios
 from app.utils.seguridad import requiere_rol, usuario_actual
 
 
-def create_blueprint(db):
+def create_blueprint(db, reloj=None):
+    """Con "reloj" las pruebas controlan la hora; sin él, los servicios usan la del servidor."""
     bp = Blueprint("analisis", __name__, url_prefix="/analisis")
-    carga_service = CargaService(ActividadRepository(db), AsignacionRepository(db), UsuarioRepository(db))
+    carga_service = construir_servicios(db, reloj=reloj).carga
 
     @bp.get("/carga")
     @requiere_rol(Rol.ADMINISTRADOR, Rol.OPERARIO)

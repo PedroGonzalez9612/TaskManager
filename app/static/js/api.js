@@ -10,11 +10,15 @@ const INICIO_POR_ROL = {
     OPERARIO: "/static/operario/index.html",
 };
 
+// El servidor rechaza las peticiones que cambian datos si no traen este encabezado: así sabe que
+// vienen de esta interfaz y no de otra página (protección contra CSRF, app/utils/seguridad.py).
+const ENCABEZADO_PROPIO = { "X-Requested-With": "GestLab" };
+
 async function pedirApi(ruta, opciones = {}) {
     // Con archivos (FormData) el navegador pone su propio Content-Type; con JSON lo ponemos nosotros.
     const esArchivo = opciones.body instanceof FormData;
     const respuesta = await fetch(ruta, {
-        headers: esArchivo ? {} : { "Content-Type": "application/json" },
+        headers: esArchivo ? ENCABEZADO_PROPIO : { ...ENCABEZADO_PROPIO, "Content-Type": "application/json" },
         ...opciones,
     });
 
@@ -60,14 +64,14 @@ function datosFormulario(formulario) {
 // ---------- Logo y límites de la empresa ----------
 
 const TAMANO_MAXIMO_LOGO = 512 * 1024;
-const TIPOS_LOGO = ["image/png", "image/jpeg", "image/webp"];
+const TIPOS_LOGO = new Set(["image/png", "image/jpeg", "image/webp"]);
 
 // Revisa el archivo en el navegador antes de enviarlo (el servidor vuelve a validarlo).
 function validarArchivoLogo(archivo) {
     if (!archivo) {
         return null;
     }
-    if (!TIPOS_LOGO.includes(archivo.type)) {
+    if (!TIPOS_LOGO.has(archivo.type)) {
         return "El logo debe ser una imagen PNG, JPG o WEBP.";
     }
     if (archivo.size > TAMANO_MAXIMO_LOGO) {
@@ -87,12 +91,12 @@ function urlLogo(empresaId) {
     return `/empresas/${encodeURIComponent(empresaId)}/logo?v=${Date.now()}`;
 }
 
-// Texto del tipo "3 de 10" para los cupos de usuarios. Sin límite definido: "3 (sin límite)".
-function textoCupo(actuales, limite) {
+// Texto del tipo "3 de 10" para los límites de usuarios. Sin límite definido: "3 (sin límite)".
+function textoLimite(actuales, limite) {
     return limite == null ? `${actuales} (sin límite)` : `${actuales} de ${limite}`;
 }
 
-function cupoLleno(empresa, rol) {
+function limiteAlcanzado(empresa, rol) {
     const campo = rol === "ADMINISTRADOR" ? "limite_administradores" : "limite_operarios";
     const limite = empresa[campo];
     return limite != null && (empresa.usuarios_actuales[rol] || 0) >= limite;
@@ -119,7 +123,11 @@ const NOMBRE_ESTADO = {
     PENDIENTE: "Sin asignar",
     ASIGNADA: "Por iniciar",
     EN_EJECUCION: "En curso",
+    PAUSADA: "Pausada",
+    DEVUELTA: "Devuelta",
     COMPLETADA: "Finalizada",
+    NO_REALIZADA: "No realizada",
+    CANCELADA: "Cancelada",
 };
 
 const NOMBRE_CATEGORIA = {

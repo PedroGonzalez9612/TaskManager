@@ -1,6 +1,7 @@
 from app.models.empresa import CAMPO_LIMITE_POR_ROL, Empresa
 from app.models.enums import Rol
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
+from app.utils.reloj import ZONA_POR_DEFECTO, validar_zona
 
 TAMANO_MAXIMO_LOGO = 512 * 1024  # 512 KB
 NOMBRE_ROL_PLURAL = {Rol.ADMINISTRADOR.value: "administradores", Rol.OPERARIO.value: "operarios"}
@@ -28,6 +29,13 @@ def leer_limite(valor, campo: str) -> int:
     return limite
 
 
+def leer_zona_horaria(valor) -> str:
+    """La zona horaria de la empresa (alcance, Sección 5.1), por ejemplo "America/Bogota"."""
+    if not isinstance(valor, str):
+        raise ValidationError(f"La zona horaria debe ser un texto. Ejemplo válido: {ZONA_POR_DEFECTO}")
+    return validar_zona(valor)
+
+
 class EmpresaService:
     def __init__(self, empresa_repository, usuario_repository):
         self.empresa_repository = empresa_repository
@@ -43,6 +51,8 @@ class EmpresaService:
 
         limite_administradores = leer_limite(data.get("limite_administradores"), "El límite de administradores")
         limite_operarios = leer_limite(data.get("limite_operarios"), "El límite de operarios")
+        # Sin zona horaria indicada, la empresa queda con la de por defecto.
+        zona_horaria = leer_zona_horaria(data["zona_horaria"]) if data.get("zona_horaria") else ZONA_POR_DEFECTO
 
         if self.empresa_repository.find_by_nit(nit):
             raise ValidationError(f"Ya existe una empresa con el NIT {nit}")
@@ -54,6 +64,7 @@ class EmpresaService:
             direccion=direccion,
             limite_administradores=limite_administradores,
             limite_operarios=limite_operarios,
+            zona_horaria=zona_horaria,
         )
         empresa_id = self.empresa_repository.insert(empresa.to_dict())
         return self.obtener_empresa(empresa_id)
@@ -81,22 +92,31 @@ class EmpresaService:
                     raise ValidationError(f"{campo} no puede quedar vacío")
                 updates[campo] = valor
 
-        # Un límite no puede quedar por debajo de los usuarios que la empresa ya tiene.
-        for rol, campo in CAMPO_LIMITE_POR_ROL.items():
-            if campo in data:
-                limite = leer_limite(data[campo], f"El límite de {NOMBRE_ROL_PLURAL[rol]}")
-                actuales = empresa["usuarios_actuales"].get(rol, 0)
-                if limite < actuales:
-                    raise ValidationError(
-                        f"La empresa ya tiene {actuales} {NOMBRE_ROL_PLURAL[rol]}; "
-                        f"el límite no puede ser menor"
-                    )
-                updates[campo] = limite
+        updates.update(self._limites_nuevos(data, empresa))
+        if "zona_horaria" in data:
+            updates["zona_horaria"] = leer_zona_horaria(data["zona_horaria"])
 
         if not updates:
             raise ValidationError("No hay campos válidos para actualizar")
         self.empresa_repository.update(empresa_id, updates)
         return self.obtener_empresa(empresa_id)
+
+    @staticmethod
+    def _limites_nuevos(data: dict, empresa: dict) -> dict:
+        """Un límite no puede quedar por debajo de los usuarios que la empresa ya tiene."""
+        limites = {}
+        for rol, campo in CAMPO_LIMITE_POR_ROL.items():
+            if campo not in data:
+                continue
+            limite = leer_limite(data[campo], f"El límite de {NOMBRE_ROL_PLURAL[rol]}")
+            actuales = empresa["usuarios_actuales"].get(rol, 0)
+            if limite < actuales:
+                raise ValidationError(
+                    f"La empresa ya tiene {actuales} {NOMBRE_ROL_PLURAL[rol]}; "
+                    f"el límite no puede ser menor"
+                )
+            limites[campo] = limite
+        return limites
 
     def guardar_logo(self, empresa_id: str, contenido: bytes) -> dict:
         self.obtener_empresa(empresa_id)

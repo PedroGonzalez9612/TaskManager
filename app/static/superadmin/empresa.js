@@ -1,4 +1,4 @@
-// Superadmin dentro de una empresa: ve sus datos y cupos, la edita y crea sus administradores.
+// Superadmin dentro de una empresa: ve sus datos y límites, la edita y crea sus administradores.
 
 const empresaId = new URLSearchParams(window.location.search).get("id");
 const lista = document.getElementById("lista-usuarios");
@@ -16,11 +16,11 @@ function pintarEmpresa() {
     document.title = `${empresa.nombre} — GestLab`;
 
     document.getElementById("logo-empresa").replaceChildren(crearLogoCuadro(empresa, true));
-    document.getElementById("cupos").replaceChildren(...crearMedidoresEmpresa(empresa, true));
+    document.getElementById("limites").replaceChildren(...crearMedidoresEmpresa(empresa, true));
 
-    // Sin cupo, el botón se desactiva y una nota explica por qué (prevención de errores, Nielsen 5).
-    const lleno = cupoLleno(empresa, "ADMINISTRADOR");
-    const aviso = document.getElementById("aviso-cupo");
+    // Con el límite alcanzado, el botón se desactiva y una nota explica por qué (prevención de errores, Nielsen 5).
+    const lleno = limiteAlcanzado(empresa, "ADMINISTRADOR");
+    const aviso = document.getElementById("aviso-limite");
     aviso.hidden = !lleno;
     aviso.replaceChildren(crearConIcono("span", "", "circle-alert", ""),
         "Se alcanzó el límite de administradores. Para crear otro, amplía el límite en “Editar empresa”.");

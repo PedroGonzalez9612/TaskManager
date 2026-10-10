@@ -32,7 +32,7 @@ function pintarIndicadores(actividades, dias, capacidad) {
             actividades.length ? `${finalizadas} finalizadas` : "Nada programado"),
         crearIndicador("Tiempo programado", duracionTexto(totalMinutos),
             `Jornada de ${duracionTexto(capacidad)}`),
-        crearIndicador("Día más cargado",
+        crearIndicador("Día de mayor carga",
             masCargado.minutos ? `${Math.round(masCargado.minutos * 100 / capacidad)} %` : "—",
             masCargado.minutos ? masCargado.nombreLargo : "Sin actividades"),
     );

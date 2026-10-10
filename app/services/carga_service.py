@@ -1,22 +1,30 @@
 from collections import defaultdict
 
-from app.models.enums import Rol
+from app.models.enums import EstadoActividad, Rol
 from app.utils.errors import ProhibidoError
 from app.utils.fechas import validar_fecha
 
-# Capacidad de una jornada en minutos (turno de 8 h menos 1 h de descanso).
-# PROVISIONAL: cuando existan los turnos, la capacidad se calculará desde el turno de cada operario
+# Las canceladas no suman a la carga; las no realizadas sí, porque ocuparon su lugar en el día
 # (alcance, Sección 5.2).
+ESTADOS_QUE_SUMAN = [estado.value for estado in EstadoActividad if estado != EstadoActividad.CANCELADA]
+
+# Capacidad provisional de una jornada en minutos (turno de 8 h menos 1 h de descanso). Se usa para
+# los operarios que todavía no tienen turno; con turno, la capacidad es la de su turno vigente en
+# esa jornada (alcance, Sección 5.2; TurnoService.capacidad_de).
 CAPACIDAD_JORNADA_MIN = 420
 
 
 class CargaService:
     """Calcula la carga laboral: tiempo estimado de las actividades de cada operario por jornada."""
 
-    def __init__(self, actividad_repository, asignacion_repository, usuario_repository):
+    def __init__(self, actividad_repository, asignacion_repository, usuario_repository, cierre_jornada,
+                 turno_service):
         self.actividad_repository = actividad_repository
         self.asignacion_repository = asignacion_repository
         self.usuario_repository = usuario_repository
+        self.cierre_jornada = cierre_jornada
+        # La capacidad de cada operario en cada jornada sale de su turno vigente.
+        self.turno_service = turno_service
 
     def consultar(self, fecha_desde: str, fecha_hasta: str, solicitante: dict) -> dict:
         """Carga por jornada. El Administrador ve a todos los operarios de su empresa; el Operario, solo la suya."""
@@ -29,6 +37,8 @@ class CargaService:
             operario_ids = [solicitante["id"]]
         else:
             raise ProhibidoError("No tienes acceso a la carga laboral")
+        # Antes de sumar: lo atrasado pasa a su nueva jornada (alcance, Sección 5.1).
+        self.cierre_jornada.cerrar_pendientes(solicitante["empresa_id"])
         return self.carga_por_jornada(solicitante["empresa_id"], fecha_desde, fecha_hasta, operario_ids)
 
     def carga_por_jornada(self, empresa_id: str, fecha_desde: str, fecha_hasta: str,
@@ -38,10 +48,12 @@ class CargaService:
             operarios = [o for o in operarios if str(o["_id"]) in operario_ids]
         ids = [str(o["_id"]) for o in operarios]
 
+        # Solo las asignaciones activas: al operario retirado o que devolvió la actividad ya no le suma.
         asignaciones = self.asignacion_repository.find_by_usuarios(ids)
         actividades = self.actividad_repository.buscar(
             empresa_id, fecha_desde=fecha_desde, fecha_hasta=fecha_hasta,
             ids=list({a["actividad_id"] for a in asignaciones}),
+            estados=ESTADOS_QUE_SUMAN,
         )
         por_id = {str(a["_id"]): a for a in actividades}
 
@@ -53,16 +65,18 @@ class CargaService:
                 minutos[asignacion["usuario_id"]][actividad["fecha_programada"]] += \
                     actividad.get("tiempo_estimado_min") or 0
 
+        turnos = self.turno_service.turnos_de_operarios(ids)
         return {
+            # La provisional, para compatibilidad: la de cada operario va en cada jornada.
             "capacidad_min": CAPACIDAD_JORNADA_MIN,
             "operarios": [
                 {
-                    "id": str(operario["_id"]),
+                    "id": usuario_id,
                     "nombre": operario["nombre"],
-                    "jornadas": [self._jornada(fecha, total) for fecha, total in
-                                 sorted(minutos[str(operario["_id"])].items())],
+                    "jornadas": [self._jornada(fecha, total, turnos.capacidad_de(usuario_id, fecha))
+                                 for fecha, total in sorted(minutos[usuario_id].items())],
                 }
-                for operario in operarios
+                for operario, usuario_id in zip(operarios, ids)
             ],
         }
 
@@ -79,10 +93,12 @@ class CargaService:
         ]
 
     @staticmethod
-    def _jornada(fecha: str, minutos: int) -> dict:
+    def _jornada(fecha: str, minutos: int, capacidad_min: int) -> dict:
+        """La carga de un operario en una jornada, comparada con su capacidad de esa jornada."""
         return {
             "fecha": fecha,
             "minutos": minutos,
-            "porcentaje": round(minutos * 100 / CAPACIDAD_JORNADA_MIN),
-            "sobrecarga": minutos > CAPACIDAD_JORNADA_MIN,
+            "capacidad_min": capacidad_min,
+            "porcentaje": round(minutos * 100 / capacidad_min),
+            "sobrecarga": minutos > capacidad_min,
         }

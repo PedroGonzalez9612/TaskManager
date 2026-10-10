@@ -38,6 +38,20 @@ function crearSelector(id, nombre, opciones) {
 
 // Crea el diálogo una sola vez por página. "obtenerRequerimientos" y "obtenerOperarios" devuelven las
 // listas vigentes; "alGuardar" se llama después de crear, editar o eliminar, para recargar la vista.
+// Revisa en el navegador lo mínimo antes de enviar (el servidor vuelve a validar todo).
+function validarDatosActividad(datos) {
+    if (!datos.requerimiento_id) {
+        return "Primero crea un requerimiento: toda actividad pertenece a uno.";
+    }
+    if (!datos.titulo.trim() || !datos.ubicacion.trim() || !datos.fecha_programada) {
+        return "Completa título, ubicación y fecha.";
+    }
+    if ((Number(datos.horas) || 0) * 60 + (Number(datos.minutos) || 0) < 1) {
+        return "Indica el tiempo estimado.";
+    }
+    return null;
+}
+
 function crearFormularioActividad({ obtenerRequerimientos, obtenerOperarios, alGuardar }) {
     const dialogo = crearElemento("dialog", "dialogo dialogo-ancho");
     let actividadEnEdicion = null;
@@ -93,7 +107,7 @@ function crearFormularioActividad({ obtenerRequerimientos, obtenerOperarios, alG
     formulario.append(
         crearCampo("Requerimiento", requerimiento),
         crearCampo("Título", tituloActividad),
-        crearCampo("Qué hay que hacer", descripcion),
+        crearCampo("Descripción de la actividad", descripcion),
         fila(crearCampo("Categoría", categoria), crearCampo("Prioridad", prioridad)),
         crearCampo("Ubicación", ubicacion, "Línea, máquina o área donde se hace el trabajo."),
         fila(crearCampo("Fecha", fecha), crearCampo("Hora (opcional)", hora)),
@@ -180,22 +194,9 @@ function crearFormularioActividad({ obtenerRequerimientos, obtenerOperarios, alG
         tituloActividad.focus();
     }
 
-    function validar(datos) {
-        if (!datos.requerimiento_id) {
-            return "Primero crea un requerimiento: toda actividad pertenece a uno.";
-        }
-        if (!datos.titulo.trim() || !datos.ubicacion.trim() || !datos.fecha_programada) {
-            return "Completa título, ubicación y fecha.";
-        }
-        if ((Number(datos.horas) || 0) * 60 + (Number(datos.minutos) || 0) < 1) {
-            return "Indica el tiempo estimado.";
-        }
-        return null;
-    }
-
     formulario.addEventListener("submit", (evento) => {
         evento.preventDefault();
-        enviarFormularioDialogo(dialogo, validar, async (datos) => {
+        enviarFormularioDialogo(dialogo, validarDatosActividad, async (datos) => {
             const cuerpo = {
                 requerimiento_id: datos.requerimiento_id,
                 titulo: datos.titulo,
@@ -229,7 +230,7 @@ function crearFormularioActividad({ obtenerRequerimientos, obtenerOperarios, alG
     eliminar.addEventListener("click", async () => {
         if (eliminar.dataset.confirmar !== "si") {
             eliminar.dataset.confirmar = "si";
-            eliminar.textContent = "¿Eliminar? Toca de nuevo";
+            eliminar.textContent = "Confirma para eliminar";
             return;
         }
         try {

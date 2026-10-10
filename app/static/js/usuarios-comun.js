@@ -2,31 +2,38 @@
 // Lo usan el Superadmin (dentro de una empresa) y el Administrador (en su propia empresa).
 // Necesita componentes.js.
 
-function crearFilaUsuario(usuario) {
+// "alAsignarTurno" (opcional): si viene, los operarios muestran su turno y un botón para cambiarlo.
+function crearFilaUsuario(usuario, alAsignarTurno = null) {
     const fila = crearElemento("li", "fila-usuario");
     const textos = crearElemento("div");
     textos.append(
         crearElemento("span", "fila-nombre", usuario.nombre),
         crearElemento("span", "fila-meta", usuario.correo),
     );
-    fila.append(
-        crearAvatarNeutro(usuario.nombre),
-        textos,
-        crearElemento("span", "rol", NOMBRE_ROL[usuario.rol] || usuario.rol),
-    );
+    const rol = crearElemento("span", "rol", NOMBRE_ROL[usuario.rol] || usuario.rol);
+    if (alAsignarTurno && usuario.rol === "OPERARIO") {
+        const turno = usuario.turno;
+        textos.append(crearElemento("span", "fila-meta cifra",
+            turno ? `Turno ${turno.nombre}, ${turno.hora_inicio} a ${turno.hora_fin}` : "Sin turno asignado"));
+        const boton = crearElemento("button", "boton-texto", turno ? "Cambiar turno" : "Asignar turno");
+        boton.type = "button";
+        boton.addEventListener("click", () => alAsignarTurno(usuario));
+        rol.append(document.createElement("br"), boton);
+    }
+    fila.append(crearAvatarNeutro(usuario.nombre), textos, rol);
     return fila;
 }
 
 // Llena la lista de usuarios o muestra el estado vacío si la empresa no tiene ninguno.
 // Devuelve los usuarios cargados.
-async function cargarUsuarios(empresaId, lista, estadoVacio) {
+async function cargarUsuarios(empresaId, lista, estadoVacio, alAsignarTurno = null) {
     try {
         const usuarios = await pedirApi(`/usuarios?empresa_id=${encodeURIComponent(empresaId)}`);
         // Primero los administradores y, dentro de cada rol, por nombre.
         usuarios.sort((a, b) => a.rol.localeCompare(b.rol) || a.nombre.localeCompare(b.nombre, "es"));
         lista.hidden = usuarios.length === 0;
         estadoVacio.hidden = usuarios.length > 0;
-        lista.replaceChildren(...usuarios.map(crearFilaUsuario));
+        lista.replaceChildren(...usuarios.map((u) => crearFilaUsuario(u, alAsignarTurno)));
         return usuarios;
     } catch (error) {
         lista.hidden = true;

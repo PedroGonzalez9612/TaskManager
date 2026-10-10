@@ -9,6 +9,11 @@ class Config:
     # Firma la cookie de sesión. En cualquier entorno compartido debe venir del .env.
     SECRET_KEY = os.environ.get("SECRET_KEY", "solo-para-desarrollo-cambiar")
 
+    # La cookie de sesión no se envía en peticiones que nacen en otro sitio (salvo al seguir un enlace)
+    # y el JavaScript de la página no puede leerla.
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_HTTPONLY = True
+
     # Tamaño máximo de una petición (protege la subida del logo). El límite del logo es menor (512 KB).
     MAX_CONTENT_LENGTH = 1024 * 1024
 

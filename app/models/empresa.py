@@ -1,4 +1,5 @@
 from app.models.enums import Rol
+from app.utils.reloj import ZONA_POR_DEFECTO
 
 # Qué campo de la empresa limita la cantidad de usuarios de cada rol.
 CAMPO_LIMITE_POR_ROL = {
@@ -8,7 +9,8 @@ CAMPO_LIMITE_POR_ROL = {
 
 
 class Empresa:
-    def __init__(self, nombre, nit, sector, direccion, limite_administradores, limite_operarios, id=None):
+    def __init__(self, nombre, nit, sector, direccion, limite_administradores, limite_operarios, id=None,
+                 zona_horaria=ZONA_POR_DEFECTO):
         self.id = id
         self.nombre = nombre
         self.nit = nit
@@ -16,6 +18,8 @@ class Empresa:
         self.direccion = direccion
         self.limite_administradores = limite_administradores
         self.limite_operarios = limite_operarios
+        # Con ella el servidor decide qué día es "hoy" para la empresa y cuándo termina la jornada.
+        self.zona_horaria = zona_horaria
 
     def to_dict(self):
         return {
@@ -25,6 +29,7 @@ class Empresa:
             "direccion": self.direccion,
             "limite_administradores": self.limite_administradores,
             "limite_operarios": self.limite_operarios,
+            "zona_horaria": self.zona_horaria,
         }
 
     @staticmethod
@@ -40,4 +45,6 @@ class Empresa:
             "limite_administradores": doc.get("limite_administradores"),
             "limite_operarios": doc.get("limite_operarios"),
             "tiene_logo": bool(doc.get("logo_tipo")),
+            # Las empresas anteriores a esta regla no la tienen guardada: usan la zona por defecto.
+            "zona_horaria": doc.get("zona_horaria") or ZONA_POR_DEFECTO,
         }

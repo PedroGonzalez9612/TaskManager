@@ -12,21 +12,37 @@ let requerimientos = [];
 let cargas = {};        // id del operario -> { minutos, porcentaje, sobrecarga } del día visible
 let capacidad = 0;
 
-// Encabezado de cada columna: nombre del operario y medidor de su carga del día.
+// Encabezado de cada columna: nombre del operario, medidor de su carga del día y sus horas. Todas las
+// columnas tienen los mismos tres renglones, para que queden alineadas; la sobrecarga se dice en el
+// renglón de las horas, con ícono y texto (alcance, Sección 6.3: "junto a las horas de la persona").
 function etiquetaDeColumna(info) {
     const columna = crearElemento("div", "columna-operario");
-    columna.append(crearElemento("span", "columna-nombre", info.resource.title));
-    if (info.resource.id !== SIN_ASIGNAR) {
-        const jornada = cargas[info.resource.id] || { minutos: 0, porcentaje: 0, sobrecarga: false };
-        const medidor = crearMedidor("Carga", jornada.porcentaje, 100);
-        medidor.querySelector(".cifra").textContent = `${jornada.porcentaje} %`;
-        medidor.title = `${duracionTexto(jornada.minutos)} programados de ${duracionTexto(capacidad)}`;
-        if (jornada.sobrecarga) {
-            medidor.append(crearConIcono("p", "medidor-nota", "circle-alert", "Sobrecarga"));
-        }
-        columna.append(medidor);
+    const nombre = crearElemento("span", "columna-nombre", info.resource.title);
+    nombre.title = info.resource.title;
+    columna.append(nombre);
+
+    if (info.resource.id === SIN_ASIGNAR) {
+        columna.append(crearElemento("p", "columna-horas", "Actividades sin operario"));
+        return { domNodes: [columna] };
     }
+
+    const jornada = cargas[info.resource.id] || { minutos: 0, porcentaje: 0, sobrecarga: false };
+    const medidor = crearMedidor("Carga", jornada.porcentaje, 100);
+    medidor.querySelector(".cifra").textContent = `${jornada.porcentaje} %`;
+    const horas = `${duracionTexto(jornada.minutos)} de ${duracionTexto(capacidad)}`;
+    const nota = jornada.sobrecarga
+        ? crearConIcono("p", "columna-horas columna-sobrecarga cifra", "circle-alert", `Sobrecarga: ${horas}`)
+        : crearElemento("p", "columna-horas cifra", horas);
+    columna.append(medidor, nota);
     return { domNodes: [columna] };
+}
+
+// Un bloque por operario asignado, con sus propias horas y su estado (cada uno tiene su ejecución).
+// Las actividades sin operario van en la columna "Sin asignar".
+function eventosDelTablero() {
+    return actividades.flatMap((actividad) => (actividad.operarios.length
+        ? actividad.operarios.map((operario) => actividadAEvento(actividad, operario))
+        : [{ ...actividadAEvento(actividad), resourceIds: [SIN_ASIGNAR] }]));
 }
 
 function columnas() {
@@ -52,7 +68,7 @@ function pintarResumen() {
     if (sobrecargados.length) {
         const nombres = sobrecargados.map((o) => `${o.nombre} (${cargas[o.id].porcentaje} %)`).join(", ");
         aviso.replaceChildren(crearConIcono("span", "", "circle-alert", ""),
-            `Con más trabajo del que cabe en su jornada: ${nombres}.`);
+            `Superan la capacidad de su jornada: ${nombres}.`);
     }
 }
 
@@ -67,20 +83,14 @@ async function cargar() {
             pedirApi(`/analisis/carga?desde=${dia}&hasta=${dia}`),
             pedirApi("/requerimientos"),
         ]);
-        actividades = lista;
+        actividades = actividadesDelHorario(lista);     // Las canceladas no se dibujan ni se cuentan.
         requerimientos = listaRequerimientos;
         capacidad = carga.capacidad_min;
         operarios = carga.operarios.map((operario) => ({ id: operario.id, nombre: operario.nombre }));
         cargas = Object.fromEntries(carga.operarios.map((operario) => [operario.id, operario.jornadas[0] || null]));
 
         calendario.setOption("resources", columnas());
-        calendario.setOption("events", actividades.map((actividad) => {
-            const evento = actividadAEvento(actividad, true);
-            if (evento.resourceIds.length === 0) {
-                evento.resourceIds = [SIN_ASIGNAR];
-            }
-            return evento;
-        }));
+        calendario.setOption("events", eventosDelTablero());
         pintarResumen();
     } catch (error) {
         mostrarAviso(`No se pudo cargar el equipo: ${error.message}`, "advertencia");
@@ -101,7 +111,6 @@ iniciarPaginaProtegida(["ADMINISTRADOR"]).then(() => {
         view: "resourceTimeGridDay",
         headerToolbar: { start: "title", center: "", end: "today prev,next" },
         titleFormat: { weekday: "long", day: "numeric", month: "long" },
-        height: "38rem",
         resources: [],
         resourceLabelContent: etiquetaDeColumna,
         datesSet: (info) => {

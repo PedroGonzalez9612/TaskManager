@@ -14,11 +14,12 @@
                 <h1>Resumen de la semana</h1>
                 <p id="rango-semana"></p>
             </div>
-            <div class="grupo-botones" role="group" aria-label="Cambiar de semana">
+            <fieldset class="grupo-botones">
+                <legend class="solo-lectores">Cambiar de semana</legend>
                 <button type="button" id="semana-anterior" class="boton-secundario boton-pequeno" aria-label="Semana anterior"></button>
                 <button type="button" id="semana-actual" class="boton-secundario boton-pequeno">Esta semana</button>
                 <button type="button" id="semana-siguiente" class="boton-secundario boton-pequeno" aria-label="Semana siguiente"></button>
-            </div>
+            </fieldset>
         </div>
 
         <section id="indicadores" class="indicadores" aria-live="polite"></section>
@@ -28,7 +29,8 @@
                 <h2>Tiempo programado por día</h2>
             </div>
             <div class="panel-cuerpo">
-                <div class="grafica"><canvas id="grafica-carga" role="img" aria-label="Horas programadas por día de la semana"></canvas></div>
+                <p class="solo-lectores">Gráfica de las horas programadas por día de la semana. Los mismos datos están en la tabla que sigue.</p>
+                <div class="grafica" aria-hidden="true"><canvas id="grafica-carga"></canvas></div>
                 <details class="tabla-datos">
                     <summary>Ver los datos en tabla</summary>
                     <div class="contenedor-tabla">

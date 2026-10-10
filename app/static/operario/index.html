@@ -9,19 +9,19 @@
 </head>
 <body class="cargando ancho-angosto">
     <main class="principal">
-        <div class="encabezado-pagina">
-            <div>
-                <h1 id="saludo">Hola</h1>
-                <p id="fecha-hoy"></p>
-            </div>
-        </div>
-
-        <section id="resumen-dia" class="resumen-dia" aria-live="polite" hidden></section>
-        <div id="aviso-urgente" class="aviso-urgente" role="alert" hidden></div>
-        <section id="ahora" class="ahora" aria-label="Actividad en curso" hidden></section>
+        <header class="turno-encabezado">
+            <p class="turno-fecha"><span id="fecha-hoy"></span> <span id="turno-estado" class="turno-estado" hidden></span></p>
+            <h1 id="saludo">Tu turno</h1>
+            <p id="turno-resumen" class="turno-resumen cifra" aria-live="polite"></p>
+            <button type="button" id="ordenar-dia" class="boton-secundario turno-ordenar" hidden></button>
+            <output id="turno-sobrecarga" class="aviso aviso-advertencia" hidden><span>El trabajo programado supera la capacidad de tu jornada. Infórmalo a tu administrador.</span></output>
+        </header>
 
         <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando actividades…</p>
-        <div id="agenda"></div>
+        <!-- Su fila del tablero del turno, en vertical: un punto de la línea de tiempo por actividad, en orden. -->
+        <ol id="linea-tiempo" class="linea-tiempo" aria-label="Programación del día" hidden></ol>
+        <!-- Modo para ordenar el día: solo las actividades de horario flexible. -->
+        <section id="ordenador" class="panel ordenador" aria-labelledby="titulo-ordenador" hidden></section>
     </main>
 
     <script src="/static/js/api.js"></script>

@@ -18,8 +18,9 @@
         </div>
 
         <div class="rejilla-ficha">
+            <div>
             <section class="panel" aria-label="Usuarios de la empresa">
-                <p id="aviso-cupo" class="nota-panel" hidden></p>
+                <p id="aviso-limite" class="nota-panel" hidden></p>
                 <ul id="lista-usuarios" class="lista-filas" hidden></ul>
                 <div id="estado-vacio" class="estado-vacio" hidden>
                     <strong>Aún no hay usuarios</strong>
@@ -27,10 +28,29 @@
                 </div>
             </section>
 
+            <!-- Asistencia de la jornada: las marcas de entrada y salida de cada operario. -->
+            <section class="panel" aria-labelledby="titulo-asistencia">
+                <div class="panel-encabezado">
+                    <h2 id="titulo-asistencia">Asistencia de hoy</h2>
+                </div>
+                <ul id="lista-asistencia" class="lista-filas"></ul>
+                <p id="asistencia-vacia" class="estado-vacio" hidden>Ningún operario tiene turno ni marcas hoy.</p>
+            </section>
+            </div>
+
             <aside>
-                <section class="panel" aria-labelledby="titulo-cupos">
-                    <div class="panel-encabezado"><h2 id="titulo-cupos">Cupos</h2></div>
-                    <div id="cupos" class="panel-cuerpo" aria-live="polite"></div>
+                <section class="panel" aria-labelledby="titulo-turnos">
+                    <div class="panel-encabezado">
+                        <h2 id="titulo-turnos">Turnos</h2>
+                        <button type="button" class="boton-texto" id="nuevo-turno">Nuevo turno</button>
+                    </div>
+                    <ul id="lista-turnos" class="lista-filas"></ul>
+                    <p id="turnos-vacio" class="nota-panel" hidden>Aún no hay turnos. Crea uno para asignarlo a tus operarios.</p>
+                </section>
+
+                <section class="panel" aria-labelledby="titulo-limites">
+                    <div class="panel-encabezado"><h2 id="titulo-limites">Límites de usuarios</h2></div>
+                    <div id="limites" class="panel-cuerpo" aria-live="polite"></div>
                 </section>
             </aside>
         </div>
@@ -66,11 +86,89 @@
         </form>
     </dialog>
 
+    <dialog id="dialogo-turno" class="dialogo" aria-labelledby="titulo-dialogo-turno">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-dialogo-turno">Nuevo turno</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <label for="turno-nombre">Nombre</label>
+            <input id="turno-nombre" name="nombre" required>
+            <div class="fila-campos">
+                <div class="campo">
+                    <label for="turno-inicio">Hora de inicio</label>
+                    <input id="turno-inicio" name="hora_inicio" type="time" required>
+                </div>
+                <div class="campo">
+                    <label for="turno-fin">Hora de fin</label>
+                    <input id="turno-fin" name="hora_fin" type="time" required>
+                </div>
+            </div>
+            <label for="turno-descanso">Descanso (minutos)</label>
+            <input id="turno-descanso" name="descanso_min" type="number" min="0" step="5" value="60">
+            <p class="ayuda-campo">Si la hora de fin es menor que la de inicio, el turno termina al día siguiente.</p>
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Crear turno</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="dialogo-asignar-turno" class="dialogo" aria-labelledby="titulo-asignar-turno">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-asignar-turno">Asignar turno</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <input type="hidden" name="operario_id">
+            <label for="asignar-turno">Turno</label>
+            <select id="asignar-turno" name="turno_id"></select>
+            <label for="asignar-desde">Desde</label>
+            <input id="asignar-desde" name="desde" type="date" required>
+            <p class="ayuda-campo">El turno anterior se conserva para las jornadas pasadas.</p>
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Asignar turno</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="dialogo-corregir" class="dialogo" aria-labelledby="titulo-corregir">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-corregir">Corregir asistencia</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <input type="hidden" name="asistencia_id">
+            <div class="fila-campos">
+                <div class="campo">
+                    <label for="corregir-entrada">Entrada</label>
+                    <input id="corregir-entrada" name="entrada" type="time" required>
+                </div>
+                <div class="campo">
+                    <label for="corregir-salida">Salida</label>
+                    <input id="corregir-salida" name="salida" type="time">
+                </div>
+            </div>
+            <label for="corregir-motivo">Motivo de la corrección</label>
+            <input id="corregir-motivo" name="motivo" required>
+            <p class="ayuda-campo">Las marcas originales quedan guardadas junto con la corrección.</p>
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Guardar corrección</button>
+            </div>
+        </form>
+    </dialog>
+
     <script src="/static/js/api.js"></script>
     <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
     <script src="/static/js/componentes.js"></script>
     <script src="/static/js/usuarios-comun.js"></script>
+    <script src="/static/admin/turnos-asistencia.js"></script>
     <script src="/static/admin/usuarios.js"></script>
 </body>
 </html>

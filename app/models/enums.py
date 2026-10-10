@@ -37,13 +37,57 @@ class EstadoRequerimiento(str, Enum):
 
 
 class EstadoActividad(str, Enum):
-    PENDIENTE = "PENDIENTE"
-    ASIGNADA = "ASIGNADA"
-    EN_EJECUCION = "EN_EJECUCION"
-    COMPLETADA = "COMPLETADA"
+    PENDIENTE = "PENDIENTE"            # Sin operarios asignados.
+    ASIGNADA = "ASIGNADA"              # Con operarios; ninguno la tiene en curso ni pausada.
+    EN_EJECUCION = "EN_EJECUCION"      # Al menos un operario la tiene en curso.
+    PAUSADA = "PAUSADA"                # Nadie la tiene en curso y al menos uno la pausó.
+    DEVUELTA = "DEVUELTA"              # El último operario asignado la devolvió al Administrador.
+    COMPLETADA = "COMPLETADA"          # Final: todos los asignados la finalizaron.
+    NO_REALIZADA = "NO_REALIZADA"      # Final: era de hora fija y no se terminó en su día.
+    CANCELADA = "CANCELADA"            # Final: la canceló el Administrador, con motivo.
+
+    @property
+    def es_final(self) -> bool:
+        """Un estado final ya no cambia: la actividad no se edita, no se reasigna y no se cancela."""
+        return self in (EstadoActividad.COMPLETADA, EstadoActividad.NO_REALIZADA, EstadoActividad.CANCELADA)
 
 
 class EstadoEjecucion(str, Enum):
-    NO_INICIADA = "NO_INICIADA"
+    """La ejecución nace cuando el operario inicia, por eso no existe un estado "no iniciada"."""
     EN_PROGRESO = "EN_PROGRESO"
-    FINALIZADA = "FINALIZADA"
+    PAUSADA = "PAUSADA"
+    FINALIZADA = "FINALIZADA"          # El operario la terminó.
+    CERRADA = "CERRADA"                # Terminó sin completarse: actividad cancelada, no realizada u operario retirado.
+
+    @property
+    def esta_abierta(self) -> bool:
+        return self in (EstadoEjecucion.EN_PROGRESO, EstadoEjecucion.PAUSADA)
+
+
+class EstadoAsignacion(str, Enum):
+    """Una asignación no se borra: se cierra, y queda como historial."""
+    ACTIVA = "ACTIVA"
+    DEVUELTA = "DEVUELTA"              # El operario devolvió la actividad antes de iniciarla.
+    RETIRADA = "RETIRADA"              # El Administrador le quitó la actividad.
+
+
+# Motivos de pausa que el sistema conoce. Los demás los escribe el operario en "Otro" y quedan
+# guardados en el catálogo de su empresa (alcance, Sección 5.1).
+MOTIVO_PAUSA_URGENTE = "Actividad urgente"
+MOTIVO_PAUSA_HORA_FIJA = "Actividad de hora fija"
+MOTIVO_PAUSA_FIN_JORNADA = "Fin de jornada"
+MOTIVOS_PAUSA_FIJOS = (MOTIVO_PAUSA_URGENTE, MOTIVO_PAUSA_HORA_FIJA, MOTIVO_PAUSA_FIN_JORNADA)
+
+# Motivos para devolver una actividad. Esta lista es fija; con "Otro" el operario escribe el suyo.
+MOTIVOS_DEVOLUCION = (
+    "Falta información",
+    "Me la asignaron por error",
+    "Falta herramienta o material",
+    "El equipo no está disponible",
+)
+
+
+class TipoCatalogo(str, Enum):
+    """Listas desplegables por empresa que se van llenando con lo que se escribe en "Otro"."""
+    MOTIVO_PAUSA = "MOTIVO_PAUSA"
+    MOTIVO_CANCELACION = "MOTIVO_CANCELACION"
