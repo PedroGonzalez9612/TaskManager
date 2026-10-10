@@ -54,6 +54,10 @@ El proyecto deberá contar con una propuesta cromática definida y justificada. 
 
 La selección de colores deberá responder a una intención funcional y comunicativa, y no únicamente a criterios estéticos.
 
+### 4. Aplicación de metáforas *(requisito agregado por el profesor en clase, Semana 11; no figura en el enunciado original)*
+
+La interfaz deberá usar metáforas que conecten elementos del mundo real con funciones de la interfaz. El estudiante deberá identificar las metáforas aplicadas en el prototipo y documentarlas.
+
 ## Documentación que se debe entregar
 
 ### A. Documento de diseño
@@ -65,6 +69,7 @@ La selección de colores deberá responder a una intención funcional y comunica
 - **Aplicación de principios de usabilidad:** principio aplicado, captura de la interfaz donde se evidencia, explicación de su aplicación, justificación de la decisión.
 - **Aplicación de leyes de Gestalt:** ley o principio utilizado, captura de la interfaz, explicación de cómo se aplica, justificación de su utilización.
 - **Teoría del color:** paleta cromática, códigos HEX de los colores utilizados, función de cada color dentro de la interfaz, justificación de la selección, evidencias de aplicación en las pantallas.
+- **Metáforas** *(agregado)*: metáfora utilizada, captura de la interfaz donde se evidencia, explicación y justificación.
 - **Conclusiones:** principales aprendizajes de la fase, dificultades encontradas, decisiones de diseño más relevantes, aspectos que podrían mejorarse en una siguiente iteración.
 
 ### B. Prototipo de la interfaz
@@ -79,7 +84,7 @@ Se debe escoger el programa o diseñador para la construcción. El prototipo deb
 
 ### C. Evidencias
 
-El estudiante deberá presentar capturas de pantalla que permitan identificar claramente la aplicación de: principios de usabilidad, leyes de Gestalt, teoría del color, y componentes y patrones visuales utilizados.
+El estudiante deberá presentar capturas de pantalla que permitan identificar claramente la aplicación de: principios de usabilidad, leyes de Gestalt, teoría del color, metáforas *(agregado)*, y componentes y patrones visuales utilizados.
 
 Cada evidencia deberá estar acompañada de una breve explicación. No se deberán incluir únicamente capturas sin justificar las decisiones de diseño.
 
