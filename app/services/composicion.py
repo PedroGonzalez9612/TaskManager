@@ -35,14 +35,15 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
     usuario_repository = UsuarioRepository(db)
     empresa_repository = EmpresaRepository(db)
 
-    # El cierre de jornada no depende de ningún otro servicio: los demás lo reciben y lo llaman
-    # antes de leer o cambiar las actividades de una empresa.
-    cierre_jornada = CierreJornadaService(
-        actividad_repository, asignacion_repository, ejecucion_repository, empresa_repository, reloj=reloj,
-    )
-    # Los turnos dan la capacidad de cada operario por jornada (carga y programación del día).
+    # Los turnos dan la capacidad de cada operario por jornada (carga y programación del día), su
+    # jornada vigente y el momento en que termina cada jornada.
     turnos = TurnoService(
         TurnoRepository(db), AsignacionTurnoRepository(db), usuario_repository, empresa_repository, reloj=reloj,
+    )
+    # El cierre de jornada solo depende de los turnos: los demás servicios lo reciben y lo llaman
+    # antes de leer o cambiar las actividades de una empresa.
+    cierre_jornada = CierreJornadaService(
+        actividad_repository, asignacion_repository, ejecucion_repository, empresa_repository, turnos, reloj=reloj,
     )
     asistencia = AsistenciaService(
         AsistenciaRepository(db), turnos, usuario_repository, empresa_repository, reloj=reloj,

@@ -8,6 +8,7 @@ const NOMBRE_ESTADO_ASISTENCIA = {
     VALIDADA: "Validada",
     CORREGIDA: "Corregida",
     SIN_MARCA: "Sin marca",
+    SIN_SALIDA: "Sin salida",
 };
 
 function horaDeMomento(momento) {

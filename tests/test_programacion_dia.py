@@ -4,6 +4,7 @@ pendiente se reacomoda. Son funciones puras: no usan base de datos.
 La jornada es el 10 de octubre en Bogotá (UTC-5). "Ahora" son las 10:00 de allá (15:00 UTC)."""
 from datetime import datetime, timedelta, timezone
 
+from app.models.ejecucion import minutos_trabajados_en
 from app.models.orden_jornada import OrdenJornada, orden_sugerido
 from app.services.programacion_dia import programar_dia
 
@@ -209,6 +210,83 @@ def test_las_canceladas_y_no_realizadas_no_entran_en_la_programacion():
 def test_una_finalizada_sin_registro_de_tiempo_se_ubica_en_su_hora():
     antigua = actividad("a", "COMPLETADA", fija="07:00")
     assert tramos(programar([antigua])) == {"a": ("07:00", "07:00")}
+
+
+# ---------- Atribución del tiempo a la jornada ----------
+
+DIA_11 = "2026-10-11"
+NOCHE_23 = hora("23:00")                         # 23:00 del 10 en Bogotá.
+
+
+def despues(minutos):
+    return NOCHE_23 + timedelta(minutes=minutos)
+
+
+def cruzada(pausas=()):
+    """Iniciada a las 23:00 del 10 y finalizada a la 01:00 del 11 (120 minutos en total)."""
+    ejecucion = {"fecha_inicio": NOCHE_23, "fecha_fin": despues(120), "tiempo_real_min": 120,
+                 "pausas": [{"motivo": "Otro", "inicio": inicio, "fin": fin} for inicio, fin in pausas]}
+    return {**actividad("a", "COMPLETADA", estimado=120), "ejecucion": ejecucion}
+
+
+def test_el_tiempo_de_una_actividad_que_cruza_la_medianoche_se_reparte():
+    del_10 = programar_dia([cruzada()], OrdenJornada("carlos", FECHA), despues(120), FECHA, ZONA, CAPACIDAD)
+    del_11 = programar_dia([cruzada()], OrdenJornada("carlos", DIA_11), despues(120), DIA_11, ZONA, CAPACIDAD)
+    assert del_10["resumen"]["trabajado_min"] == 60
+    assert del_11["resumen"]["trabajado_min"] == 60
+
+
+def test_en_la_jornada_siguiente_el_tramo_empieza_a_la_medianoche():
+    del_11 = programar_dia([cruzada()], OrdenJornada("carlos", DIA_11), despues(120), DIA_11, ZONA, CAPACIDAD)
+    assert (tramo(del_11, "a")["inicio"], tramo(del_11, "a")["fin"]) == (despues(60), despues(120))
+
+
+def test_la_pausa_dentro_de_la_ventana_se_descuenta():
+    # Pausa de 00:15 a 00:30 del 11: solo le quita a la jornada del 11.
+    con_pausa = cruzada(pausas=[(despues(75), despues(90))])
+    del_10 = programar_dia([con_pausa], OrdenJornada("carlos", FECHA), despues(120), FECHA, ZONA, CAPACIDAD)
+    del_11 = programar_dia([con_pausa], OrdenJornada("carlos", DIA_11), despues(120), DIA_11, ZONA, CAPACIDAD)
+    assert del_10["resumen"]["trabajado_min"] == 60
+    assert del_11["resumen"]["trabajado_min"] == 45
+
+
+def test_con_turno_de_noche_la_jornada_cuenta_hasta_el_fin_del_turno():
+    # En curso desde las 23:00 del 10; son las 02:00 del 11 y el turno termina a las 06:00.
+    en_curso = {**actividad("a", "EN_EJECUCION", estimado=300),
+                "ejecucion": {"fecha_inicio": NOCHE_23, "fecha_fin": None, "tiempo_real_min": 180, "pausas": []}}
+    fin_turno = despues(7 * 60)
+    con_turno = programar_dia([en_curso], OrdenJornada("carlos", FECHA), despues(180), FECHA, ZONA, CAPACIDAD,
+                              fin_turno)
+    sin_turno = programar_dia([en_curso], OrdenJornada("carlos", FECHA), despues(180), FECHA, ZONA, CAPACIDAD)
+    assert con_turno["resumen"]["trabajado_min"] == 180
+    assert sin_turno["resumen"]["trabajado_min"] == 60
+
+
+def test_con_turno_de_noche_lo_que_empieza_antes_del_fin_del_turno_esta_en_la_jornada():
+    pendiente = actividad("b", estimado=60)
+    ahora = despues(180)                         # 02:00 del 11.
+    con_turno = programar_dia([pendiente], OrdenJornada("carlos", FECHA), ahora, FECHA, ZONA, CAPACIDAD,
+                              despues(7 * 60))
+    sin_turno = programar_dia([pendiente], OrdenJornada("carlos", FECHA), ahora, FECHA, ZONA, CAPACIDAD)
+    assert tramo(con_turno, "b")["fuera_de_jornada"] is False
+    assert tramo(sin_turno, "b")["fuera_de_jornada"] is True
+
+
+def test_una_terminada_antes_de_la_jornada_no_ocupa_tiempo_en_ella():
+    # Un compañero dejó la actividad en el 11; la parte de este operario terminó el 10 a las 23:30.
+    hecha = {**actividad("a", "COMPLETADA", estimado=60),
+             "ejecucion": {"fecha_inicio": NOCHE_23, "fecha_fin": despues(30), "tiempo_real_min": 30, "pausas": []}}
+    del_11 = programar_dia([hecha], OrdenJornada("carlos", DIA_11), despues(120), DIA_11, ZONA, CAPACIDAD)
+    assert (tramo(del_11, "a")["inicio"], tramo(del_11, "a")["fin"]) == (despues(60), despues(60))
+    assert del_11["resumen"]["trabajado_min"] == 0
+
+
+def test_minutos_trabajados_dentro_de_una_ventana():
+    inicio = hora("08:00")
+    pausas = [(hora("08:30"), hora("08:45")), (hora("09:50"), None)]       # La segunda sigue abierta.
+    assert minutos_trabajados_en(inicio, hora("10:00"), pausas, hora("00:00"), hora("23:59")) == 95
+    assert minutos_trabajados_en(inicio, hora("10:00"), pausas, hora("08:40"), hora("09:00")) == 15
+    assert minutos_trabajados_en(inicio, hora("10:00"), pausas, hora("11:00"), hora("12:00")) == 0
 
 
 def test_acepta_las_fechas_sin_zona_que_devuelve_mongo():

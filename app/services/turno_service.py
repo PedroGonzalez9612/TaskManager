@@ -3,15 +3,22 @@
 De aquí sale la capacidad de cada operario en cada jornada (alcance, Sección 5.2): la del turno
 vigente ese día o, si no tiene turno, la capacidad provisional."""
 from collections import defaultdict
+from datetime import date, timedelta
 
 from app.models.enums import Rol
+from app.models.pausa import en_utc
 from app.models.turno import AsignacionTurno, Turno, turno_vigente
 from app.services.carga_service import CAPACIDAD_JORNADA_MIN
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 from app.utils.fechas import validar_fecha
-from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, fecha_local
+from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, fecha_local, fin_del_dia
 
 CAMPOS_TURNO = ("nombre", "hora_inicio", "hora_fin", "descanso_min")
+
+
+def dia_anterior(fecha: str) -> str:
+    """El día ("AAAA-MM-DD") anterior a esa fecha."""
+    return (date.fromisoformat(fecha) - timedelta(days=1)).isoformat()
 
 
 def resumen_turno(turno) -> dict | None:
@@ -39,6 +46,23 @@ class TurnosDeOperarios:
     def capacidad_de(self, usuario_id: str, fecha: str) -> int:
         turno = self.turno_de(usuario_id, fecha)
         return turno.capacidad_min if turno else CAPACIDAD_JORNADA_MIN
+
+    def jornada_vigente(self, usuario_id: str, ahora, zona) -> str:
+        """La jornada que el operario está trabajando en ese momento (alcance, Sección 5.1). Si el
+        turno de ayer cruza la medianoche y todavía no termina, sigue siendo la de ayer; si no, la de hoy."""
+        hoy = fecha_local(ahora, zona)
+        ayer = dia_anterior(hoy)
+        turno = self.turno_de(usuario_id, ayer)
+        if turno and turno.cruza_medianoche and en_utc(ahora) < turno.fin_en(ayer, zona):
+            return ayer
+        return hoy
+
+    def cierre_de(self, usuario_ids, fecha: str, zona):
+        """Cuándo termina la jornada "fecha" para esos operarios (alcance, Sección 5.1): a la
+        medianoche o al fin del turno más tardío de ellos, lo que ocurra después. Sin turno, cuenta
+        solo la medianoche."""
+        fines = [turno.fin_en(fecha, zona) for turno in (self.turno_de(u, fecha) for u in usuario_ids) if turno]
+        return max([fin_del_dia(fecha, zona), *fines])
 
 
 class TurnoService:
@@ -118,6 +142,10 @@ class TurnoService:
     def capacidad_de(self, usuario_id: str, fecha: str) -> int:
         """La capacidad del operario en esa jornada: la de su turno vigente o, sin turno, la provisional."""
         return self.turnos_de_operarios([usuario_id]).capacidad_de(usuario_id, fecha)
+
+    def jornada_vigente(self, usuario_id: str, ahora, zona) -> str:
+        """La jornada ("AAAA-MM-DD") que el operario está trabajando en ese momento."""
+        return self.turnos_de_operarios([usuario_id]).jornada_vigente(usuario_id, ahora, zona)
 
     def turnos_de_hoy(self, empresa_id: str, usuario_ids: list) -> dict:
         """{usuario_id: resumen del turno vigente hoy o None}, para la lista de usuarios."""

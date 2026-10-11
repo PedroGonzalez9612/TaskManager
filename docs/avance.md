@@ -204,6 +204,8 @@ Programación dinámica del día (cuarto bloque de la Etapa 4): la estimación s
 - **Documentos:** `docs/logica_de_negocio.md` explica cómo funciona el sistema sin hablar de código.
 - Verificación: 421 pruebas automáticas, SonarQube en verde (0 hallazgos, 98 % de cobertura) y recorrido en la aplicación de prueba de Hoy, Semana, Equipo y Usuarios, en celular y escritorio, sin errores de JavaScript.
 
+Ajustes del mismo día por decisión del usuario: las finalizadas del calendario van en verde suave, como dice la Sección 6.3; la **jornada vigente** resuelve los turnos de noche (a las 02:00 se ve el turno de anoche y sus actividades); la salida cierra la asistencia de la jornada vigente o de la anterior, y una salida olvidada ya no bloquea el día siguiente (queda "Sin salida"); el tiempo trabajado se atribuye a la jornada en que se trabajó; y la jornada se cierra a la medianoche o al fin del turno más tardío, con la pausa de cada operario al fin de su propia jornada. 451 pruebas, SonarQube en verde.
+
 ## Calidad del código: análisis de SonarQube (2026-10-10) ✅
 
 El análisis del proyecto no pasaba la puerta de calidad: 3 vulnerabilidades, 44 detalles de mantenimiento y 0 % de cobertura (SonarQube no recibía el reporte de las pruebas). Después de las correcciones **pasa**: 0 bugs, 0 vulnerabilidades, 0 hallazgos abiertos, 0 % de duplicación y 96,9 % de cobertura, con calificación A en fiabilidad, seguridad y mantenimiento.
@@ -281,11 +283,8 @@ Programación dinámica del día, cierre de jornada con reprogramación automát
 - Tiempo trabajado "hoy" de una actividad que se empezó ayer: hoy se suma todo su tiempo real, también el de ayer. ¿Debe contarse solo lo trabajado en la jornada?
 - Una actividad pausada que se trabajó hoy solo muestra en la línea de tiempo lo que le falta, no el rato ya trabajado.
 - Si lo que está en curso se proyecta más allá del inicio de una de hora fija, las dos tarjetas se cruzan en la línea de tiempo sin un aviso de choque.
-- Calendario: las finalizadas se muestran en gris con su ícono verde, y la Sección 6.3 dice "Finalizada (verde suave)". ¿Se aprueba el gris para el horario? Las canceladas no se dibujan en el horario (siguen en Actividades).
-- Turno de noche: "En turno" y la línea de tiempo miran el turno que empieza hoy; quien trabaja de 22:00 a 06:00 y consulta a las 02:00 ve el turno de esta noche. Hay que definir la regla.
-- La salida cierra cualquier asistencia abierta, aunque sea de hace varios días; el tiempo presente queda grande y el Administrador lo corrige. ¿Se limita a la jornada anterior?
-- El Administrador no puede crear la asistencia de un operario que quedó "Sin marca" (solo corregir una existente).
-- El cierre de jornada sigue a la medianoche de la empresa, no al fin del turno.
+- Casos de lógica por definir (hora fija antes de su hora, iniciar sin entrada, salida con algo en curso, horas fijas que se cruzan, registrar la asistencia de un operario sin marca, entre otros): ver [casos_por_definir.md](casos_por_definir.md).
+- Página inicial del Operario (turno, entrada y salida antes de la información del día): propuesta presentada al usuario, pendiente de su visto bueno.
 - Aviso al Administrador cuando una reprogramación automática deja una jornada por encima del 100 % (lo pide el alcance; hoy solo se ve en la carga del día).
 - ¿El tiempo de un operario retirado de una actividad suma al tiempo real de esa actividad? Hoy queda guardado pero no se suma; se recomienda sumarlo al construir los indicadores.
 

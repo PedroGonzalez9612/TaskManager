@@ -3,7 +3,7 @@ reprograma, lo de hora fija queda No realizado y lo que alguien dejó en curso s
 
 El reloj de las pruebas empieza el 10 de octubre a las 08:00 UTC (las 03:00 en Bogotá, la zona por
 defecto). El día 10 termina allí a las 05:00 UTC del 11."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -337,6 +337,100 @@ def test_si_otra_peticion_ya_pauso_la_ejecucion_no_se_cuenta_dos_veces(servicios
     monkeypatch.setattr(cierre.ejecucion_repository, "guardar", lambda *_, **__: False)
 
     assert cierre.cerrar_pendientes(empresa.id) == {**NADA, "reprogramadas": 1}
+
+
+# ---------- Turnos: la jornada termina con el turno más tardío ----------
+
+FIN_TURNO_NOCHE = datetime(2026, 10, 11, 11, 0)     # 06:00 del 11 en Bogotá, en UTC y sin zona (como en Mongo).
+
+
+def a_las(dia, hora, minuto=0):
+    """Una hora de Bogotá (UTC-5) de octubre, como momento en UTC."""
+    return datetime(2026, 10, dia, hora, minuto, tzinfo=timezone.utc) + timedelta(hours=5)
+
+
+def asignar(servicios, empresa, operario, inicio, fin):
+    turno = servicios.turnos.crear_turno(
+        {"nombre": f"{inicio}-{fin}", "hora_inicio": inicio, "hora_fin": fin, "descanso_min": 0}, empresa.admin)
+    servicios.turnos.asignar_turno(empresa.admin, operario["id"], turno["id"])
+
+
+def test_con_turno_de_noche_la_actividad_en_curso_no_se_cierra_a_la_medianoche(servicios, empresa,
+                                                                              crear_actividad, reloj):
+    asignar(servicios, empresa, empresa.ana, "22:00", "06:00")
+    actividad = crear_actividad([empresa.ana])
+    reloj.ahora = a_las(10, 23)
+    servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+
+    reloj.ahora = a_las(11, 2)                   # Sigue en su turno del 10.
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id) == NADA
+    vista = ver(servicios, actividad, empresa.ana)
+    assert (vista["estado"], vista["fecha_programada"]) == ("EN_EJECUCION", HOY)
+
+    reloj.ahora = a_las(11, 6, 30)               # Su turno terminó a las 06:00.
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id) == {
+        **NADA, "reprogramadas": 1, "ejecuciones_pausadas": 1,
+    }
+    vista = ver(servicios, actividad, empresa.ana)
+    assert (vista["estado"], vista["fecha_programada"]) == ("PAUSADA", MANANA)
+    assert vista["ejecucion"]["pausas"] == [{"motivo": "Fin de jornada", "inicio": FIN_TURNO_NOCHE, "fin": None}]
+    assert vista["ejecucion"]["tiempo_real_min"] == 7 * 60
+
+
+def test_con_turno_de_noche_la_de_hora_fija_se_cierra_al_fin_del_turno(servicios, empresa, crear_actividad, reloj):
+    asignar(servicios, empresa, empresa.ana, "22:00", "06:00")
+    actividad = crear_actividad([empresa.ana], hora_programada="23:00")
+    reloj.ahora = a_las(10, 23)
+    servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+
+    reloj.ahora = a_las(11, 2)
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id) == NADA
+    reloj.ahora = a_las(11, 6, 30)
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id) == {
+        **NADA, "no_realizadas": 1, "ejecuciones_cerradas": 1,
+    }
+    assert ver(servicios, actividad, empresa.admin)["ejecuciones"][0]["fecha_fin"] == FIN_TURNO_NOCHE
+
+
+def test_con_dos_operarios_la_actividad_espera_al_turno_mas_tardio_y_cada_uno_pausa_al_fin_del_suyo(
+        servicios, empresa, crear_actividad, reloj):
+    asignar(servicios, empresa, empresa.ana, "06:00", "14:00")
+    asignar(servicios, empresa, empresa.luis, "22:00", "06:00")
+    actividad = crear_actividad([empresa.ana, empresa.luis])
+    reloj.ahora = a_las(10, 10)
+    servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+    reloj.ahora = a_las(10, 23)
+    servicios.ejecucion.iniciar(actividad["id"], empresa.luis)
+
+    reloj.ahora = a_las(11, 2)                   # El turno de Ana ya terminó, pero el de Luis no.
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id) == NADA
+    reloj.ahora = a_las(11, 6, 30)
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id) == {
+        **NADA, "reprogramadas": 1, "ejecuciones_pausadas": 2,
+    }
+    de_ana = ver(servicios, actividad, empresa.ana)["ejecucion"]
+    de_luis = ver(servicios, actividad, empresa.luis)["ejecucion"]
+    # Ana (turno de día) queda pausada a la medianoche; Luis (turno de noche), al fin de su turno.
+    assert de_ana["pausas"][0]["inicio"] == MEDIANOCHE
+    assert de_ana["tiempo_real_min"] == 14 * 60          # De las 10:00 a la medianoche.
+    assert de_luis["pausas"][0]["inicio"] == FIN_TURNO_NOCHE
+    assert de_luis["tiempo_real_min"] == 7 * 60          # De las 23:00 a las 06:00.
+
+
+def test_un_turno_de_noche_de_otro_operario_no_retiene_la_actividad(servicios, empresa, crear_actividad, reloj):
+    asignar(servicios, empresa, empresa.luis, "22:00", "06:00")
+    actividad = crear_actividad([empresa.ana])        # Ana no tiene turno: su jornada acaba a la medianoche.
+    reloj.ahora = a_las(11, 2)
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id)["reprogramadas"] == 1
+    assert ver(servicios, actividad, empresa.ana)["fecha_programada"] == MANANA
+
+
+def test_sin_nada_atrasado_no_se_leen_los_turnos(servicios, empresa, crear_actividad, monkeypatch):
+    crear_actividad([empresa.ana])
+    llamadas = []
+    monkeypatch.setattr(servicios.cierre_jornada.turno_service, "turnos_de_operarios", llamadas.append)
+    assert servicios.cierre_jornada.cerrar_pendientes(empresa.id) == NADA
+    assert llamadas == []
 
 
 # ---------- La hora del cierre ----------

@@ -40,6 +40,11 @@ class Turno:
         return (_minutos(self.hora_fin) - _minutos(self.hora_inicio)) % MINUTOS_DEL_DIA
 
     @property
+    def cruza_medianoche(self) -> bool:
+        """El turno termina al día siguiente de empezar (por ejemplo, de 22:00 a 06:00)."""
+        return self.hora_fin < self.hora_inicio
+
+    @property
     def capacidad_min(self) -> int:
         """Tiempo de trabajo disponible en la jornada: duración del turno menos el descanso."""
         return self.duracion_min - self.descanso_min

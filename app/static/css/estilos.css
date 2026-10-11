@@ -2189,9 +2189,13 @@ html[data-color-bloques="categoria"] .ec .bloque.bloque-prioridad-urgente.bloque
     box-shadow: inset 0 0 0 2px var(--error), inset 0 0 0 4px var(--principal);
 }
 
-/* Finalizada y No realizada: blanco con borde gris y texto gris, sin transparencia. Se leen como
-   "hechas", no como "deshabilitadas"; el visto bueno de Finalizada va en el verde de finalizada. */
-html[data-color-bloques] .ec .bloque.bloque-estado-completada,
+/* Finalizada: verde suave con su texto oscuro, como manda la Sección 6.3 (estado Finalizada).
+   No realizada: blanco con borde gris y texto gris. Ninguna usa transparencia. */
+html[data-color-bloques] .ec .bloque.bloque-estado-completada {
+    background-color: var(--exito-suave);
+    color: var(--exito-texto);
+}
+
 html[data-color-bloques] .ec .bloque.bloque-estado-no_realizada {
     background-color: var(--superficie);
     color: var(--texto-secundario);
@@ -2675,8 +2679,9 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     color: var(--info-texto);
 }
 
-/* Sin marca con turno asignado: posible ausencia. */
-.etiqueta.asistencia-sin_marca {
+/* Sin marca con turno asignado (posible ausencia) o sin salida de una jornada anterior: requieren al Administrador. */
+.etiqueta.asistencia-sin_marca,
+.etiqueta.asistencia-sin_salida {
     background: var(--error-suave);
     color: var(--error-texto);
 }

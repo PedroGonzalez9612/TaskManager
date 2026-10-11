@@ -175,13 +175,13 @@ Consecuencia: **si algo termina antes, lo siguiente se adelanta; si se demora, s
 
 ## 7. El cierre de jornada
 
-Cuando termina el día (a la medianoche, en la zona horaria de la empresa), el sistema revisa lo que quedó abierto. No hay un proceso corriendo todo el tiempo: el cierre se hace la próxima vez que alguien de la empresa consulta o cambia algo, y está protegido para no hacerse dos veces.
+Cuando termina la jornada, el sistema revisa lo que quedó abierto. Una jornada termina a la medianoche (en la zona horaria de la empresa) o al fin del turno más tardío de sus operarios, lo que ocurra después; así un turno de noche no se cierra a mitad de camino. No hay un proceso corriendo todo el tiempo: el cierre se hace la próxima vez que alguien de la empresa consulta o cambia algo, y está protegido para no hacerse dos veces.
 
 | Situación | Qué hace el sistema |
 |---|---|
 | Actividad de **horario flexible** que no se hizo o no se terminó | **Reprogramación automática:** pasa al día siguiente, queda marcada como reprogramada y conserva su fecha original para contar los **días de retraso** |
 | Actividad de **hora fija** que no se hizo o no se terminó | Queda **No realizada**. Es definitivo; si el trabajo sigue haciendo falta, el Administrador crea una nueva |
-| Algo quedó **en curso** al terminar el día | Si es flexible, se pausa con el motivo "Fin de jornada" y se reprograma. Si es de hora fija, su ejecución se cierra y queda No realizada. En los dos casos la pausa o el cierre quedan con la hora de la medianoche, no con la de la consulta, para no inflar el tiempo real |
+| Algo quedó **en curso** al terminar el día | Si es flexible, se pausa con el motivo "Fin de jornada" y se reprograma. Si es de hora fija, su ejecución se cierra y queda No realizada. En los dos casos, la pausa o el cierre de cada operario quedan con la hora en que terminó su propia jornada (la medianoche o el fin de su turno), no con la hora de la consulta, para no inflar el tiempo real |
 
 - Si una actividad tiene varios operarios, se reprograma para todos, porque tiene una sola fecha.
 - Si el Administrador cambia a mano la fecha de una reprogramada, conserva su marca y su fecha original: el retraso ya ocurrió.
@@ -195,7 +195,9 @@ Cuando termina el día (a la medianoche, en la zona horaria de la empresa), el s
 - Cada operario tiene **un solo turno** a la vez. Cuando se le cambia, se conserva la fecha del cambio, para que los periodos anteriores se calculen con el turno que regía entonces.
 - La **capacidad** de la jornada es la duración del turno menos el descanso. Un operario sin turno tiene una capacidad provisional de 7 horas.
 - El turno **no limita** el trabajo: el operario puede trabajar fuera de su turno, y ese tiempo cuenta como tiempo adicional.
-- **Asistencia:** el operario marca su **entrada** y su **salida** de cada jornada; la hora la pone el servidor. El Administrador **valida** cada asistencia o la **corrige** con un motivo, y la corrección conserva las marcas originales.
+- **Jornada vigente:** es la del turno que el operario está trabajando. En un turno de noche (por ejemplo, de 22:00 a 06:00), después de la medianoche sigue siendo la jornada del día en que empezó, hasta el fin del turno. Con ella se decide qué ve en Hoy y si está "En turno".
+- **Asistencia:** el operario marca su **entrada** y su **salida** de cada jornada; la hora la pone el servidor. La salida cierra la asistencia de la jornada vigente (o la de la jornada anterior, en un turno de noche), nunca una más antigua. Si olvidó la salida, eso no le impide marcar la entrada del día siguiente: la asistencia vieja queda "Sin salida" para el Administrador. El Administrador **valida** cada asistencia o la **corrige** con un motivo, y la corrección conserva las marcas originales.
+- **El tiempo queda en su día:** lo trabajado se atribuye a la jornada en que se trabajó. Una actividad de 23:00 a 01:00 cuenta una hora en cada jornada; así los indicadores de un día solo suman lo que pasó en él.
 - **Aviso de posible ausencia (pendiente):** si pasado un tiempo de tolerancia el operario no ha marcado entrada, el Administrador recibe un aviso con sus actividades del día para reasignarlas.
 
 ---
