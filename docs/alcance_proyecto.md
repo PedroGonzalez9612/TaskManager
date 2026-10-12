@@ -85,6 +85,9 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Una jornada pertenece al día en que inicia el turno, aunque el turno termine después de la medianoche.
 - El turno no limita el trabajo: el operario puede ejecutar actividades fuera de su turno, y ese tiempo se registra como tiempo adicional.
 - Registro de asistencia: el operario marca su entrada y su salida de cada jornada (la hora la registra el servidor), y el Administrador valida o corrige cada marca.
+- Para iniciar o reanudar una actividad, el operario debe tener marcada la entrada de su jornada vigente y no haber marcado la salida. El turno no limita: la entrada se puede marcar antes o después de la hora de inicio del turno.
+- No se puede marcar la salida con una actividad en curso. El operario la finaliza o la pausa con el motivo "Fin de jornada"; una de hora fija no se pausa, así que debe finalizarla. Las actividades pausadas no impiden la salida.
+- Aviso de inicio y de fin del turno: desde 15 minutos antes de la hora de inicio y desde 15 minutos antes de la hora de fin, el operario ve cuánto falta. El aviso es informativo y no obliga a marcar a esa hora; lo que trabaje después del fin del turno sigue siendo tiempo adicional.
 - Jornada vigente: es la del turno que el operario está trabajando. Si su turno cruza la medianoche, después de las 00:00 sigue siendo la jornada del día en que empezó, hasta la hora de fin del turno. Con ella se decide en qué jornada queda cada marca, qué actividades ve en Hoy y si está "En turno".
 - La entrada queda en la jornada vigente; hay una sola por jornada. La salida cierra la asistencia de la jornada vigente o, si esa no existe, la de la jornada inmediatamente anterior (turno nocturno o tiempo adicional), nunca una más antigua. Una asistencia que quedó sin salida no impide marcar la entrada de la jornada siguiente: queda como "Sin salida" para que el Administrador la corrija.
 - Atribución del tiempo: el tiempo trabajado en actividades se atribuye a la jornada en que se trabajó. Si una actividad se empieza en una jornada y se termina en otra, su tiempo se reparte entre las dos; así los indicadores de cada jornada solo cuentan lo que pasó en ella.
@@ -157,7 +160,10 @@ Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usua
 
 **Pantallas mínimas definidas para el flujo del Operario (sitio web responsive, vista móvil):**
 1. Bienvenida + Inicio de sesión (unificadas — el Operario no se autoregistra, según Sección 4)
-2. Hoy (su día ordenado y acceso a reportar una actividad externa). La actividad en curso se ejecuta en su lugar del día, con cronómetro, control de estado, historial de pausas y observación final; ya no hay una pantalla aparte de ejecución.
+2. Hoy, con tres estados según la asistencia de la jornada vigente:
+   - Antes de marcar la entrada: saludo, su turno, un resumen de lo que tiene programado (cuántas actividades, tiempo estimado y si hay urgentes) y "Marcar entrada" como única acción principal. No muestra la línea de tiempo.
+   - Con la entrada marcada: su día ordenado y acceso a reportar una actividad externa. La actividad en curso se ejecuta en su lugar del día, con cronómetro, control de estado, historial de pausas y observación final; ya no hay una pantalla aparte de ejecución. "Marcar salida" está siempre visible.
+   - Después de marcar la salida: cierre de la jornada, con sus marcas, el tiempo trabajado, las actividades finalizadas y las que pasan a la siguiente jornada.
 3. Detalle de actividad (información completa antes de iniciar una tarea; desde aquí se inicia o se devuelve)
 
 **Principios de usabilidad que orientan el diseño de la interfaz** (Diseño de Interfaces, Semana 7):
@@ -183,7 +189,7 @@ Cada rol ingresa por la misma pantalla de inicio de sesión y es llevado a su pr
 |---|---|---|
 | Superadmin | Computador | Empresas (lista, registro, detalle con usuarios, edición de datos, límites y logo) |
 | Administrador | Computador (también usable en celular) | **Equipo** (el tablero del turno: una fila por persona y las horas de izquierda a derecha, con lo que está por atender; el Administrador reasigna una actividad moviendo su tarjeta a la fila de otra persona, sin cambiarle la hora) · **Actividades** (todas, independientes o de un proyecto) · **Proyectos** (lista y detalle, con su avance en horas) · **Usuarios**. Pendientes: Turnos y asistencia · Indicadores |
-| Operario | Celular | **Hoy** (su fila del tablero en vertical: el día sobre una línea de tiempo, con la actividad en curso abierta en su hora) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios). Pendiente: marca de entrada y salida |
+| Operario | Celular | **Hoy** (su fila del tablero en vertical: el día sobre una línea de tiempo, con la actividad en curso abierta en su hora; antes de marcar la entrada muestra el inicio de la jornada y, después de marcar la salida, su cierre) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios) |
 
 Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
 
@@ -651,6 +657,7 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 | 2026-10-10 | POO | Secciones 5.1, 5.2 y 14 | Programación dinámica del día: lo ejecutado se mide con sus horas reales de inicio y fin, no con el estimado, y lo pendiente se reacomoda cuando una actividad termina antes o se demora. Se define el tiempo disponible de la jornada. La carga sigue siendo un dato de planeación, con estimados | Decisión del usuario: la estimación es una cosa y la ejecución es otra |
 | 2026-10-10 | Ambas | Sección 14 | Se agregan al glosario Turno, Asistencia (con sus estados) y Tiempo presente | Construcción del criterio 7 del MVP (turnos y asistencia) |
 | 2026-10-10 | POO | Secciones 5.1 y 14 | Jornada vigente para turnos que cruzan la medianoche; la salida cierra la asistencia de la jornada vigente o de la anterior, y una asistencia sin salida no bloquea la jornada siguiente; el tiempo trabajado se atribuye a la jornada en que se trabajó; la jornada se cierra a la medianoche o al fin del turno más tardío, lo que ocurra después | Decisiones del usuario: con un turno de noche, a las 02:00 el sistema mostraba el turno equivocado y cerraba la jornada antes de tiempo ("es ilógico"); y las actividades deben quedar asociadas al día en que se trabajaron para los indicadores |
+| 2026-10-12 | Ambas | Secciones 5.1, 6.1 y 6.2 | Para iniciar o reanudar una actividad hay que tener la entrada marcada; no se marca la salida con una actividad en curso; aviso de 15 minutos antes del inicio y del fin del turno. Hoy pasa a tener tres estados: inicio de la jornada (saludo y "Marcar entrada"), el día, y cierre de la jornada | Decisión del usuario: la marca de entrada y de salida no se veía en un día con varias actividades. Resuelve los casos E1 y E2 de `casos_por_definir.md` |
 
 ### Texto original de las secciones modificadas (para referencia)
 

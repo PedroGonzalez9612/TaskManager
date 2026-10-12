@@ -9,6 +9,9 @@ from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 
 from tests.conftest import HOY
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 INICIO = datetime(2026, 10, 10, 8, 0, tzinfo=timezone.utc)
 
 

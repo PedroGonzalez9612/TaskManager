@@ -14,13 +14,22 @@ const INICIO_POR_ROL = {
 // vienen de esta interfaz y no de otra página (protección contra CSRF, app/utils/seguridad.py).
 const ENCABEZADO_PROPIO = { "X-Requested-With": "GestLab" };
 
+const MENSAJE_SIN_CONEXION = "No hay conexión con el servidor. Revisa tu conexión e inténtalo de nuevo.";
+const MENSAJE_ERROR_GENERICO = "No se pudo completar la acción. Inténtalo de nuevo.";
+
 async function pedirApi(ruta, opciones = {}) {
     // Con archivos (FormData) el navegador pone su propio Content-Type; con JSON lo ponemos nosotros.
     const esArchivo = opciones.body instanceof FormData;
-    const respuesta = await fetch(ruta, {
-        headers: esArchivo ? ENCABEZADO_PROPIO : { ...ENCABEZADO_PROPIO, "Content-Type": "application/json" },
-        ...opciones,
-    });
+    let respuesta;
+    try {
+        respuesta = await fetch(ruta, {
+            headers: esArchivo ? ENCABEZADO_PROPIO : { ...ENCABEZADO_PROPIO, "Content-Type": "application/json" },
+            ...opciones,
+        });
+    } catch (e) {
+        // fetch solo falla cuando no logra hablar con el servidor (sin red o servidor apagado).
+        throw new Error(MENSAJE_SIN_CONEXION);
+    }
 
     // Sesión vencida o inexistente: se vuelve al login (salvo que ya estemos en él).
     if (respuesta.status === 401 && window.location.pathname !== RUTA_LOGIN) {
@@ -29,7 +38,7 @@ async function pedirApi(ruta, opciones = {}) {
     }
 
     if (!respuesta.ok) {
-        let mensaje = `Error ${respuesta.status}`;
+        let mensaje = MENSAJE_ERROR_GENERICO;
         try {
             const cuerpo = await respuesta.json();
             mensaje = cuerpo.error || mensaje;

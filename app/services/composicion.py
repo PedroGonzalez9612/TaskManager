@@ -46,7 +46,8 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
         actividad_repository, asignacion_repository, ejecucion_repository, empresa_repository, turnos, reloj=reloj,
     )
     asistencia = AsistenciaService(
-        AsistenciaRepository(db), turnos, usuario_repository, empresa_repository, reloj=reloj,
+        AsistenciaRepository(db), turnos, usuario_repository, empresa_repository, ejecucion_repository,
+        reloj=reloj,
     )
     catalogos = CatalogoService(CatalogoRepository(db))
     carga = CargaService(actividad_repository, asignacion_repository, usuario_repository, cierre_jornada, turnos)
@@ -57,7 +58,7 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
     )
     ejecucion = EjecucionService(
         ejecucion_repository, actividad_repository, asignacion_repository, actividades, catalogos,
-        cierre_jornada, reloj=reloj,
+        cierre_jornada, asistencia, reloj=reloj,
     )
     proyectos = ProyectoService(proyecto_repository, actividad_repository, actividades, cierre_jornada, reloj=reloj)
     programacion = ProgramacionService(

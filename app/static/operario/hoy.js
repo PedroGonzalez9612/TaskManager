@@ -3,8 +3,12 @@
 // abierta en su lugar del día y la línea "Ahora", que separa lo que ya pasó de lo que falta.
 // La programación la calcula el servidor (GET /programacion-del-dia): lo terminado ocupa el tiempo
 // que realmente tomó y lo pendiente se reacomoda desde que el operario queda libre.
+// La pantalla tiene tres estados según la asistencia de la jornada (alcance, Sección 6.1): antes de
+// marcar la entrada, el inicio de la jornada; con la entrada marcada, el día; después de la salida, el cierre.
 
 const INTERVALO_MINIMO_MIN = 15;    // Un espacio libre más corto que esto no se anuncia.
+const AVISO_TURNO_MIN = 15;         // Desde cuántos minutos antes se avisa el inicio y el fin del turno.
+const MOTIVO_FIN_JORNADA = "Fin de jornada";
 
 const hoy = new Date();
 hoy.setHours(0, 0, 0, 0);
@@ -359,36 +363,211 @@ async function marcarAsistencia(boton, ruta, texto) {
     }
 }
 
+// En la línea de tiempo la entrada y el fin del turno son solo datos: la entrada se marca en el
+// inicio de la jornada y la salida, con el botón del encabezado.
 function crearMarcaEntrada() {
-    const { asistencia } = programacion;
-    if (asistencia) {
-        const marca = crearElemento("p", "linea-marca");
-        marca.append("Marcaste entrada a las ", crearElemento("strong", "cifra", horaLocal(asistencia.entrada)));
-        return marca;
-    }
-    // Una sola acción principal por pantalla: si ya hay algo en curso, la principal es "Finalizar".
-    const hayEnCurso = programacion.tramos.some((tramo) => tramo.tipo === "EN_CURSO");
-    const boton = crearConIcono("button", hayEnCurso ? "boton-secundario" : "boton", "log-in", "Marcar entrada");
-    boton.type = "button";
-    boton.addEventListener("click", () => marcarAsistencia(boton, "/asistencia/entrada", "Entrada registrada."));
-    return boton;
+    const marca = crearElemento("p", "linea-marca");
+    marca.append("Marcaste entrada a las ", crearElemento("strong", "cifra", horaLocal(programacion.asistencia.entrada)));
+    return marca;
 }
 
 function crearMarcaSalida() {
-    const { asistencia, turno } = programacion;
     const bloque = crearElemento("div", "linea-fin-turno");
-    bloque.append(crearElemento("span", "", turno ? "Fin del turno" : "Fin de la jornada"));
-    if (asistencia?.salida) {
-        const marca = crearElemento("span", "linea-marca");
-        marca.append("Saliste a las ", crearElemento("strong", "cifra", horaLocal(asistencia.salida)));
-        bloque.append(marca);
-    } else if (asistencia) {
-        const boton = crearConIcono("button", "boton-secundario", "log-out", "Marcar salida");
-        boton.type = "button";
-        boton.addEventListener("click", () => marcarAsistencia(boton, "/asistencia/salida", "Salida registrada."));
-        bloque.append(boton);
-    }
+    bloque.append(crearElemento("span", "", programacion.turno ? "Fin del turno" : "Fin de la jornada"));
     return bloque;
+}
+
+// ---------- Estados de la jornada: inicio, día y cierre ----------
+
+function estadoJornada() {
+    const { asistencia, fecha } = programacion;
+    // Una asistencia de otra jornada que quedó sin salida no cuenta: hoy se marca una entrada nueva.
+    if (!asistencia || asistencia.jornada !== fecha) {
+        return "inicio";
+    }
+    return asistencia.salida ? "cierre" : "dia";
+}
+
+function tramoEnCurso() {
+    return programacion.tramos.find((tramo) => tramo.tipo === "EN_CURSO") || null;
+}
+
+function crearDatos(filas) {
+    const datos = crearElemento("dl", "portada-datos");
+    for (const [nombre, valor] of filas) {
+        datos.append(crearElemento("dt", "", nombre), crearElemento("dd", "cifra", valor));
+    }
+    return datos;
+}
+
+function textoTurno(turno) {
+    return turno ? `${turno.nombre}, ${turno.hora_inicio} a ${turno.hora_fin}` : "Sin turno asignado";
+}
+
+// Antes de marcar la entrada: lo que tiene programado y una sola acción principal.
+function crearInicioJornada() {
+    const { tramos, resumen, turno, asistencia } = programacion;
+    const porId = new Map(actividades.map((actividad) => [actividad.id, actividad]));
+    const porHacer = tramos.filter((tramo) => tramo.tipo !== "FINALIZADA" && porId.has(tramo.actividad_id));
+    const urgentes = porHacer.filter((tramo) => porId.get(tramo.actividad_id).prioridad === "URGENTE").length;
+    const contenido = [crearDatos([["Turno", textoTurno(turno)]])];
+
+    if (porHacer.length) {
+        contenido.push(
+            crearElemento("h2", "", "Lo que tienes programado"),
+            crearDatos([
+                ["Actividades", String(porHacer.length)],
+                ["Tiempo estimado", duracionTexto(resumen.pendiente_min)],
+            ]),
+        );
+        if (urgentes) {
+            const aviso = crearElemento("p", "portada-urgentes");
+            aviso.append(crearSenalPrioridad("URGENTE"), crearElemento("span", "",
+                urgentes === 1 ? "1 actividad urgente te espera." : `${urgentes} actividades urgentes te esperan.`));
+            contenido.push(aviso);
+        }
+    } else {
+        contenido.push(crearElemento("p", "texto-suave", "No tienes actividades programadas para hoy."));
+    }
+    if (asistencia) {
+        contenido.push(crearElemento("p", "texto-suave",
+            "Tu jornada anterior quedó sin marca de salida. Tu Administrador la corrige."));
+    }
+
+    const boton = crearConIcono("button", "boton boton-bloque", "log-in", "Marcar entrada");
+    boton.type = "button";
+    boton.addEventListener("click", () => marcarAsistencia(boton, "/asistencia/entrada", "Entrada registrada."));
+    contenido.push(boton);
+    return contenido;
+}
+
+// Después de marcar la salida: las marcas, el tiempo trabajado y lo que quedó sin finalizar.
+function crearCierreJornada() {
+    const { tramos, resumen, asistencia } = programacion;
+    const finalizadas = tramos.filter((tramo) => tramo.tipo === "FINALIZADA").length;
+    const sinFinalizar = tramos.length - finalizadas;
+    const contenido = [crearDatos([
+        ["Entrada", horaLocal(asistencia.entrada)],
+        ["Salida", horaLocal(asistencia.salida)],
+        ["Tiempo presente", duracionTexto(asistencia.minutos_presente)],
+        ["Tiempo en actividades", duracionTexto(resumen.trabajado_min)],
+        ["Actividades finalizadas", `${finalizadas} de ${tramos.length}`],
+    ])];
+    if (sinFinalizar) {
+        const cuantas = sinFinalizar === 1
+            ? "Quedó 1 actividad sin finalizar."
+            : `Quedaron ${sinFinalizar} actividades sin finalizar.`;
+        contenido.push(crearConIcono("p", "aviso aviso-info", "clock",
+            `${cuantas} Las de horario flexible pasan a tu siguiente jornada.`));
+    }
+    contenido.push(crearElemento("p", "texto-suave",
+        "Si marcaste la salida por error, pide a tu Administrador que la corrija."));
+    return contenido;
+}
+
+// Muestra el estado que corresponde y oculta lo de los otros dos.
+function pintarJornada() {
+    const estado = estadoJornada();
+    const esDia = estado === "dia";
+    const portada = document.getElementById("portada-jornada");
+    document.getElementById("saludo").textContent = {
+        inicio: `Hola, ${nombreOperario}`, dia: `Tu turno, ${nombreOperario}`, cierre: "Jornada terminada",
+    }[estado];
+    document.getElementById("turno-resumen").hidden = !esDia;
+    document.getElementById("turno-acciones").hidden = !esDia;
+    portada.hidden = esDia;
+
+    if (esDia) {
+        pintarResumen(programacion.resumen);
+        pintarLineaDeTiempo();
+        return;
+    }
+    clearInterval(temporizador);
+    for (const id of ["mensaje", "linea-tiempo", "ordenador", "turno-sobrecarga"]) {
+        document.getElementById(id).hidden = true;
+    }
+    portada.replaceChildren(...(estado === "inicio" ? crearInicioJornada() : crearCierreJornada()));
+}
+
+// Aviso de 15 minutos: antes de la entrada, cuánto falta para que inicie el turno; durante el día,
+// cuánto falta para que termine. Es informativo: el turno no limita la entrada ni la salida.
+function pintarAvisoTurno() {
+    const aviso = document.getElementById("aviso-turno");
+    const turno = programacion?.turno;
+    const estado = turno ? estadoJornada() : "";
+    const momento = { inicio: turno?.inicio, dia: turno?.fin }[estado];
+    const faltan = momento ? Math.ceil((new Date(momento).getTime() - Date.now()) / UN_MINUTO) : 0;
+    aviso.hidden = faltan <= 0 || faltan > AVISO_TURNO_MIN;
+    if (!aviso.hidden) {
+        const texto = estado === "inicio" ? "Tu turno inicia en" : "Tu turno termina en";
+        aviso.replaceChildren(...crearConIcono("span", "", "clock", `${texto} ${duracionTexto(faltan)}.`).childNodes);
+    }
+}
+
+// ---------- Marcar salida ----------
+
+// Con una actividad en curso no se marca la salida: la de horario flexible se pausa con el motivo
+// "Fin de jornada" y la de hora fija, que no se pausa, se finaliza. Todo en el mismo paso.
+function abrirSalida() {
+    const tramo = tramoEnCurso();
+    const enCurso = tramo ? actividades.find((actividad) => actividad.id === tramo.actividad_id) : null;
+    const esFija = Boolean(enCurso?.hora_programada);
+    const dialogo = crearElemento("dialog", "dialogo");
+
+    const encabezado = crearElemento("div", "dialogo-encabezado");
+    const cerrar = crearElemento("button", "boton-cerrar", "×");
+    cerrar.type = "button";
+    cerrar.setAttribute("aria-label", "Cerrar");
+    cerrar.addEventListener("click", () => dialogo.close());
+    encabezado.append(crearElemento("h2", "", "Marcar salida"), cerrar);
+
+    const cuerpo = crearElemento("div", "detalle-cuerpo");
+    if (enCurso) {
+        cuerpo.append(crearConIcono("p", "aviso aviso-advertencia aviso-bloque", "circle-alert", esFija
+            ? `Tienes ${enCurso.codigo} en curso. Es de hora fija y no se pausa: se finaliza antes de marcar la salida.`
+            : `Tienes ${enCurso.codigo} en curso. Se pausa con el motivo "${MOTIVO_FIN_JORNADA}" y la retomas en tu siguiente jornada.`));
+    }
+    cuerpo.append(crearElemento("p", "portada-nota",
+        "Después de marcar la salida no podrás iniciar ni reanudar actividades en esta jornada."));
+    const error = crearElemento("p", "mensaje-formulario");
+    error.setAttribute("role", "alert");
+    error.hidden = true;
+
+    let textoConfirmar = "Marcar salida";
+    if (enCurso) {
+        textoConfirmar = esFija ? "Finalizar y marcar salida" : "Pausar y marcar salida";
+    }
+    const confirmar = crearConIcono("button", "boton", "log-out", textoConfirmar);
+    confirmar.type = "button";
+    confirmar.addEventListener("click", async () => {
+        confirmar.disabled = true;
+        try {
+            if (enCurso && esFija) {
+                await pedirApi(`/actividades/${enCurso.id}/finalizar`, { method: "POST" });
+            } else if (enCurso) {
+                await enviarJson(`/actividades/${enCurso.id}/pausar`, "POST", { motivo: MOTIVO_FIN_JORNADA });
+            }
+            await pedirApi("/asistencia/salida", { method: "POST" });
+            dialogo.close();
+            await cargar();
+            mostrarAviso("Salida registrada.");
+        } catch (error_) {
+            mostrarErrorFormulario(error, error_.message);
+            confirmar.disabled = false;
+            cargar();    // Si alcanzó a pausar o finalizar, la pantalla debe mostrarlo.
+        }
+    });
+    const cancelar = crearElemento("button", "boton-secundario", "Cancelar");
+    cancelar.type = "button";
+    cancelar.addEventListener("click", () => dialogo.close());
+    const acciones = crearElemento("div", "dialogo-acciones");
+    acciones.append(cancelar, confirmar);
+
+    cuerpo.append(error, acciones);
+    dialogo.append(encabezado, cuerpo);
+    dialogo.addEventListener("close", () => dialogo.remove());
+    document.body.append(dialogo);
+    dialogo.showModal();
 }
 
 // ---------- Línea de tiempo ----------
@@ -568,8 +747,15 @@ function pintarEstadoTurno() {
         return;
     }
     const horario = `${turno.nombre}, ${turno.hora_inicio} a ${turno.hora_fin}`;
-    estado.classList.toggle("en-turno", Boolean(programacion.en_turno));
-    estado.textContent = programacion.en_turno ? `En turno · ${horario}` : `Fuera de turno · ${horario}`;
+    // Con la salida marcada ya no está "En turno", aunque el horario del turno no haya terminado.
+    const salio = estadoJornada() === "cierre";
+    const enTurno = Boolean(programacion.en_turno) && !salio;
+    estado.classList.toggle("en-turno", enTurno);
+    if (salio) {
+        estado.textContent = `Salida marcada · ${horario}`;
+    } else {
+        estado.textContent = enTurno ? `En turno · ${horario}` : `Fuera de turno · ${horario}`;
+    }
 }
 
 function pintarResumen(resumen) {
@@ -584,13 +770,22 @@ function pintarResumen(resumen) {
 
 // ---------- Carga de datos ----------
 
+// La pantalla se ubica en "Ahora" solo la primera vez que muestra el día; después el operario se
+// desplaza por su cuenta.
+let vistaUbicada = false;
+let nombreOperario = "";
+
 async function cargar() {
     try {
         programacion = await pedirApi("/programacion-del-dia");
         actividades = programacion.actividades;
-        pintarResumen(programacion.resumen);
         pintarEstadoTurno();
-        pintarLineaDeTiempo();
+        pintarJornada();
+        pintarAvisoTurno();
+        if (!vistaUbicada && estadoJornada() === "dia") {
+            document.querySelector(".linea-nodo.actual")?.scrollIntoView({ block: "center" });
+            vistaUbicada = true;
+        }
     } catch {
         const mensaje = document.getElementById("mensaje");
         mensaje.hidden = false;
@@ -600,12 +795,17 @@ async function cargar() {
 }
 
 iniciarPaginaProtegida(["OPERARIO"]).then((usuario) => {
-    document.getElementById("saludo").textContent = `Tu turno, ${usuario.nombre.split(" ")[0]}`;
+    nombreOperario = usuario.nombre.split(" ")[0];
     const fecha = fechaLarga(hoy);
     document.getElementById("fecha-hoy").textContent = fecha.charAt(0).toUpperCase() + fecha.slice(1);
     document.getElementById("turno-sobrecarga").insertAdjacentHTML("afterbegin", icono("triangle-alert"));
     const ordenar = document.getElementById("ordenar-dia");
     ordenar.append(...crearConIcono("span", "", "arrow-up-down", "Ordenar mi día").childNodes);
     ordenar.addEventListener("click", abrirOrdenador);
+    const salida = document.getElementById("marcar-salida");
+    salida.append(...crearConIcono("span", "", "log-out", "Marcar salida").childNodes);
+    salida.addEventListener("click", abrirSalida);
+    // El aviso del turno depende de la hora: se revisa cada medio minuto.
+    setInterval(pintarAvisoTurno, 30000);
     cargar();
 });

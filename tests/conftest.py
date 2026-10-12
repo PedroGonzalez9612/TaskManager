@@ -92,6 +92,14 @@ def empresa(repos):
 
 
 @pytest.fixture
+def con_entrada_marcada(servicios, empresa):
+    """Ana y Luis ya marcaron la entrada de la jornada: sin ella no se inicia ni se reanuda una
+    actividad (alcance, Sección 5.1). Los módulos que ejecutan actividades la piden con pytestmark."""
+    for operario in (empresa.ana, empresa.luis):
+        servicios.asistencia.marcar_entrada(operario)
+
+
+@pytest.fixture
 def otra_empresa(repos):
     """Una segunda empresa, con su administrador (Rosa) y un operario (Iván)."""
     empresa_id = repos.empresas.insert({"nombre": "Otra empresa", "nit": "901", "consecutivo_actividad": 0})

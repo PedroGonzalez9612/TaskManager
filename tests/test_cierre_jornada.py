@@ -12,6 +12,9 @@ from app.models.pausa import Pausa
 from app.services.cierre_jornada_service import momento_de_cierre
 from app.utils.errors import ValidationError
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 HOY = "2026-10-10"          # La fecha programada de las actividades que crea conftest.py.
 MANANA = "2026-10-11"
 MEDIANOCHE = datetime(2026, 10, 11, 5, 0)    # Fin del día 10 en Bogotá, en UTC. Mongo guarda sin zona.

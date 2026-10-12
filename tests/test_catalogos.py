@@ -6,6 +6,9 @@ from app.services.catalogo_service import (
 )
 from app.utils.errors import NotFoundError, ValidationError
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 FIJOS_PAUSA = ["Actividad urgente", "Actividad de hora fija", "Fin de jornada"]
 
 

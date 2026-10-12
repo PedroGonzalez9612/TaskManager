@@ -19,8 +19,6 @@ Fecha de la revisión: 2026-10-10.
 
 | # | Caso | Qué pasa hoy | Propuesta |
 |---|---|---|---|
-| E1 | El operario **inicia una actividad sin haber marcado entrada** | Se permite | Pedir la entrada primero: "Marca tu entrada para empezar". El turno no limita, pero la asistencia debe existir para atribuir bien el tiempo |
-| E2 | Intenta **marcar la salida con una actividad en curso** | Se permite y la actividad sigue corriendo | No se permite hasta pausarla o finalizarla; la pantalla ofrece pausarla con el motivo "Fin de turno" en el mismo paso |
 | E3 | **Inicia una actividad de un día futuro** | Se permite si la tiene asignada | Solo se ejecuta lo de la jornada vigente. Para adelantar trabajo, el Administrador le cambia la fecha |
 | E4 | **Finaliza en segundos** una actividad estimada en horas (lo que pasó en la base de prueba: "Tomó 0 min") | Se acepta y daña la precisión de la estimación | Si el tiempo real es menor que el 10 % del estimado, pedir confirmación con una observación obligatoria |
 | E5 | **Dos urgentes** llegan al mismo tiempo | Las dos se muestran; la primera queda arriba | Ordenarlas por hora de creación y avisar al Administrador cuando un operario tiene más de una urgente |

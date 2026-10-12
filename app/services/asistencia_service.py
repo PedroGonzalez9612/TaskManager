@@ -21,6 +21,9 @@ SIN_MARCA = "SIN_MARCA"
 SIN_SALIDA = "SIN_SALIDA"
 CAMBIO_SIMULTANEO = "La asistencia cambió mientras hacías esto. Actualiza la pantalla e inténtalo de nuevo."
 YA_MARCO_ENTRADA = "Ya marcaste la entrada de esta jornada"
+SIN_ENTRADA = "Marca tu entrada para empezar"
+YA_MARCO_SALIDA = "Ya marcaste la salida de esta jornada"
+SALIDA_CON_ACTIVIDAD_EN_CURSO = "Tienes una actividad en curso. Finalízala o páusala antes de marcar la salida."
 
 
 def _dia_siguiente(fecha: str) -> str:
@@ -28,8 +31,11 @@ def _dia_siguiente(fecha: str) -> str:
 
 
 class AsistenciaService:
-    def __init__(self, asistencia_repository, turno_service, usuario_repository, empresa_repository, reloj=None):
+    def __init__(self, asistencia_repository, turno_service, usuario_repository, empresa_repository,
+                 ejecucion_repository, reloj=None):
         self.asistencia_repository = asistencia_repository
+        # Solo para saber si el operario tiene algo en curso al marcar la salida.
+        self.ejecucion_repository = ejecucion_repository
         self.turno_service = turno_service
         self.usuario_repository = usuario_repository
         self.empresa_repository = empresa_repository
@@ -63,6 +69,9 @@ class AsistenciaService:
         asistencia = self._la_que_corresponde(solicitante["id"], self._jornada_vigente(solicitante, ahora))
         if asistencia is None:
             raise ValidationError("No tienes una entrada abierta en esta jornada: marca primero la entrada")
+        # Las pausadas no lo impiden: el cierre de jornada las reprograma.
+        if self.ejecucion_repository.find_en_progreso_de_usuario(solicitante["id"]):
+            raise ValidationError(SALIDA_CON_ACTIVIDAD_EN_CURSO)
         asistencia.marcar_salida(ahora)
         if not self.asistencia_repository.guardar(asistencia.id, asistencia.to_dict(), asistencia.estado.value,
                                                   solo_si_abierta=True):
@@ -75,6 +84,16 @@ class AsistenciaService:
         self._exigir_rol(solicitante, Rol.OPERARIO, "Solo el operario consulta su asistencia")
         ahora = self.reloj()
         return self.actual(solicitante["id"], self._jornada_vigente(solicitante, ahora), ahora)
+
+    def exigir_entrada_abierta(self, solicitante: dict, ahora) -> None:
+        """Para iniciar o reanudar una actividad el operario debe tener marcada la entrada de su
+        jornada vigente y no haber marcado la salida (alcance, Sección 5.1). El turno no limita:
+        no importa a qué hora la marcó."""
+        asistencia = self._la_que_corresponde(solicitante["id"], self._jornada_vigente(solicitante, ahora))
+        if asistencia is None:
+            raise ValidationError(SIN_ENTRADA)
+        if not asistencia.esta_abierta:
+            raise ValidationError(YA_MARCO_SALIDA)
 
     def actual(self, usuario_id: str, jornada: str, ahora):
         """La asistencia que importa ahora para el operario en su jornada vigente "jornada": la de

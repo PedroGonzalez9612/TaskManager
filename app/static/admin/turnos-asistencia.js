@@ -10,6 +10,13 @@ const NOMBRE_ESTADO_ASISTENCIA = {
     SIN_MARCA: "Sin marca",
     SIN_SALIDA: "Sin salida",
 };
+const ICONO_ESTADO_ASISTENCIA = {
+    REGISTRADA: "clock",
+    VALIDADA: "check",
+    CORREGIDA: "pencil",
+    SIN_MARCA: "minus",
+    SIN_SALIDA: "circle-alert",
+};
 
 function horaDeMomento(momento) {
     if (!momento) {
@@ -79,8 +86,11 @@ function crearFilaAsistencia(asistencia) {
         crearElemento("span", "fila-meta cifra",
             `${turno}Entrada ${horaDeMomento(asistencia.entrada)} · Salida ${horaDeMomento(asistencia.salida)}`),
     );
-    const estado = crearElemento("span", `etiqueta asistencia-${asistencia.estado.toLowerCase()}`,
-        NOMBRE_ESTADO_ASISTENCIA[asistencia.estado] || asistencia.estado);
+    const estado = crearConIcono(
+        "span", `etiqueta asistencia-${asistencia.estado.toLowerCase()}`,
+        ICONO_ESTADO_ASISTENCIA[asistencia.estado] || "circle",
+        NOMBRE_ESTADO_ASISTENCIA[asistencia.estado] || asistencia.estado,
+    );
     const acciones = crearElemento("div", "fila-acciones");
     if (asistencia.id && asistencia.salida && asistencia.estado === "REGISTRADA") {
         const validar = crearElemento("button", "boton-texto", "Validar");

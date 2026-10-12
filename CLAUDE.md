@@ -57,9 +57,10 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   ESTADO DEL REDISEÑO "Calma operativa" (plan en `docs/plan_rediseno_calma_operativa.md`): Etapa 1
   (alcance) y Etapa 2 (base visual: colores, Figtree, sombras, logo del tablero) y Etapa 3 (Hoy del Operario como línea de tiempo, en `operario/hoy.js`, clases `linea-*` y `tarjeta-*`) hechas, pendientes del visto bueno del
   usuario. Etapa 4 (backend) a medias: ver "Próximos pasos" en `docs/avance.md`. Etapas 5 a 7
-  pendientes. Ya existen turnos y asistencia (marca de entrada y salida en Hoy; turnos y validación
-  en Usuarios del Administrador) y el calendario rediseñado. Hasta que se apliquen, las pantallas siguen con requerimientos en lugar de proyectos,
-  Equipo como horario por columnas, y Hoy sin pausar, turnos, asistencia ni "Reportar actividad",
+  pendientes. Ya existen turnos y asistencia (turnos y validación en Usuarios del Administrador) y el
+  calendario rediseñado. Hoy tiene tres estados según la asistencia (`estadoJornada` en `operario/hoy.js`):
+  inicio de la jornada con "Marcar entrada", el día con "Marcar salida" en el encabezado, y el cierre. Hasta que se apliquen, las pantallas siguen con requerimientos en lugar de proyectos,
+  Equipo como horario por columnas, y Hoy sin botón de pausar ni "Reportar actividad",
   aunque la API ya tiene pausar, reanudar, cancelar, devolver y proyectos.
   Se avanza etapa por etapa, con la aprobación del usuario.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
@@ -113,6 +114,9 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
 - Jornada: pertenece al día en que inicia el turno. Capacidad = duración del turno menos descanso.
 - La carga se calcula por jornada. Alerta cuando supera el 100% de la capacidad.
 - Asistencia: el operario marca entrada/salida; el Administrador valida o corrige.
+- Sin la entrada marcada no se inicia ni se reanuda una actividad. No se marca la salida con una
+  actividad en curso: se finaliza o se pausa con motivo "Fin de jornada". El turno no limita la hora
+  de la entrada ni de la salida; hay un aviso informativo 15 minutos antes del inicio y del fin del turno.
 - Indicadores agregados: sumar tiempos y dividir al final; nunca promediar porcentajes.
 
 ## Decisiones de diseño abiertas (no implementar sin resolverlas con el agente diseno-oo)
@@ -162,6 +166,9 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   `python herramientas/sonar_resumen.py` para ver la puerta de calidad y los hallazgos en la terminal.
   La puerta exige 0 hallazgos nuevos y 80 % de cobertura: antes de dar una etapa por terminada debe pasar.
   No se corrigen (están aceptados en SonarQube con su motivo): nombres con "ñ" y `await` de nivel superior.
+- `documento_pdf.py`: convierte un documento Markdown de `docs/` en PDF (imágenes y diagramas Mermaid).
+  Los entregables de cada materia van en `docs/diseno_interfaces/` y `docs/diseno_orientado_objetos/`,
+  en una carpeta por momento, junto al enunciado (`actividad.md`).
 - `migrar_etapa4.py`: migración de una sola vez para bases con datos anteriores a la Etapa 4
   (sin argumentos muestra lo que haría; con `--aplicar` lo hace).
 

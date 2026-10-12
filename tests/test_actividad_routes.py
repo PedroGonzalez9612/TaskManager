@@ -6,6 +6,9 @@ from flask import Flask, jsonify
 from app.routes.actividad_routes import create_blueprint
 from app.utils.errors import ErrorApi
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 
 @pytest.fixture
 def aplicacion(db, reloj):

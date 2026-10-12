@@ -515,7 +515,7 @@ body.ancho-angosto {
 }
 
 .boton-pequeno {
-    min-height: 2.4rem;
+    min-height: var(--alto-control);
     padding: 0 0.8rem;
 }
 
@@ -713,6 +713,12 @@ body.ancho-angosto {
     background: var(--advertencia-suave);
     color: var(--advertencia-texto);
     font-weight: var(--peso-fuerte);
+}
+
+/* Información que no pide una acción inmediata. */
+.aviso-info {
+    background: var(--info-suave);
+    color: var(--info-texto);
 }
 
 .aviso-bloque {
@@ -1700,8 +1706,54 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     background: var(--exito);
 }
 
-.turno-ordenar {
+.turno-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e3);
     margin-top: var(--e3);
+}
+
+/* Inicio y cierre de la jornada: una sola columna con los datos del turno y una acción (alcance, Sección 6.1). */
+.portada-jornada {
+    display: grid;
+    gap: var(--e4);
+    padding: var(--e5);
+}
+
+.portada-jornada > * {
+    margin: 0;
+}
+
+.portada-jornada h2 {
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
+}
+
+.portada-datos {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--e2) var(--e4);
+}
+
+.portada-datos dt {
+    color: var(--texto-secundario);
+}
+
+.portada-datos dd {
+    margin: 0;
+    font-weight: var(--peso-fuerte);
+    text-align: right;
+}
+
+.portada-urgentes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e2);
+}
+
+.portada-nota {
+    margin: 0;
 }
 
 .linea-marca {
@@ -2897,7 +2949,7 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     display: inline-flex;
     align-items: center;
     gap: var(--e1);
-    min-height: 2.4rem;
+    min-height: var(--alto-control);
     padding: 0 var(--e2);
     border: none;
     border-radius: var(--radio-control);

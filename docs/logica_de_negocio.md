@@ -120,9 +120,9 @@ Cada operario tiene su propia **ejecución**: su hora de inicio, sus pausas y su
 
 | Acción | Regla |
 |---|---|
-| **Iniciar** | Solo si la actividad le está asignada y no tiene otra en curso. Un operario tiene una sola actividad en curso a la vez; la base de datos lo garantiza aunque lleguen dos peticiones al mismo tiempo |
+| **Iniciar** | Solo si la actividad le está asignada, ya marcó la entrada de su jornada y no tiene otra en curso. Un operario tiene una sola actividad en curso a la vez; la base de datos lo garantiza aunque lleguen dos peticiones al mismo tiempo |
 | **Pausar** | Exige un motivo. Una actividad de hora fija no se puede pausar una vez iniciada |
-| **Reanudar** | Solo si no tiene otra en curso |
+| **Reanudar** | Solo si no tiene otra en curso y su jornada sigue abierta (marcó la entrada y no ha marcado la salida) |
 | **Finalizar** | Puede dejar una observación |
 
 La hora de cada acción la pone el servidor, nunca el celular del operario.
@@ -197,6 +197,9 @@ Cuando termina la jornada, el sistema revisa lo que quedó abierto. Una jornada 
 - El turno **no limita** el trabajo: el operario puede trabajar fuera de su turno, y ese tiempo cuenta como tiempo adicional.
 - **Jornada vigente:** es la del turno que el operario está trabajando. En un turno de noche (por ejemplo, de 22:00 a 06:00), después de la medianoche sigue siendo la jornada del día en que empezó, hasta el fin del turno. Con ella se decide qué ve en Hoy y si está "En turno".
 - **Asistencia:** el operario marca su **entrada** y su **salida** de cada jornada; la hora la pone el servidor. La salida cierra la asistencia de la jornada vigente (o la de la jornada anterior, en un turno de noche), nunca una más antigua. Si olvidó la salida, eso no le impide marcar la entrada del día siguiente: la asistencia vieja queda "Sin salida" para el Administrador. El Administrador **valida** cada asistencia o la **corrige** con un motivo, y la corrección conserva las marcas originales.
+- **La entrada abre el trabajo y la salida lo cierra:** sin la entrada marcada no se inicia ni se reanuda ninguna actividad. La salida no se marca con una actividad en curso: primero se finaliza o se pausa con el motivo "Fin de jornada" (una de hora fija no se pausa, así que se finaliza). Las pausadas no impiden salir. Después de la salida no se trabaja más en esa jornada; si fue un error, el Administrador corrige la asistencia.
+- **Lo que ve el operario en Hoy:** antes de la entrada, un saludo con su turno y lo que tiene programado; con la entrada marcada, su día; después de la salida, el cierre de la jornada con sus marcas y su tiempo.
+- **Aviso del turno:** desde 15 minutos antes de la hora de inicio y desde 15 minutos antes de la hora de fin, la pantalla dice cuánto falta. Es informativo: no obliga a marcar a esa hora.
 - **El tiempo queda en su día:** lo trabajado se atribuye a la jornada en que se trabajó. Una actividad de 23:00 a 01:00 cuenta una hora en cada jornada; así los indicadores de un día solo suman lo que pasó en él.
 - **Aviso de posible ausencia (pendiente):** si pasado un tiempo de tolerancia el operario no ha marcado entrada, el Administrador recibe un aviso con sus actividades del día para reasignarlas.
 
