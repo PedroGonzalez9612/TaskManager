@@ -1,6 +1,21 @@
 from app.models.enums import EstadoEjecucion
-from app.models.pausa import Pausa, minutos_entre
+from app.models.pausa import Pausa, en_utc, minutos_entre
 from app.utils.errors import ValidationError
+
+
+def minutos_trabajados_en(fecha_inicio, fecha_fin, pausas, desde, hasta) -> int:
+    """Minutos trabajados de una ejecución dentro de la ventana [desde, hasta) (alcance, Sección
+    5.1, "Atribución del tiempo"): el intervalo [fecha_inicio, fecha_fin] menos sus pausas,
+    recortado a la ventana. "fecha_fin" es el fin de la ejecución o "ahora" si sigue abierta.
+    "pausas" son pares (inicio, fin); una pausa sin fin dura hasta "fecha_fin"."""
+    inicio, fin = en_utc(fecha_inicio), en_utc(fecha_fin)
+    desde, hasta = max(en_utc(desde), inicio), min(en_utc(hasta), fin)
+    if hasta <= desde:
+        return 0
+    trabajado = minutos_entre(desde, hasta)
+    for pausa_inicio, pausa_fin in pausas:
+        trabajado -= minutos_entre(max(en_utc(pausa_inicio), desde), min(en_utc(pausa_fin) or fin, hasta))
+    return max(0, round(trabajado))
 
 
 class Ejecucion:

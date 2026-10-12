@@ -2,13 +2,19 @@
 
 No hay un proceso en segundo plano: los demás servicios llaman a cerrar_pendientes() antes de leer
 o cambiar las actividades de una empresa. Si no hay nada atrasado, sale después de dos consultas
-cortas (la zona horaria de la empresa y las actividades abiertas de días anteriores)."""
+cortas (la zona horaria de la empresa y las actividades abiertas de días anteriores).
+
+Una jornada termina a la medianoche o al fin del turno más tardío de sus operarios, lo que ocurra
+después: una actividad de ayer cuyo operario sigue en su turno de noche todavía no se cierra."""
+from collections import defaultdict
+from functools import partial
+
 from app.models.actividad import Actividad
 from app.models.ejecucion import Ejecucion
 from app.models.enums import MOTIVO_PAUSA_FIN_JORNADA, EstadoEjecucion
 from app.models.pausa import en_utc
 from app.services.estado_actividad import calcular_estado_actividad
-from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, fecha_local, fin_del_dia
+from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, fecha_local
 
 CONTEOS = ("reprogramadas", "no_realizadas", "ejecuciones_pausadas", "ejecuciones_cerradas")
 
@@ -27,71 +33,100 @@ def momento_de_cierre(ejecucion: Ejecucion, fin_jornada):
     return max([fin_jornada] + [en_utc(evento) for evento in eventos if evento is not None])
 
 
+def _fin_de_la_jornada_de(turnos, fecha: str, zona: str, ejecucion: Ejecucion):
+    """Cuándo terminó la jornada "fecha" para el operario de esa ejecución: el mayor entre la
+    medianoche y el fin de SU turno de esa jornada (sin turno, la medianoche)."""
+    return turnos.cierre_de([ejecucion.usuario_id], fecha, zona)
+
+
 class CierreJornadaService:
     """Reprograma las actividades de horario flexible que no se terminaron y deja como No realizadas las de
-    hora fija. Mientras no existan los turnos, la jornada termina con el día en la zona horaria
-    de la empresa.
+    hora fija. La jornada de una actividad termina a la medianoche (zona horaria de la empresa) o
+    al fin del turno más tardío de sus operarios con asignación activa, lo que ocurra después.
 
     No depende de ActividadService (que es quien lo llama): el estado de una actividad reprogramada
-    lo calcula con la misma función pura de estado_actividad.py."""
+    lo calcula con la misma función pura de estado_actividad.py. Los turnos los pide a TurnoService."""
 
     def __init__(self, actividad_repository, asignacion_repository, ejecucion_repository,
-                 empresa_repository, reloj=None):
+                 empresa_repository, turno_service, reloj=None):
         self.actividad_repository = actividad_repository
         self.asignacion_repository = asignacion_repository
         self.ejecucion_repository = ejecucion_repository
         self.empresa_repository = empresa_repository
+        self.turno_service = turno_service
         self.reloj = reloj or ahora_utc
 
     def cerrar_pendientes(self, empresa_id: str) -> dict:
-        """Cierra lo que quedó abierto en días anteriores a hoy y devuelve cuánto hizo. Se puede
+        """Cierra lo que quedó abierto en jornadas que ya terminaron y devuelve cuánto hizo. Se puede
         llamar las veces que sea: lo que ya se cerró no se vuelve a tocar."""
         resultado = dict.fromkeys(CONTEOS, 0)
         if not empresa_id:
             return resultado
-        ahora = self.reloj()
+        ahora = en_utc(self.reloj())
         zona = self._zona_de(empresa_id)
         hoy = fecha_local(ahora, zona)
 
-        for doc in self.actividad_repository.buscar_abiertas_anteriores_a(empresa_id, hoy):
+        # La consulta barata: lo abierto de días anteriores a hoy. Solo si hay algo se leen los turnos.
+        docs = self.actividad_repository.buscar_abiertas_anteriores_a(empresa_id, hoy)
+        cierres, turnos = self._momentos_de_cierre(docs, zona) if docs else ({}, None)
+        for doc in docs:
+            if ahora < cierres[str(doc["_id"])]:
+                continue                # Su jornada sigue: un operario todavía está en su turno de noche.
             actividad = Actividad.desde_documento(doc)
+            # Cada ejecución se pausa o se cierra con el fin de la jornada de SU operario, no con el
+            # del turno más tardío: así no se infla el tiempo real de quien ya había terminado su turno.
+            fin_de = partial(_fin_de_la_jornada_de, turnos, actividad.fecha_programada, zona)
             # Solo se guarda si nadie más la movió ni le cambió el estado desde que se leyó: con
             # dos peticiones a la vez, una sola la cierra y la otra la salta.
             condicion = {"fecha_programada": doc.get("fecha_programada"), "estado": doc.get("estado")}
-            fin_jornada = fin_del_dia(actividad.fecha_programada, zona)
             if actividad.es_hora_fija:
-                self._dejar_no_realizada(actividad, condicion, fin_jornada, ahora, resultado)
+                self._dejar_no_realizada(actividad, condicion, fin_de, ahora, resultado)
             else:
-                self._reprogramar(actividad, condicion, fin_jornada, hoy, ahora, resultado)
+                self._reprogramar(actividad, condicion, fin_de, hoy, ahora, resultado)
         return resultado
+
+    def _momentos_de_cierre(self, docs: list, zona: str) -> tuple:
+        """({actividad_id: momento en que termina su jornada}, turnos de los operarios). Lee las
+        asignaciones activas y los turnos de todos los operarios involucrados de una vez (tres
+        consultas en total)."""
+        operarios = defaultdict(list)
+        for asignacion in self.asignacion_repository.find_by_actividades([str(doc["_id"]) for doc in docs]):
+            operarios[asignacion["actividad_id"]].append(asignacion["usuario_id"])
+        usuario_ids = list({usuario_id for ids in operarios.values() for usuario_id in ids})
+        turnos = self.turno_service.turnos_de_operarios(usuario_ids)
+        cierres = {
+            str(doc["_id"]): turnos.cierre_de(operarios[str(doc["_id"])], doc["fecha_programada"], zona)
+            for doc in docs
+        }
+        return cierres, turnos
 
     # ---------- Hora fija: No realizada ----------
 
-    def _dejar_no_realizada(self, actividad: Actividad, condicion: dict, fin_jornada, ahora, resultado: dict) -> None:
+    def _dejar_no_realizada(self, actividad: Actividad, condicion: dict, fin_de, ahora, resultado: dict) -> None:
         """La actividad queda No realizada y lo que alguien llevaba abierto se cierra a la hora en
-        que terminó su día: el tiempo trabajado se conserva."""
+        que terminó su jornada: el tiempo trabajado se conserva."""
         actividad.marcar_no_realizada(ahora)
         if not self._guardar(actividad, condicion, CAMPOS_NO_REALIZADA):
             return
         resultado["no_realizadas"] += 1
         for ejecucion in self._ejecuciones_abiertas(actividad.id):
             estado_leido = ejecucion.estado.value
-            ejecucion.cerrar(momento_de_cierre(ejecucion, fin_jornada))
+            ejecucion.cerrar(momento_de_cierre(ejecucion, fin_de(ejecucion)))
             if self.ejecucion_repository.guardar(ejecucion.id, ejecucion.to_dict(), estado_esperado=estado_leido):
                 resultado["ejecuciones_cerradas"] += 1
 
     # ---------- Horario flexible: actividad reprogramada ----------
 
-    def _reprogramar(self, actividad: Actividad, condicion: dict, fin_jornada, hoy: str, ahora, resultado: dict) -> None:
+    def _reprogramar(self, actividad: Actividad, condicion: dict, fin_de, hoy: str, ahora, resultado: dict) -> None:
         """Lo que alguien dejó en curso se pausa con el motivo "Fin de jornada" a la hora en que
-        terminó su día, y la actividad pasa a hoy con una sola reprogramación, aunque hayan pasado varios
+        terminó su jornada, y la actividad pasa a hoy con una sola reprogramación, aunque hayan pasado varios
         días. Lo que ya estaba pausado no se toca."""
         en_curso = [
             ejecucion for ejecucion in self._ejecuciones_abiertas(actividad.id)
             if ejecucion.estado == EstadoEjecucion.EN_PROGRESO
         ]
         for ejecucion in en_curso:
-            ejecucion.pausar(MOTIVO_PAUSA_FIN_JORNADA, momento_de_cierre(ejecucion, fin_jornada))
+            ejecucion.pausar(MOTIVO_PAUSA_FIN_JORNADA, momento_de_cierre(ejecucion, fin_de(ejecucion)))
             if self.ejecucion_repository.guardar(
                     ejecucion.id, ejecucion.to_dict(), estado_esperado=EstadoEjecucion.EN_PROGRESO.value):
                 resultado["ejecuciones_pausadas"] += 1

@@ -5,10 +5,15 @@ La estimación y la ejecución son cosas distintas. Lo terminado ocupa el tiempo
 falta del estimado); y lo pendiente se reacomoda desde que el operario queda libre. Si algo termina
 antes, lo siguiente se adelanta; si se demora, se corre. Las de hora fija no se mueven.
 
+El tiempo trabajado se atribuye a la jornada en que se trabajó: solo cuenta lo que cae dentro de la
+ventana de la jornada, de su medianoche a su cierre (el mayor entre la medianoche siguiente y el fin
+del turno). Así una actividad que empezó en una jornada y terminó en otra reparte su tiempo.
+
 Es una función pura: recibe las actividades ya presentadas para el operario y la hora, y devuelve
 la programación. No lee la base de datos ni el reloj."""
 from datetime import timedelta
 
+from app.models.ejecucion import minutos_trabajados_en
 from app.models.enums import EstadoActividad, Prioridad
 from app.models.pausa import en_utc
 from app.utils.reloj import fin_del_dia, momento_local
@@ -28,6 +33,16 @@ def _trabajado(actividad: dict) -> int:
     return (actividad.get("ejecucion") or {}).get("tiempo_real_min") or 0
 
 
+def _trabajado_en(actividad: dict, ventana: tuple, ahora) -> int:
+    """Minutos que el operario trabajó en la actividad dentro de la ventana (desde, hasta) de la
+    jornada. Sin hora de inicio registrada (datos anteriores), se usa su tiempo real completo."""
+    ejecucion = actividad.get("ejecucion") or {}
+    if not ejecucion.get("fecha_inicio"):
+        return _trabajado(actividad)
+    pausas = [(pausa["inicio"], pausa.get("fin")) for pausa in ejecucion.get("pausas") or []]
+    return minutos_trabajados_en(ejecucion["fecha_inicio"], ejecucion.get("fecha_fin") or ahora, pausas, *ventana)
+
+
 def _restante(actividad: dict) -> int:
     """Minutos que le faltan según el estimado. Lo que ya se pasó del estimado no resta: queda en 0."""
     return max(0, actividad["tiempo_estimado_min"] - _trabajado(actividad))
@@ -41,10 +56,13 @@ def _tramo(actividad: dict, tipo: str, inicio, fin, **datos) -> dict:
     }
 
 
-def _tramo_finalizado(actividad: dict, fecha: str, zona) -> dict:
+def _tramo_finalizado(actividad: dict, fecha: str, zona, desde) -> dict:
+    """Lo terminado ocupa sus horas reales, pero solo desde que empieza la jornada: si se inició en
+    una jornada anterior, se dibuja la parte que cae en esta."""
     ejecucion = actividad.get("ejecucion") or {}
     if ejecucion.get("fecha_inicio") and ejecucion.get("fecha_fin"):
-        return _tramo(actividad, FINALIZADA, en_utc(ejecucion["fecha_inicio"]), en_utc(ejecucion["fecha_fin"]))
+        inicio = max(en_utc(ejecucion["fecha_inicio"]), desde)
+        return _tramo(actividad, FINALIZADA, inicio, max(inicio, en_utc(ejecucion["fecha_fin"])))
     # Datos anteriores, sin registro de tiempo: se ubica en su hora y no ocupa tiempo.
     momento = momento_local(fecha, actividad.get("hora_programada") or "00:00", zona)
     return _tramo(actividad, FINALIZADA, momento, momento)
@@ -98,8 +116,8 @@ def _ubicar_pendientes(fijas: list, flexibles: list, libre_desde, ahora) -> list
     return tramos
 
 
-def _resumen(actividades: list, tramos: list, capacidad_min: int) -> dict:
-    trabajado = sum(_trabajado(actividad) for actividad in actividades)
+def _resumen(actividades: list, tramos: list, capacidad_min: int, ventana: tuple, ahora) -> dict:
+    trabajado = sum(_trabajado_en(actividad, ventana, ahora) for actividad in actividades)
     pendiente = sum(_restante(actividad) for actividad in actividades
                     if actividad["estado"] != EstadoActividad.COMPLETADA.value)
     return {
@@ -111,26 +129,30 @@ def _resumen(actividades: list, tramos: list, capacidad_min: int) -> dict:
     }
 
 
-def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_min: int) -> dict:
+def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_min: int, cierre=None) -> dict:
     """Devuelve {"tramos": [...], "resumen": {...}} para la jornada "fecha" de un operario.
 
     "actividades" son las suyas de esa jornada, presentadas con su estado personal y su ejecución.
     "orden" es su OrdenJornada (el orden que eligió para las de horario flexible).
+    "cierre" es el momento (UTC) en que termina la jornada: el mayor entre la medianoche siguiente
+    y el fin de su turno. Sin él, la jornada termina a la medianoche siguiente.
     Cada tramo trae actividad_id, tipo (FINALIZADA, EN_CURSO o PENDIENTE), inicio y fin (reales o
     proyectados, en UTC) y estas marcas: hora_fija, aproximada (hora calculada, no fija), vencida
     (hora fija que ya pasó sin iniciarse), interrumpe (urgente que interrumpe lo que está en curso),
-    siguiente (la próxima por hacer) y fuera_de_jornada (empezaría después de terminar el día)."""
+    siguiente (la próxima por hacer) y fuera_de_jornada (empezaría después de terminar la jornada).
+    El resumen cuenta como trabajado solo lo que cae entre la medianoche de "fecha" y el cierre."""
     ahora = en_utc(ahora)
+    ventana = (momento_local(fecha, "00:00", zona), cierre or fin_del_dia(fecha, zona))
     de_la_jornada = [a for a in actividades if a["estado"] in (
         EstadoActividad.COMPLETADA.value, EstadoActividad.EN_EJECUCION.value, *ESTADOS_PENDIENTES)]
 
-    tramos = [_tramo_finalizado(a, fecha, zona) for a in de_la_jornada
+    tramos = [_tramo_finalizado(a, fecha, zona, ventana[0]) for a in de_la_jornada
               if a["estado"] == EstadoActividad.COMPLETADA.value]
 
     en_curso = next((a for a in de_la_jornada if a["estado"] == EstadoActividad.EN_EJECUCION.value), None)
     tramo_en_curso = None
     if en_curso:
-        inicio = en_utc(en_curso["ejecucion"]["fecha_inicio"])
+        inicio = max(en_utc(en_curso["ejecucion"]["fecha_inicio"]), ventana[0])
         tramo_en_curso = _tramo(en_curso, EN_CURSO, inicio, ahora + _minutos(_restante(en_curso)))
         tramos.append(tramo_en_curso)
 
@@ -150,8 +172,7 @@ def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_m
         vigentes[0]["siguiente"] = True
 
     tramos += por_hacer
-    fin_jornada = fin_del_dia(fecha, zona)
     for tramo in tramos:
-        tramo["fuera_de_jornada"] = tramo["tipo"] == PENDIENTE and tramo["inicio"] >= fin_jornada
+        tramo["fuera_de_jornada"] = tramo["tipo"] == PENDIENTE and tramo["inicio"] >= ventana[1]
     tramos.sort(key=lambda tramo: tramo["inicio"])
-    return {"tramos": tramos, "resumen": _resumen(de_la_jornada, tramos, capacidad_min)}
+    return {"tramos": tramos, "resumen": _resumen(de_la_jornada, tramos, capacidad_min, ventana, ahora)}

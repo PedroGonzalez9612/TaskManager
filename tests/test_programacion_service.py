@@ -361,6 +361,81 @@ def test_cada_operario_ve_su_propio_avance_en_una_actividad_compartida(servicios
     assert de_luis["resumen"]["trabajado_min"] == 0
 
 
+# ---------- Jornada vigente: turno de noche ----------
+
+MANANA = "2026-10-11"
+
+
+def bogota(dia, hora, minuto=0):
+    """Una hora de Bogotá (UTC-5) de octubre, como momento en UTC."""
+    return datetime(2026, 10, dia, hora, minuto, tzinfo=timezone.utc) + timedelta(hours=5)
+
+
+@pytest.fixture
+def ana_de_noche(servicios, empresa):
+    """Ana tiene turno de noche (22:00 a 06:00 en Bogotá) desde el 10."""
+    noche = servicios.turnos.crear_turno(
+        {"nombre": "Noche", "hora_inicio": "22:00", "hora_fin": "06:00", "descanso_min": 30}, empresa.admin)
+    servicios.turnos.asignar_turno(empresa.admin, empresa.ana["id"], noche["id"])
+    return noche
+
+
+def test_de_madrugada_el_turno_de_noche_ve_la_jornada_en_que_empezo(servicios, empresa, crear_actividad,
+                                                                    ana_de_noche, reloj):
+    del_10 = crear_actividad([empresa.ana], titulo="Del 10")
+    crear_actividad([empresa.ana], titulo="Del 11", fecha_programada=MANANA)
+    reloj.ahora = bogota(11, 2)
+
+    programacion = servicios.programacion.consultar(empresa.ana)
+
+    assert programacion["fecha"] == HOY
+    assert programacion["turno"]["inicio"] == bogota(10, 22)
+    assert programacion["turno"]["fin"] == bogota(11, 6)
+    assert programacion["en_turno"] is True
+    assert [actividad["id"] for actividad in programacion["actividades"]] == [del_10["id"]]
+
+
+def test_al_terminar_el_turno_de_noche_la_jornada_vigente_es_la_del_dia(servicios, empresa, crear_actividad,
+                                                                       ana_de_noche, reloj):
+    crear_actividad([empresa.ana], titulo="Del 11", fecha_programada=MANANA)
+    reloj.ahora = bogota(11, 7)
+
+    programacion = servicios.programacion.consultar(empresa.ana)
+
+    assert programacion["fecha"] == MANANA
+    assert programacion["turno"]["inicio"] == bogota(11, 22)
+    assert programacion["en_turno"] is False
+
+
+def test_de_madrugada_el_orden_se_guarda_en_la_jornada_vigente(servicios, empresa, ana_de_noche, tres_flexibles,
+                                                              ordenes, reloj):
+    alta, _, baja = tres_flexibles
+    reloj.ahora = bogota(11, 2)
+    servicios.programacion.guardar_orden(empresa.ana, [baja["id"], alta["id"]])
+    assert ordenes.find_de_usuario(empresa.ana["id"], HOY)["actividad_ids"] == [baja["id"], alta["id"]]
+    servicios.programacion.restablecer_orden(empresa.ana)
+    assert ordenes.find_de_usuario(empresa.ana["id"], HOY) is None
+
+
+def test_el_trabajo_de_la_noche_anterior_no_cuenta_en_la_jornada_siguiente(servicios, empresa, crear_actividad,
+                                                                          reloj):
+    # Sin turno: la jornada del 10 termina a la medianoche. Inicia a las 23:00 y termina a la 01:00.
+    actividad = crear_actividad([empresa.ana], tiempo_estimado_min=180)
+    reloj.ahora = bogota(10, 23)
+    servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+    reloj.ahora = bogota(11, 0)            # El cierre la pausa a la medianoche y la pasa al 11.
+    servicios.ejecucion.reanudar(actividad["id"], empresa.ana)
+    reloj.ahora = bogota(11, 1)
+    finalizada = servicios.ejecucion.finalizar(actividad["id"], empresa.ana)
+
+    programacion = servicios.programacion.consultar(empresa.ana)
+
+    assert programacion["fecha"] == MANANA
+    assert programacion["resumen"]["trabajado_min"] == 60
+    assert horas_de(programacion, actividad) == (bogota(11, 0), bogota(11, 1))
+    assert finalizada["ejecucion"]["tiempo_real_min"] == 120          # El total no cambia.
+
+
 # ---------- Quién consulta ----------
 
 def test_el_administrador_consulta_la_programacion_de_un_operario(servicios, empresa, crear_actividad, reloj):

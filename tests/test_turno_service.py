@@ -1,10 +1,11 @@
 """Pruebas del catálogo de turnos, del turno de cada operario y de la capacidad que sale de él
 (alcance, Secciones 5.1 y 5.2), por el servicio y por la API.
 El reloj empieza el 2026-10-10 a las 08:00 UTC: las 03:00 en Bogotá."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from app.models.turno import Turno
 from app.repositories.turno_repository import AsignacionTurnoRepository
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 
@@ -209,6 +210,55 @@ def test_sin_turno_la_programacion_sigue_con_la_capacidad_provisional(servicios,
     assert programacion["resumen"]["capacidad_min"] == 420
     assert programacion["turno"] is None
     assert programacion["en_turno"] is False
+
+
+# ---------- Jornada vigente y fin de la jornada ----------
+
+NOCHE = {"nombre": "Noche", "hora_inicio": "22:00", "hora_fin": "06:00", "descanso_min": 30}
+ZONA = "America/Bogota"
+
+
+def bogota(dia, hora, minuto=0):
+    """Una hora de Bogotá (UTC-5) del mes de octubre, como momento en UTC."""
+    return datetime(2026, 10, dia, hora, minuto, tzinfo=timezone.utc) + timedelta(hours=5)
+
+
+@pytest.fixture
+def noche(turnos, empresa):
+    turno = turnos.crear_turno(NOCHE, empresa.admin)
+    turnos.asignar_turno(empresa.admin, empresa.ana["id"], turno["id"])
+    return turno
+
+
+@pytest.mark.parametrize("momento, jornada", [
+    (bogota(10, 23), HOY),              # Empezó su turno del 10.
+    (bogota(11, 2), HOY),               # Después de la medianoche sigue siendo la del 10.
+    (bogota(11, 5, 59), HOY),
+    (bogota(11, 6), "2026-10-11"),      # A la hora de fin del turno pasa a la del 11.
+    (bogota(11, 7), "2026-10-11"),
+])
+def test_la_jornada_vigente_con_turno_de_noche(turnos, empresa, noche, momento, jornada):
+    assert turnos.jornada_vigente(empresa.ana["id"], momento, ZONA) == jornada
+
+
+def test_la_jornada_vigente_sin_turno_o_con_turno_de_dia_es_hoy(turnos, empresa, manana):
+    turnos.asignar_turno(empresa.admin, empresa.ana["id"], manana["id"])
+    assert turnos.jornada_vigente(empresa.ana["id"], bogota(11, 2), ZONA) == "2026-10-11"
+    assert turnos.jornada_vigente(empresa.luis["id"], bogota(11, 2), ZONA) == "2026-10-11"
+
+
+def test_la_jornada_termina_con_el_turno_mas_tardio_o_a_la_medianoche(turnos, empresa, manana, noche):
+    turnos.asignar_turno(empresa.admin, empresa.luis["id"], manana["id"])
+    de = turnos.turnos_de_operarios([empresa.ana["id"], empresa.luis["id"]])
+    medianoche = bogota(11, 0)
+    assert de.cierre_de([], HOY, ZONA) == medianoche
+    assert de.cierre_de([empresa.luis["id"]], HOY, ZONA) == medianoche        # Su turno acaba a las 14:00.
+    assert de.cierre_de([empresa.luis["id"], empresa.ana["id"]], HOY, ZONA) == bogota(11, 6)
+
+
+def test_el_turno_sabe_si_cruza_la_medianoche():
+    assert Turno("Noche", "22:00", "06:00", 0, "e1").cruza_medianoche is True
+    assert Turno("Día", "06:00", "14:00", 0, "e1").cruza_medianoche is False
 
 
 # ---------- Por la API ----------

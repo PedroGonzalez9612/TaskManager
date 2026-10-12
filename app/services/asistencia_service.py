@@ -1,20 +1,26 @@
 """Registro de asistencia (alcance, Sección 5.1): el operario marca su entrada y su salida de cada
 jornada con la hora del servidor, y el Administrador valida o corrige cada marca.
 
-El turno no limita las marcas: se puede marcar entrada o salida fuera del horario del turno."""
+El turno no limita las marcas: se puede marcar entrada o salida fuera del horario del turno. Lo que
+sí decide es la jornada vigente: con un turno de noche, después de la medianoche las marcas siguen
+siendo de la jornada en que empezó el turno."""
 from datetime import date, timedelta
 
 from app.models.asistencia import Asistencia
 from app.models.enums import Rol
 from app.models.pausa import en_utc
-from app.services.turno_service import resumen_turno
+from app.services.turno_service import dia_anterior, resumen_turno
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 from app.utils.fechas import validar_fecha, validar_hora
 from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, fecha_local, momento_local
 
-# Estado con el que aparece en la lista del Administrador un operario con turno que no marcó entrada.
+# Estados con los que aparece una fila en la lista del Administrador (solo de presentación, no se
+# guardan): un operario con turno que no marcó entrada, y una asistencia de una jornada que ya
+# pasó y quedó sin salida, para que la corrija.
 SIN_MARCA = "SIN_MARCA"
+SIN_SALIDA = "SIN_SALIDA"
 CAMBIO_SIMULTANEO = "La asistencia cambió mientras hacías esto. Actualiza la pantalla e inténtalo de nuevo."
+YA_MARCO_ENTRADA = "Ya marcaste la entrada de esta jornada"
 
 
 def _dia_siguiente(fecha: str) -> str:
@@ -33,32 +39,30 @@ class AsistenciaService:
     # ---------- Marcas del Operario ----------
 
     def marcar_entrada(self, solicitante: dict) -> dict:
-        """Abre la asistencia de hoy (el día de la empresa) con la hora del servidor. Si quedó
-        abierta la de una jornada anterior, primero hay que marcar esa salida."""
+        """Abre la asistencia de la jornada vigente con la hora del servidor; hay una sola por
+        jornada. Una asistencia de una jornada anterior que quedó sin salida no lo impide: sigue
+        abierta para que el Administrador la corrija."""
         self._exigir_rol(solicitante, Rol.OPERARIO, "Solo el operario marca su entrada")
         ahora = self.reloj()
-        jornada = fecha_local(ahora, self._zona_de(solicitante["empresa_id"]))
-        abierta = self._abierta_de(solicitante["id"])
-        if abierta and abierta.jornada != jornada:
-            raise ValidationError(f"Tienes una salida pendiente de la jornada {abierta.jornada}. Márcala primero.")
-        if abierta or self.asistencia_repository.find_de_usuario_en(solicitante["id"], jornada):
-            raise ValidationError("Ya marcaste la entrada de hoy")
+        jornada = self._jornada_vigente(solicitante, ahora)
+        if self._de_la_jornada(solicitante["id"], jornada):
+            raise ValidationError(YA_MARCO_ENTRADA)
 
         asistencia = Asistencia(solicitante["id"], solicitante["empresa_id"], jornada, entrada=ahora)
         asistencia.id = self.asistencia_repository.insertar(asistencia.to_dict())
         if asistencia.id is None:
             # Otra marca de entrada del mismo operario llegó primero (índice único).
-            raise ValidationError("Ya marcaste la entrada de hoy")
+            raise ValidationError(YA_MARCO_ENTRADA)
         return self.presentar(asistencia, ahora)
 
     def marcar_salida(self, solicitante: dict) -> dict:
-        """Cierra la asistencia abierta del operario, aunque sea de la jornada anterior (un turno
-        que cruza la medianoche se cierra al día siguiente)."""
+        """Cierra la asistencia de la jornada vigente o, si esa no existe, la abierta de la jornada
+        inmediatamente anterior (turno nocturno o tiempo adicional). Nunca una más antigua."""
         self._exigir_rol(solicitante, Rol.OPERARIO, "Solo el operario marca su salida")
-        asistencia = self._abierta_de(solicitante["id"])
-        if asistencia is None:
-            raise ValidationError("No tienes una entrada abierta: marca primero la entrada")
         ahora = self.reloj()
+        asistencia = self._la_que_corresponde(solicitante["id"], self._jornada_vigente(solicitante, ahora))
+        if asistencia is None:
+            raise ValidationError("No tienes una entrada abierta en esta jornada: marca primero la entrada")
         asistencia.marcar_salida(ahora)
         if not self.asistencia_repository.guardar(asistencia.id, asistencia.to_dict(), asistencia.estado.value,
                                                   solo_si_abierta=True):
@@ -66,30 +70,29 @@ class AsistenciaService:
         return self.presentar(asistencia, ahora)
 
     def consultar_hoy(self, solicitante: dict):
-        """La asistencia abierta del operario o, si no tiene, la de hoy. None si no ha marcado."""
+        """La asistencia de la jornada vigente o, si no la hay, la abierta de la jornada anterior.
+        None si no ha marcado."""
         self._exigir_rol(solicitante, Rol.OPERARIO, "Solo el operario consulta su asistencia")
         ahora = self.reloj()
-        jornada = fecha_local(ahora, self._zona_de(solicitante["empresa_id"]))
-        return self.actual(solicitante["id"], jornada, ahora)
+        return self.actual(solicitante["id"], self._jornada_vigente(solicitante, ahora), ahora)
 
     def actual(self, usuario_id: str, jornada: str, ahora):
-        """La asistencia que importa ahora para el operario: la abierta (de hoy o de la jornada
-        anterior) o, si no hay, la de esa jornada. Presentada, o None."""
-        asistencia = self._abierta_de(usuario_id)
-        if asistencia is None:
-            doc = self.asistencia_repository.find_de_usuario_en(usuario_id, jornada)
-            asistencia = Asistencia.desde_documento(doc) if doc else None
+        """La asistencia que importa ahora para el operario en su jornada vigente "jornada": la de
+        esa jornada o, si no existe, la abierta de la jornada anterior. Presentada, o None."""
+        asistencia = self._la_que_corresponde(usuario_id, jornada)
         return self.presentar(asistencia, ahora) if asistencia else None
 
     # ---------- Revisión del Administrador ----------
 
     def listar(self, solicitante: dict, jornada=None) -> list:
         """Las asistencias de la empresa en la jornada, con el nombre del operario, su turno vigente
-        y el tiempo presente. Los operarios con turno que no marcaron aparecen como SIN_MARCA."""
+        y el tiempo presente. Los operarios con turno que no marcaron aparecen como SIN_MARCA, y una
+        asistencia de una jornada anterior a la vigente del operario que sigue sin salida, como SIN_SALIDA."""
         self._exigir_rol(solicitante, Rol.ADMINISTRADOR, "Solo el Administrador revisa la asistencia")
         empresa_id = solicitante["empresa_id"]
         ahora = self.reloj()
-        jornada = validar_fecha(jornada, "La jornada") if jornada else fecha_local(ahora, self._zona_de(empresa_id))
+        zona = self._zona_de(empresa_id)
+        jornada = validar_fecha(jornada, "La jornada") if jornada else fecha_local(ahora, zona)
 
         operarios = self.usuario_repository.find_by_empresa_y_rol(empresa_id, Rol.OPERARIO.value)
         turnos = self.turno_service.turnos_de_operarios([str(o["_id"]) for o in operarios])
@@ -103,7 +106,10 @@ class AsistenciaService:
             asistencia = por_usuario.get(usuario_id)
             if asistencia is None and turno is None:
                 continue                        # Sin turno ni marca: no se esperaba que viniera.
-            fila = self.presentar(asistencia, ahora) if asistencia else self._sin_marca(usuario_id, jornada)
+            if asistencia is None:
+                fila = self._sin_marca(usuario_id, jornada)
+            else:
+                fila = self._fila(asistencia, turnos.jornada_vigente(usuario_id, ahora, zona), ahora)
             filas.append({**fila, "operario": operario["nombre"], "turno": resumen_turno(turno)})
         return filas
 
@@ -142,6 +148,15 @@ class AsistenciaService:
             "minutos_presente": asistencia.minutos_presente(ahora), "revision": asistencia.revision,
         }
 
+    @classmethod
+    def _fila(cls, asistencia: Asistencia, jornada_vigente: str, ahora) -> dict:
+        """La asistencia para la lista del Administrador. Si es de una jornada que ya pasó para el
+        operario y sigue sin salida, se muestra como SIN_SALIDA (el estado guardado no cambia)."""
+        fila = cls.presentar(asistencia, ahora)
+        if asistencia.esta_abierta and asistencia.jornada < jornada_vigente:
+            fila["estado"] = SIN_SALIDA
+        return fila
+
     @staticmethod
     def _sin_marca(usuario_id: str, jornada: str) -> dict:
         return {
@@ -167,9 +182,22 @@ class AsistenciaService:
             raise ValidationError(CAMBIO_SIMULTANEO)
         return self.presentar(asistencia, ahora)
 
-    def _abierta_de(self, usuario_id: str):
-        doc = self.asistencia_repository.find_abierta_de_usuario(usuario_id)
+    def _jornada_vigente(self, solicitante: dict, ahora) -> str:
+        zona = self._zona_de(solicitante["empresa_id"])
+        return self.turno_service.jornada_vigente(solicitante["id"], ahora, zona)
+
+    def _de_la_jornada(self, usuario_id: str, jornada: str):
+        doc = self.asistencia_repository.find_de_usuario_en(usuario_id, jornada)
         return Asistencia.desde_documento(doc) if doc else None
+
+    def _la_que_corresponde(self, usuario_id: str, jornada: str):
+        """La asistencia de la jornada vigente o, si no existe, la abierta de la jornada
+        inmediatamente anterior. Nunca una más antigua. None si no hay ninguna."""
+        asistencia = self._de_la_jornada(usuario_id, jornada)
+        if asistencia is not None:
+            return asistencia
+        anterior = self._de_la_jornada(usuario_id, dia_anterior(jornada))
+        return anterior if anterior and anterior.esta_abierta else None
 
     def _asistencia_de_la_empresa(self, asistencia_id: str, solicitante: dict) -> Asistencia:
         doc = self.asistencia_repository.find_by_id(asistencia_id)

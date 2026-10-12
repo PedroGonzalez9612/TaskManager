@@ -12,6 +12,8 @@ from tests.conftest import HOY
 PROPIA = {"X-Requested-With": "GestLab"}
 NOCHE = {"nombre": "Noche", "hora_inicio": "22:00", "hora_fin": "06:00", "descanso_min": 30}
 TARDE = {"nombre": "Tarde", "hora_inicio": "14:00", "hora_fin": "22:00", "descanso_min": 30}
+DIA = {"nombre": "Día", "hora_inicio": "06:00", "hora_fin": "14:00", "descanso_min": 30}
+MANANA = "2026-10-11"
 
 
 def utc(dia, hora, minuto=0):
@@ -89,11 +91,88 @@ def test_la_salida_de_un_turno_de_noche_cierra_la_jornada_anterior(asistencia, e
     assert asistencia.marcar_entrada(empresa.ana)["jornada"] == "2026-10-11"
 
 
-def test_una_salida_pendiente_de_otra_jornada_bloquea_la_entrada(asistencia, empresa, reloj):
-    asistencia.marcar_entrada(empresa.ana)
+def test_una_salida_pendiente_de_otra_jornada_no_bloquea_la_entrada(asistencia, asistencias, empresa, reloj):
+    # Regla nueva (alcance, Sección 5.1): la asistencia sin salida queda para que el Administrador la corrija.
+    vieja = asistencia.marcar_entrada(empresa.ana)
     reloj.avanzar(24 * 60)
-    with pytest.raises(ValidationError, match="salida pendiente de la jornada 2026-10-10"):
-        asistencia.marcar_entrada(empresa.ana)
+    assert asistencia.marcar_entrada(empresa.ana)["jornada"] == MANANA
+    assert asistencias.find_by_id(vieja["id"])["salida"] is None
+
+
+# ---------- Jornada vigente: turno de noche y salidas olvidadas ----------
+
+@pytest.fixture
+def noche(servicios, empresa):
+    """Ana tiene turno de noche (22:00 a 06:00 en Bogotá) desde el 10."""
+    turno = servicios.turnos.crear_turno(NOCHE, empresa.admin)
+    servicios.turnos.asignar_turno(empresa.admin, empresa.ana["id"], turno["id"])
+    return turno
+
+
+@pytest.fixture
+def dia(servicios, empresa):
+    """Ana tiene turno de día (06:00 a 14:00 en Bogotá) desde el 10."""
+    turno = servicios.turnos.crear_turno(DIA, empresa.admin)
+    servicios.turnos.asignar_turno(empresa.admin, empresa.ana["id"], turno["id"])
+    return turno
+
+
+def test_turno_de_noche_entrada_y_salida_quedan_en_una_sola_asistencia(asistencia, asistencias, empresa, noche,
+                                                                       reloj):
+    reloj.ahora = utc(11, 4, 30)                 # 23:30 del 10 en Bogotá.
+    assert asistencia.marcar_entrada(empresa.ana)["jornada"] == HOY
+    reloj.ahora = utc(11, 11, 10)                # 06:10 del 11: su turno ya terminó.
+    cerrada = asistencia.marcar_salida(empresa.ana)
+    assert cerrada["jornada"] == HOY
+    assert cerrada["salida"] == utc(11, 11, 10)
+    assert asistencias.collection.count_documents({"usuario_id": empresa.ana["id"]}) == 1
+
+
+def test_la_llegada_tarde_despues_de_medianoche_queda_en_la_jornada_del_turno(asistencia, empresa, noche, reloj):
+    reloj.ahora = utc(11, 5, 30)                 # 00:30 del 11 en Bogotá: sigue su turno del 10.
+    assert asistencia.marcar_entrada(empresa.ana)["jornada"] == HOY
+    assert asistencia.consultar_hoy(empresa.ana)["jornada"] == HOY
+
+
+def test_la_salida_olvidada_queda_sin_salida_para_el_administrador(asistencia, asistencias, empresa, dia, reloj):
+    reloj.ahora = utc(10, 11)                    # 06:00 del 10: entra y olvida la salida.
+    del_10 = asistencia.marcar_entrada(empresa.ana)
+    reloj.ahora = utc(11, 11)                    # 06:00 del 11: se le permite entrar.
+    del_11 = asistencia.marcar_entrada(empresa.ana)
+    assert del_11["jornada"] == MANANA
+    reloj.ahora = utc(11, 19)                    # 14:00 del 11: la salida cierra la del 11.
+    assert asistencia.marcar_salida(empresa.ana)["id"] == del_11["id"]
+
+    assert asistencias.find_by_id(del_10["id"])["salida"] is None
+    assert asistencias.find_by_id(del_10["id"])["estado"] == "REGISTRADA"     # Lo guardado no cambia.
+    assert [fila["estado"] for fila in asistencia.listar(empresa.admin, HOY)] == ["SIN_SALIDA"]
+    assert [fila["estado"] for fila in asistencia.listar(empresa.admin, MANANA)] == ["REGISTRADA"]
+
+
+def test_el_turno_de_noche_en_curso_no_aparece_sin_salida(asistencia, empresa, noche, reloj):
+    reloj.ahora = utc(11, 3)                     # 22:00 del 10.
+    asistencia.marcar_entrada(empresa.ana)
+    reloj.ahora = utc(11, 7)                     # 02:00 del 11: todavía es su jornada del 10.
+    assert [fila["estado"] for fila in asistencia.listar(empresa.admin, HOY)] == ["REGISTRADA"]
+
+
+def test_la_salida_nunca_cierra_una_asistencia_mas_antigua(asistencia, asistencias, empresa, reloj):
+    vieja = asistencia.marcar_entrada(empresa.ana)
+    reloj.avanzar(3 * 24 * 60)                   # Tres días después, sin entrada ayer ni hoy.
+    with pytest.raises(ValidationError, match="No tienes una entrada abierta en esta jornada"):
+        asistencia.marcar_salida(empresa.ana)
+    assert asistencias.find_by_id(vieja["id"])["salida"] is None
+
+
+def test_con_la_salida_de_la_jornada_ya_marcada_no_se_cierra_la_anterior(asistencia, asistencias, empresa, reloj):
+    vieja = asistencia.marcar_entrada(empresa.ana)
+    reloj.avanzar(24 * 60)
+    asistencia.marcar_entrada(empresa.ana)
+    reloj.avanzar(60)
+    asistencia.marcar_salida(empresa.ana)
+    with pytest.raises(ValidationError, match="Ya marcaste la salida"):
+        asistencia.marcar_salida(empresa.ana)
+    assert asistencias.find_by_id(vieja["id"])["salida"] is None
 
 
 def test_el_turno_no_limita_la_entrada(servicios, asistencia, empresa, tarde):
