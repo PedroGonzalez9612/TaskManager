@@ -1,22 +1,11 @@
 from app.models.empresa import CAMPO_LIMITE_POR_ROL, Empresa
 from app.models.enums import Rol
+from app.utils.archivos import detectar_tipo_imagen
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 from app.utils.reloj import ZONA_POR_DEFECTO, validar_zona
 
 TAMANO_MAXIMO_LOGO = 512 * 1024  # 512 KB
 NOMBRE_ROL_PLURAL = {Rol.ADMINISTRADOR.value: "administradores", Rol.OPERARIO.value: "operarios"}
-
-
-def detectar_tipo_imagen(contenido: bytes):
-    """Reconoce la imagen por sus primeros bytes (no por la extensión, que se puede falsificar).
-    No se aceptan SVG porque pueden contener código."""
-    if contenido.startswith(b"\x89PNG\r\n\x1a\n"):
-        return "image/png"
-    if contenido.startswith(b"\xff\xd8\xff"):
-        return "image/jpeg"
-    if contenido[:4] == b"RIFF" and contenido[8:12] == b"WEBP":
-        return "image/webp"
-    return None
 
 
 def leer_limite(valor, campo: str) -> int:
@@ -139,10 +128,21 @@ class EmpresaService:
             raise NotFoundError("La empresa no tiene logo")
         return bytes(doc["logo"]), doc["logo_tipo"]
 
-    def eliminar_empresa(self, empresa_id: str) -> None:
-        deleted = self.empresa_repository.delete(empresa_id)
-        if not deleted:
-            raise NotFoundError(f"Empresa {empresa_id} no encontrada")
+    # ---------- Dar de baja (alcance, Sección 4) ----------
+
+    def desactivar_empresa(self, empresa_id: str) -> dict:
+        """Ninguno de sus usuarios puede iniciar sesión, pero todo su historial se conserva."""
+        return self._cambiar_activa(empresa_id, False)
+
+    def reactivar_empresa(self, empresa_id: str) -> dict:
+        return self._cambiar_activa(empresa_id, True)
+
+    def _cambiar_activa(self, empresa_id: str, activa: bool) -> dict:
+        empresa = self.obtener_empresa(empresa_id)
+        if empresa["activa"] == activa:
+            raise ValidationError(f"{empresa['nombre']} ya está {'activa' if activa else 'desactivada'}")
+        self.empresa_repository.update(empresa_id, {"activa": activa})
+        return self.obtener_empresa(empresa_id)
 
     @staticmethod
     def verificar_acceso(solicitante: dict, empresa_id: str) -> None:

@@ -13,7 +13,6 @@ Fecha de la revisión: 2026-10-10.
 | F3 | El Administrador programa **dos de hora fija que se cruzan** para el mismo operario | Se permite sin aviso | No se permite: "Carlos ya tiene una actividad de hora fija de 10:00 a 11:00" |
 | F4 | Una de hora fija **termina después del fin del turno** del operario | Se permite sin aviso | Se permite (el turno no limita), con un aviso al asignar |
 | F5 | Pasa algo grave **durante una de hora fija** (falla del equipo, accidente) y el operario necesita detenerla | No se puede pausar; solo finalizar | Permitir detenerla solo con un motivo de una lista corta (por ejemplo, "Emergencia" o "Falla del equipo"), y que quede marcada para el Administrador |
-| F6 | El Administrador **cambia la hora** de una de hora fija que ya se inició | Se permite | No se permite mientras esté en curso o pausada |
 
 ## Ejecución
 

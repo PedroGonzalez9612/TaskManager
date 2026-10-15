@@ -62,12 +62,13 @@ class RequerimientoService:
         return self.obtener_requerimiento(requerimiento_id, solicitante)
 
     def eliminar_requerimiento(self, requerimiento_id: str, solicitante: dict) -> None:
-        """Elimina el requerimiento junto con sus actividades, asignaciones y ejecuciones."""
+        """Solo se elimina un requerimiento vacío: las actividades no se borran (alcance, Sección 5.1)."""
         self._buscar_de_la_empresa(requerimiento_id, solicitante["empresa_id"])
-        actividad_ids = [str(a["_id"]) for a in self.actividad_repository.find_by_requerimiento(requerimiento_id)]
-        self.asignacion_repository.delete_by_actividades(actividad_ids)
-        self.ejecucion_repository.delete_by_actividades(actividad_ids)
-        self.actividad_repository.delete_by_requerimiento(requerimiento_id)
+        if self.actividad_repository.find_by_requerimiento(requerimiento_id):
+            raise ValidationError(
+                "Este requerimiento tiene actividades y las actividades no se borran. "
+                "Cancela las que ya no se harán."
+            )
         self.requerimiento_repository.delete(requerimiento_id)
 
     def _buscar_de_la_empresa(self, requerimiento_id: str, empresa_id: str) -> dict:

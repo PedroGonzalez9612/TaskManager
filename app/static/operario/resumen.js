@@ -102,8 +102,8 @@ function pintarGrafica(dias, capacidad) {
                         label: (item) => {
                             const dia = dias[item.dataIndex];
                             const porcentaje = Math.round(dia.minutos * 100 / capacidad);
-                            return `${duracionTexto(dia.minutos)} · ${porcentaje} % de la jornada`
-                                + (sobrecargado(dia) ? " · Sobrecarga" : "");
+                            return `${duracionTexto(dia.minutos)}, ${porcentaje} % de la jornada`
+                                + (sobrecargado(dia) ? " (sobrecarga)" : "");
                         },
                     },
                 },
@@ -128,7 +128,7 @@ function pintarGrafica(dias, capacidad) {
         const porcentaje = Math.round(dia.minutos * 100 / capacidad);
         const carga = crearElemento("td", "cifra", `${porcentaje} %`);
         if (sobrecargado(dia)) {
-            carga.replaceChildren(crearConIcono("span", "carga carga-sobrecarga", "triangle-alert", `${porcentaje} % · Sobrecarga`));
+            carga.replaceChildren(crearConIcono("span", "carga carga-sobrecarga", "triangle-alert", `${porcentaje} %, sobrecarga`));
         }
         fila.append(
             crearElemento("td", "", dia.nombreLargo),
@@ -156,7 +156,7 @@ function pintarConteos(actividades) {
             fila.append(
                 crearEtiqueta(clave),
                 crearElemento("span", "conteo-detalle cifra",
-                    `${datos.cantidad} · ${duracionTexto(datos.minutos)}`),
+                    `${datos.cantidad === 1 ? "1 actividad" : `${datos.cantidad} actividades`}, ${duracionTexto(datos.minutos)}`),
             );
             return fila;
         });

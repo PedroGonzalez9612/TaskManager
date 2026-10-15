@@ -88,6 +88,11 @@ MOTIVOS_DEVOLUCION = (
 
 
 class TipoCatalogo(str, Enum):
-    """Listas desplegables por empresa que se van llenando con lo que se escribe en "Otro"."""
+    """Listas por empresa que se van llenando con lo que escriben las personas: los motivos (con
+    "Otro") y las sugerencias de la información de la actividad."""
     MOTIVO_PAUSA = "MOTIVO_PAUSA"
     MOTIVO_CANCELACION = "MOTIVO_CANCELACION"
+    HERRAMIENTA = "HERRAMIENTA"
+    EQUIPO = "EQUIPO"
+    PRECAUCION = "PRECAUCION"
+    CONTACTO = "CONTACTO"

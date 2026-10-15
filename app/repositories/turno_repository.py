@@ -36,6 +36,10 @@ class AsignacionTurnoRepository(BaseRepository):
         self.collection.create_index(
             [("usuario_id", ASCENDING), ("desde", ASCENDING)], name="usuario_desde")
 
+    def existe_de_turno(self, turno_id: str) -> bool:
+        """Si el turno está o estuvo asignado a algún operario."""
+        return self.collection.count_documents({"turno_id": turno_id}, limit=1) > 0
+
     def find_de_usuario(self, usuario_id: str):
         """Todas las asignaciones de turno del operario, de la más antigua a la más reciente."""
         return self.find_de_usuarios([usuario_id])

@@ -188,11 +188,11 @@ function textoDuracion(nodo) {
     const { actividad } = nodo;
     const estimado = duracionTexto(actividad.tiempo_estimado_min);
     if (nodo.tipo === "hecha" && actividad.ejecucion) {
-        return `Tomó ${duracionTexto(actividad.ejecucion.tiempo_real_min)} · estimado ${estimado}`;
+        return `Tomó ${duracionTexto(actividad.ejecucion.tiempo_real_min)} de ${estimado} estimados`;
     }
     if (actividad.estado === "PAUSADA" && nodo.tramo) {
         const faltan = Math.round((new Date(nodo.tramo.fin) - new Date(nodo.tramo.inicio)) / UN_MINUTO);
-        return `Faltan ${duracionTexto(faltan)} · estimado ${estimado}`;
+        return `Faltan ${duracionTexto(faltan)} de ${estimado} estimados`;
     }
     return estimado;
 }
@@ -222,7 +222,7 @@ function crearTarjeta(nodo) {
         datos.append(crearEtiquetaEstado("PAUSADA"));
     }
     datos.append(crearElemento("span", "cifra", textoDuracion(nodo)), crearElemento("span", "codigo", actividad.codigo));
-    if (actividad.reprogramada) {
+    if (actividad.reprogramada && nodo.tipo !== "hecha") {
         datos.append(crearConIcono("span", "etiqueta etiqueta-retraso", "clock", textoRetraso(actividad)));
     } else if (nodo.atrasada) {
         datos.append(crearConIcono("span", "etiqueta etiqueta-retraso", "clock", "Hora vencida"));
@@ -239,18 +239,31 @@ function crearTarjeta(nodo) {
 function crearBotonFinalizar(actividad, clase) {
     const boton = crearConIcono("button", clase, "check", "Finalizar");
     boton.type = "button";
-    boton.addEventListener("click", async () => {
-        boton.disabled = true;
-        try {
-            await pedirApi(`/actividades/${actividad.id}/finalizar`, { method: "POST" });
-            await cargar();
-            mostrarAviso(`${actividad.codigo} finalizada.`);
-        } catch (error) {
-            mostrarAviso(error.message, "advertencia");
-            boton.disabled = false;
-        }
-    });
+    boton.addEventListener("click", () => abrirFinalizar(actividad, cargar));
     return boton;
+}
+
+// Una de horario flexible se pausa con un motivo; una de hora fija no tiene este botón.
+function crearBotonPausar(actividad) {
+    const boton = crearConIcono("button", "boton-secundario", "pause", "Pausar");
+    boton.type = "button";
+    boton.addEventListener("click", () => abrirPausar(actividad, cargar));
+    return boton;
+}
+
+// "Ver detalle", con cuántas pausas lleva: el historial está en el detalle.
+function crearEnlaceDetalle(actividad) {
+    const pausas = actividad.ejecucion?.pausas?.length || 0;
+    let texto = "Ver detalle";
+    if (pausas === 1) {
+        texto = "Ver detalle (1 pausa)";
+    } else if (pausas > 1) {
+        texto = `Ver detalle (${pausas} pausas)`;
+    }
+    const enlace = crearConIcono("button", "boton-texto tarjeta-enlace", pausas ? "pause" : "chevron-right", texto);
+    enlace.type = "button";
+    enlace.addEventListener("click", () => abrirDetalle(actividad));
+    return enlace;
 }
 
 function crearCronometro(actividad, clase) {
@@ -261,6 +274,23 @@ function crearCronometro(actividad, clase) {
     return cronometro;
 }
 
+// Mientras trabaja, lo que necesita para hacerlo sin abrir el detalle: las precauciones primero y
+// después los pasos (alcance, Sección 5.1). Lo demás (herramientas, contacto, adjuntos) está en el detalle.
+function crearGuiaEnCurso(actividad) {
+    const informacion = actividad.informacion || { bloques: [] };
+    const nodos = [];
+    for (const bloque of BLOQUES_INFORMACION.filter((b) => ["PRECAUCIONES", "PASOS"].includes(b.clave))
+        .reverse()) {
+        const valores = informacion.bloques.includes(bloque.clave) ? informacion[bloque.campo] : [];
+        if (valores.length) {
+            const grupo = crearElemento("div", "tarjeta-guia");
+            grupo.append(crearElemento("p", "tarjeta-guia-titulo", bloque.nombre), crearListaDeBloque(bloque, valores));
+            nodos.push(grupo);
+        }
+    }
+    return nodos;
+}
+
 // Actividad en curso, abierta en su lugar del día: cronómetro, avance contra el estimado y acciones.
 function crearTarjetaEnCurso(nodo) {
     const { actividad } = nodo;
@@ -269,7 +299,7 @@ function crearTarjetaEnCurso(nodo) {
 
     const cabecera = crearElemento("p", "tarjeta-cabecera");
     cabecera.append(
-        crearConIcono("span", "cifra", "play", `En curso · desde ${nodo.desde}`),
+        crearConIcono("span", "cifra", "play", `En curso desde las ${nodo.desde}`),
         crearSenalPrioridad(actividad.prioridad),
     );
 
@@ -298,12 +328,13 @@ function crearTarjetaEnCurso(nodo) {
     });
 
     const acciones = crearElemento("div", "tarjeta-acciones");
-    const detalle = crearElemento("button", "boton-secundario", "Ver detalle");
-    detalle.type = "button";
-    detalle.addEventListener("click", () => abrirDetalle(actividad));
-    acciones.append(detalle, crearBotonFinalizar(actividad, "boton"));
+    if (!actividad.hora_programada) {
+        acciones.append(crearBotonPausar(actividad));
+    }
+    acciones.append(crearBotonFinalizar(actividad, "boton"));
 
-    tarjeta.append(cabecera, crearElemento("h2", "", actividad.titulo), lugar, tiempo, avance, acciones);
+    tarjeta.append(cabecera, crearElemento("h2", "", actividad.titulo), lugar, ...crearGuiaEnCurso(actividad),
+        tiempo, avance, crearEnlaceDetalle(actividad), acciones);
     return tarjeta;
 }
 
@@ -316,11 +347,14 @@ function crearTarjetaCompacta(nodo) {
     const cabecera = crearElemento("p", "tarjeta-cabecera");
     cabecera.append(crearConIcono("span", "", "play", "En curso"), crearCronometro(actividad, "cifra dato-fuerte"));
 
+    // Puede terminarla antes de atender la urgente, o ver su detalle: no queda atrapado.
+    const acciones = crearElemento("div", "tarjeta-compacta-acciones");
+    acciones.append(crearEnlaceDetalle(actividad), crearBotonFinalizar(actividad, "boton-texto"));
     tarjeta.append(
         cabecera,
         crearElemento("strong", "", actividad.titulo),
-        crearElemento("p", "tarjeta-nota", "Para atender la urgente, finaliza primero esta actividad."),
-        crearBotonFinalizar(actividad, "boton-secundario"),
+        crearElemento("p", "tarjeta-nota", "Si atiendes la urgente, esta queda en pausa y no pierdes el tiempo registrado."),
+        acciones,
     );
     return tarjeta;
 }
@@ -338,15 +372,58 @@ function crearTarjetaUrgente(nodo) {
         crearConIcono("span", "cifra", "clock", duracionTexto(actividad.tiempo_estimado_min)),
     );
 
-    const boton = crearElemento("button", "boton", "Ver y atender la actividad");
-    boton.type = "button";
-    boton.addEventListener("click", () => abrirDetalle(actividad));
-
     tarjeta.append(
-        crearConIcono("p", "tarjeta-cabecera", "triangle-alert", "Urgente"),
-        crearElemento("h2", "", actividad.titulo), datos, boton,
+        crearConIcono("p", "tarjeta-cabecera", "triangle-alert", actividad.estado === "PAUSADA" ? "Urgente en pausa" : "Urgente"),
+        crearElemento("h2", "", actividad.titulo), datos, ...crearAccionesUrgente(actividad),
     );
     return tarjeta;
+}
+
+// La acción de la urgente depende de lo que el operario tenga en curso (alcance, Sección 5.1):
+// una de horario flexible se pausa y la urgente empieza en el mismo paso; una de hora fija no se
+// interrumpe, así que solo se puede ver la urgente; sin nada en curso, se inicia directamente.
+function crearAccionesUrgente(urgente) {
+    const tramo = tramoEnCurso();
+    const enCurso = tramo ? actividades.find((actividad) => actividad.id === tramo.actividad_id) : null;
+    const verDetalle = crearElemento("button", "boton-texto tarjeta-enlace", "Ver detalle");
+    verDetalle.type = "button";
+    verDetalle.addEventListener("click", () => abrirDetalle(urgente));
+
+    if (enCurso?.hora_programada) {
+        const aviso = crearElemento("p", "tarjeta-nota-urgente",
+            `${enCurso.codigo} es de hora fija y no se interrumpe. Atiende la urgente al finalizarla.`);
+        verDetalle.className = "boton";
+        verDetalle.textContent = "Ver la urgente";
+        return [aviso, verDetalle];
+    }
+    const retomar = urgente.estado === "PAUSADA";
+    let texto = retomar ? "Reanudar la urgente" : "Iniciar la urgente";
+    if (enCurso) {
+        texto = "Pausar y atender";
+    }
+    const boton = crearConIcono("button", "boton", "play", texto);
+    boton.type = "button";
+    boton.addEventListener("click", () => atenderUrgente(boton, urgente, enCurso));
+    return [boton, verDetalle];
+}
+
+// Pausa lo que está en curso con el motivo "Actividad urgente" e inicia (o reanuda) la urgente.
+// Son dos pasos en el servidor: si el segundo falla, lo primero ya quedó en pausa y se explica.
+async function atenderUrgente(boton, urgente, enCurso) {
+    boton.disabled = true;
+    try {
+        if (enCurso) {
+            await enviarJson(`/actividades/${enCurso.id}/pausar`, "POST", { motivo: MOTIVO_URGENTE });
+        }
+        const accion = urgente.estado === "PAUSADA" ? "reanudar" : "iniciar";
+        await pedirApi(`/actividades/${urgente.id}/${accion}`, { method: "POST" });
+        await cargar();
+        mostrarAviso(enCurso ? `${enCurso.codigo} quedó en pausa. ${urgente.codigo} en curso.` : `${urgente.codigo} en curso.`);
+    } catch (error) {
+        mostrarAviso(error.message, "advertencia");
+        boton.disabled = false;
+        cargar();    // Si alcanzó a pausar, la pantalla debe mostrarlo.
+    }
 }
 
 // ---------- Asistencia: marca de entrada y de salida ----------
@@ -457,7 +534,7 @@ function crearCierreJornada() {
         const cuantas = sinFinalizar === 1
             ? "Quedó 1 actividad sin finalizar."
             : `Quedaron ${sinFinalizar} actividades sin finalizar.`;
-        contenido.push(crearConIcono("p", "aviso aviso-info", "clock",
+        contenido.push(crearConIcono("p", "aviso aviso-info", "info",
             `${cuantas} Las de horario flexible pasan a tu siguiente jornada.`));
     }
     contenido.push(crearElemento("p", "texto-suave",
@@ -500,7 +577,7 @@ function pintarAvisoTurno() {
     aviso.hidden = faltan <= 0 || faltan > AVISO_TURNO_MIN;
     if (!aviso.hidden) {
         const texto = estado === "inicio" ? "Tu turno inicia en" : "Tu turno termina en";
-        aviso.replaceChildren(...crearConIcono("span", "", "clock", `${texto} ${duracionTexto(faltan)}.`).childNodes);
+        aviso.replaceChildren(...crearConIcono("span", "", "info", `${texto} ${duracionTexto(faltan)}.`).childNodes);
     }
 }
 
@@ -577,7 +654,7 @@ function crearNodo(nodo) {
 
     if (nodo.tipo === "intervalo") {
         elemento.classList.add("linea-nodo-intervalo");
-        elemento.append(crearElemento("p", "linea-intervalo cifra", `Disponible · ${duracionTexto(nodo.minutos)}`));
+        elemento.append(crearElemento("p", "linea-intervalo cifra", `${duracionTexto(nodo.minutos)} disponibles`));
         return elemento;
     }
 
@@ -656,7 +733,7 @@ function crearFilaOrden(actividad, indice, total, mover) {
     const textos = crearElemento("span", "orden-textos");
     textos.append(
         crearElemento("strong", "", actividad.titulo),
-        crearElemento("span", "orden-datos cifra", `${NOMBRE_PRIORIDAD[actividad.prioridad]} · ${duracionTexto(actividad.tiempo_estimado_min)}`),
+        crearElemento("span", "orden-datos cifra", `${NOMBRE_PRIORIDAD[actividad.prioridad]}, ${duracionTexto(actividad.tiempo_estimado_min)}`),
     );
     const subir = crearConIcono("button", "boton-icono", "arrow-up", "");
     subir.type = "button";
@@ -752,16 +829,16 @@ function pintarEstadoTurno() {
     const enTurno = Boolean(programacion.en_turno) && !salio;
     estado.classList.toggle("en-turno", enTurno);
     if (salio) {
-        estado.textContent = `Salida marcada · ${horario}`;
+        estado.textContent = `Salida marcada (turno ${horario})`;
     } else {
-        estado.textContent = enTurno ? `En turno · ${horario}` : `Fuera de turno · ${horario}`;
+        estado.textContent = `${enTurno ? "En turno" : "Fuera de turno"} (${horario})`;
     }
 }
 
 function pintarResumen(resumen) {
     document.getElementById("turno-resumen").replaceChildren(
         crearElemento("strong", "", duracionTexto(resumen.trabajado_min)),
-        ` trabajados · ${duracionTexto(resumen.pendiente_min)} por hacer · `
+        ` trabajados, ${duracionTexto(resumen.pendiente_min)} por hacer y `
         + `${duracionTexto(resumen.disponible_min)} disponibles`,
     );
     const superaLaJornada = resumen.trabajado_min + resumen.pendiente_min > resumen.capacidad_min;

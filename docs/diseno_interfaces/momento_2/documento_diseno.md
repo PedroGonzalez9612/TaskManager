@@ -317,6 +317,6 @@ Una metáfora de interfaz usa un objeto que la persona ya conoce para explicar u
 **Aspectos por mejorar en la siguiente iteración**
 
 - Las pantallas del Administrador todavía usan el modelo anterior en dos puntos: la lista lateral de "Requerimientos" y el horario por columnas. Falta llevarlas al tablero del turno y a la vista de proyectos.
-- En la pantalla Hoy falta el botón para pausar una actividad con su motivo; hoy solo se pausa al marcar la salida.
+- En la pantalla Hoy falta el aviso 10 minutos antes de una actividad de hora fija y la opción de devolver una actividad.
 - No hay una ayuda dentro de la aplicación para quien la usa por primera vez.
 - Algunos datos de apoyo dependen de un texto emergente que no existe en pantallas táctiles.

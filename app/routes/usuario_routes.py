@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 
 from app.models.enums import Rol
+from app.repositories.actividad_repository import ActividadRepository
+from app.repositories.asignacion_repository import AsignacionRepository
 from app.repositories.empresa_repository import EmpresaRepository
 from app.repositories.usuario_repository import UsuarioRepository
 from app.services.composicion import construir_servicios
@@ -12,7 +14,8 @@ def create_blueprint(db, reloj=None):
     """Con "reloj" las pruebas controlan la hora; sin él, los servicios usan la del servidor."""
     bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
     turno_service = construir_servicios(db, reloj=reloj).turnos
-    service = UsuarioService(UsuarioRepository(db), EmpresaRepository(db), turno_service)
+    service = UsuarioService(UsuarioRepository(db), EmpresaRepository(db), turno_service,
+                             AsignacionRepository(db), ActividadRepository(db))
 
     @bp.post("")
     @requiere_rol(Rol.SUPERADMIN, Rol.ADMINISTRADOR)
@@ -46,10 +49,15 @@ def create_blueprint(db, reloj=None):
         asignacion = turno_service.asignar_turno(usuario_actual(), usuario_id, data.get("turno_id"), data.get("desde"))
         return jsonify(asignacion), 200
 
-    @bp.delete("/<usuario_id>")
+    # Un usuario no se borra: se desactiva y se puede reactivar (alcance, Sección 4).
+    @bp.post("/<usuario_id>/desactivar")
     @requiere_rol(Rol.SUPERADMIN, Rol.ADMINISTRADOR)
-    def eliminar_usuario(usuario_id):
-        service.eliminar_usuario(usuario_id, usuario_actual())
-        return "", 204
+    def desactivar_usuario(usuario_id):
+        return jsonify(service.desactivar_usuario(usuario_id, usuario_actual())), 200
+
+    @bp.post("/<usuario_id>/reactivar")
+    @requiere_rol(Rol.SUPERADMIN, Rol.ADMINISTRADOR)
+    def reactivar_usuario(usuario_id):
+        return jsonify(service.reactivar_usuario(usuario_id, usuario_actual())), 200
 
     return bp

@@ -50,10 +50,15 @@ def create_blueprint(db):
         respuesta.headers["Cache-Control"] = "private, max-age=300"
         return respuesta
 
-    @bp.delete("/<empresa_id>")
+    # Una empresa no se borra: se desactiva y se puede reactivar (alcance, Sección 4).
+    @bp.post("/<empresa_id>/desactivar")
     @requiere_rol(Rol.SUPERADMIN)
-    def eliminar_empresa(empresa_id):
-        service.eliminar_empresa(empresa_id)
-        return "", 204
+    def desactivar_empresa(empresa_id):
+        return jsonify(service.desactivar_empresa(empresa_id)), 200
+
+    @bp.post("/<empresa_id>/reactivar")
+    @requiere_rol(Rol.SUPERADMIN)
+    def reactivar_empresa(empresa_id):
+        return jsonify(service.reactivar_empresa(empresa_id)), 200
 
     return bp

@@ -5,29 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <title>Equipo — GestLab</title>
-    <link rel="stylesheet" href="/static/vendor/event-calendar/event-calendar.min.css">
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
 <body class="cargando">
     <main class="principal">
         <div class="encabezado-pagina">
             <div>
+                <p id="fecha-equipo" class="texto-suave"></p>
                 <h1>Equipo</h1>
                 <p id="resumen" class="cifra" aria-live="polite"></p>
             </div>
             <button type="button" id="nueva-actividad" class="boton">Nueva actividad</button>
         </div>
 
-        <section class="panel panel-horario" aria-label="Horario del día por operario">
-            <output id="aviso-sobrecarga" class="nota-panel" hidden></output>
-            <!-- Proximidad: el significado de los colores y el control que los cambia van juntos, con el horario. -->
-            <div class="barra-horario">
-                <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
-                <div id="controles"></div>
+        <!-- La planilla del turno (alcance, Sección 6.5): una fila por persona y las horas de izquierda a derecha. -->
+        <section class="panel tablero-panel" aria-labelledby="titulo-tablero">
+            <div class="panel-encabezado tablero-cabecera">
+                <h2 id="titulo-tablero">Tablero del turno</h2>
+                <fieldset class="grupo-botones">
+                    <legend class="solo-lectores">Cambiar de día</legend>
+                    <button type="button" id="dia-hoy" class="boton-secundario">Hoy</button>
+                    <button type="button" id="dia-anterior" class="boton-secundario" aria-label="Día anterior"></button>
+                    <button type="button" id="dia-siguiente" class="boton-secundario" aria-label="Día siguiente"></button>
+                </fieldset>
             </div>
-            <div class="panel-calendario">
-                <div id="calendario"></div>
+            <div id="leyenda-tablero" class="leyenda-tablero" aria-label="Significado de los colores"></div>
+            <output id="aviso-sobrecarga" class="aviso aviso-advertencia aviso-tablero" hidden></output>
+            <div id="tablero-desplazable" class="tablero-desplazable">
+                <ol id="tablero" class="tablero" aria-label="Una fila por operario"></ol>
             </div>
+            <p id="sin-operarios" class="estado-vacio" hidden>Tu empresa todavía no tiene operarios activos. Créalos en Usuarios.</p>
+        </section>
+
+        <!-- Lista de apoyo del tablero: va sobre el fondo, sin panel (alcance, Sección 6.2). -->
+        <section class="seccion-apoyo" aria-labelledby="titulo-por-atender">
+            <h2 id="titulo-por-atender" class="titulo-con-cantidad">Por atender</h2>
+            <ul id="por-atender" class="lista-filas"></ul>
+            <p id="nada-por-atender" class="estado-vacio" hidden>Nada por atender: todas las actividades de este día tienen operario.</p>
         </section>
     </main>
 
@@ -37,7 +51,6 @@
     <script src="/static/js/componentes.js"></script>
     <script src="/static/js/actividades-comun.js"></script>
     <script src="/static/js/formulario-actividad.js"></script>
-    <script src="/static/vendor/event-calendar/event-calendar.min.js"></script>
     <script src="/static/admin/equipo.js"></script>
 </body>
 </html>

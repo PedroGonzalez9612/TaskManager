@@ -19,10 +19,13 @@
 
         <section class="panel panel-horario" aria-label="Horario de tus actividades">
             <!-- Proximidad: el significado de los colores y el control que los cambia van juntos, con el horario. -->
-            <div class="barra-horario">
-                <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
-                <div id="controles"></div>
-            </div>
+            <details id="opciones-horario" class="opciones-horario">
+                <summary>Colores y leyenda</summary>
+                <div class="barra-horario">
+                    <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
+                    <div id="controles"></div>
+                </div>
+            </details>
             <div class="panel-calendario">
                 <div id="calendario"></div>
             </div>

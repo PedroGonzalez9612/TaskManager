@@ -77,10 +77,3 @@ class AsignacionRepository(BaseRepository):
         except DuplicateKeyError:
             return None
 
-    # Se retira cuando el servicio deje de usarlo: las asignaciones ya no se borran, se cierran.
-    def delete_by_actividad(self, actividad_id: str) -> None:
-        self.collection.delete_many({"actividad_id": actividad_id})
-
-    # Se retira cuando el servicio deje de usarlo: las asignaciones ya no se borran, se cierran.
-    def delete_by_actividades(self, actividad_ids: list) -> None:
-        self.collection.delete_many({"actividad_id": {"$in": actividad_ids}})

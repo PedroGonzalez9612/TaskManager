@@ -163,6 +163,54 @@ function configurarDialogo(botonesAbrir, dialogo) {
     });
 }
 
+// Una ventana con un formulario corto: un subtítulo (sobre qué se actúa), sus campos, la salida y una
+// sola acción principal (alcance, Sección 6.2). "alConfirmar" lanza un error con el mensaje que se
+// muestra si algo falla; si termina bien, la ventana se cierra.
+function abrirDialogoAccion({ titulo, subtitulo = "", campos = [], textoConfirmar, iconoConfirmar = "check",
+    textoCerrar = "Cancelar", alConfirmar }) {
+    const dialogo = crearElemento("dialog", "dialogo");
+    const encabezado = crearElemento("div", "dialogo-encabezado");
+    const cerrar = crearElemento("button", "boton-cerrar", "×");
+    cerrar.type = "button";
+    cerrar.setAttribute("aria-label", "Cerrar");
+    cerrar.addEventListener("click", () => dialogo.close());
+    encabezado.append(crearElemento("h2", "", titulo), cerrar);
+
+    const formulario = crearElemento("form", "formulario");
+    formulario.noValidate = true;
+    const error = crearElemento("p", "mensaje-formulario");
+    error.setAttribute("role", "alert");
+    error.hidden = true;
+    const salir = crearElemento("button", "boton-secundario", textoCerrar);
+    salir.type = "button";
+    salir.addEventListener("click", () => dialogo.close());
+    const confirmar = crearConIcono("button", "boton", iconoConfirmar, textoConfirmar);
+    confirmar.type = "submit";
+    const acciones = crearElemento("div", "dialogo-acciones");
+    acciones.append(salir, confirmar);
+    if (subtitulo) {
+        formulario.append(crearElemento("p", "dialogo-actividad", subtitulo));
+    }
+    formulario.append(...campos, error, acciones);
+
+    formulario.addEventListener("submit", async (evento) => {
+        evento.preventDefault();
+        confirmar.disabled = true;
+        try {
+            await alConfirmar();
+            dialogo.close();
+        } catch (error_) {
+            mostrarErrorFormulario(error, error_.message);
+            confirmar.disabled = false;
+        }
+    });
+    dialogo.append(encabezado, formulario);
+    dialogo.addEventListener("close", () => dialogo.remove());
+    document.body.append(dialogo);
+    dialogo.showModal();
+    formulario.querySelector("select, textarea, input")?.focus();
+}
+
 // Muestra la imagen elegida antes de subirla, y la limpia cuando se cierra el diálogo.
 // "urlActual" permite mostrar el logo que ya tiene la empresa (al editar).
 function configurarCampoLogo(dialogo, urlActual = null) {

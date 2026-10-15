@@ -9,6 +9,7 @@ const NOMBRE_ESTADO_ASISTENCIA = {
     CORREGIDA: "Corregida",
     SIN_MARCA: "Sin marca",
     SIN_SALIDA: "Sin salida",
+    EN_TURNO: "En turno",
 };
 const ICONO_ESTADO_ASISTENCIA = {
     REGISTRADA: "clock",
@@ -16,6 +17,7 @@ const ICONO_ESTADO_ASISTENCIA = {
     CORREGIDA: "pencil",
     SIN_MARCA: "minus",
     SIN_SALIDA: "circle-alert",
+    EN_TURNO: "log-in",
 };
 
 function horaDeMomento(momento) {
@@ -33,7 +35,7 @@ function crearFilaTurno(turno) {
     fila.append(
         crearElemento("span", "fila-nombre", turno.nombre),
         crearElemento("span", "fila-meta cifra",
-            `${turno.hora_inicio} a ${turno.hora_fin} · descanso ${duracionTexto(turno.descanso_min)} · capacidad ${duracionTexto(turno.capacidad_min)}`),
+            `${turno.hora_inicio} a ${turno.hora_fin}, descanso de ${duracionTexto(turno.descanso_min)}, capacidad de ${duracionTexto(turno.capacidad_min)}`),
     );
     return fila;
 }
@@ -80,16 +82,21 @@ function abrirAsignarTurno(operario) {
 function crearFilaAsistencia(asistencia) {
     const fila = crearElemento("li", "fila-asistencia");
     const textos = crearElemento("div");
-    const turno = asistencia.turno ? `Turno ${asistencia.turno.hora_inicio} a ${asistencia.turno.hora_fin} · ` : "";
-    textos.append(
-        crearElemento("span", "fila-nombre", asistencia.operario),
-        crearElemento("span", "fila-meta cifra",
-            `${turno}Entrada ${horaDeMomento(asistencia.entrada)} · Salida ${horaDeMomento(asistencia.salida)}`),
+    const meta = crearElemento("span", "fila-meta datos-linea cifra");
+    if (asistencia.turno) {
+        meta.append(crearElemento("span", "", `Turno ${asistencia.turno.hora_inicio} a ${asistencia.turno.hora_fin}`));
+    }
+    meta.append(
+        crearElemento("span", "", `Entrada ${horaDeMomento(asistencia.entrada)}`),
+        crearElemento("span", "", `Salida ${horaDeMomento(asistencia.salida)}`),
     );
+    textos.append(crearElemento("span", "fila-nombre", asistencia.operario), meta);
+    // Mientras no marque la salida está en turno: todavía no hay nada que validar.
+    const estadoMostrado = asistencia.estado === "REGISTRADA" && !asistencia.salida ? "EN_TURNO" : asistencia.estado;
     const estado = crearConIcono(
-        "span", `etiqueta asistencia-${asistencia.estado.toLowerCase()}`,
-        ICONO_ESTADO_ASISTENCIA[asistencia.estado] || "circle",
-        NOMBRE_ESTADO_ASISTENCIA[asistencia.estado] || asistencia.estado,
+        "span", `etiqueta asistencia-${estadoMostrado.toLowerCase()}`,
+        ICONO_ESTADO_ASISTENCIA[estadoMostrado] || "circle",
+        NOMBRE_ESTADO_ASISTENCIA[estadoMostrado] || estadoMostrado,
     );
     const acciones = crearElemento("div", "fila-acciones");
     if (asistencia.id && asistencia.salida && asistencia.estado === "REGISTRADA") {

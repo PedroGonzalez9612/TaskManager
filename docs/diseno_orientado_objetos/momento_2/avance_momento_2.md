@@ -39,6 +39,7 @@ erDiagram
     USUARIO ||--o{ ASIGNACION : "recibe"
     ASIGNACION ||--o| EJECUCION : "se ejecuta en"
     EJECUCION ||--o{ PAUSA : "contiene"
+    EJECUCION ||--o{ EVIDENCIA : "respalda"
     USUARIO ||--o{ ASIGNACION_TURNO : "tiene"
     TURNO ||--o{ ASIGNACION_TURNO : "se asigna en"
     USUARIO ||--o{ ASISTENCIA : "marca"
@@ -79,6 +80,12 @@ erDiagram
         string asignacion_id FK
         string usuario_id FK
         string estado
+    }
+    EVIDENCIA {
+        ObjectId _id PK
+        string ejecucion_id FK
+        string contenido_tipo
+        binary contenido
     }
     PAUSA {
         string motivo
@@ -124,6 +131,7 @@ erDiagram
 | Actividad – Asignación – Usuario | Relación de muchos a muchos: una actividad se asigna a uno o varios operarios |
 | Asignación – Ejecución | Cada asignación tiene como máximo una ejecución, que nace cuando el operario inicia |
 | Ejecución – Pausa | Las pausas viven dentro de la ejecución; no existen por separado |
+| Ejecución – Evidencia | Cada ejecución tiene hasta 5 archivos de evidencia (fotos o PDF). Van en su propia colección porque pesan mucho más que el resto de la ejecución |
 | Usuario – Turno | Un operario tiene un solo turno vigente; se guarda la fecha de cada cambio |
 | Usuario – Asistencia | Una asistencia por operario y jornada |
 
@@ -134,7 +142,7 @@ erDiagram
 
 ### 1.2 Modelo físico
 
-La base se llama `taskmanager` y tiene 12 colecciones. Los índices los crea la aplicación al arrancar, desde cada repositorio (`app/repositories/`).
+La base se llama `taskmanager` y tiene 13 colecciones. Los índices los crea la aplicación al arrancar, desde cada repositorio (`app/repositories/`).
 
 **Convenciones de tipos**
 
@@ -268,6 +276,22 @@ La base se llama `taskmanager` y tiene 12 colecciones. Los índices los crea la 
 
 Índice: `orden_unico_por_dia` (`usuario_id`, `fecha`), **único**.
 
+#### `evidencias`
+
+Fotos y adjuntos que el operario deja al finalizar una actividad. El archivo se guarda dentro del documento, como el logo de la empresa: con el límite de 5 MB por archivo cabe sin pasar del máximo de MongoDB (16 MB por documento).
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `_id` | ObjectId | Identificador |
+| `ejecucion_id`, `actividad_id`, `usuario_id`, `empresa_id` | string | A qué ejecución pertenece, y copias para comprobar quién la puede ver |
+| `nombre` | string | Nombre del archivo, sin la carpeta de quien lo subió |
+| `contenido_tipo` | string | `image/jpeg`, `image/png`, `image/webp` o `application/pdf`, reconocido por los primeros bytes del archivo y no por su nombre |
+| `tamano` | number | Bytes del archivo |
+| `fecha` | date | Cuándo se subió |
+| `contenido` | binario | El archivo. Las consultas de listado no lo traen |
+
+Índice: `ejecucion` (`ejecucion_id`).
+
 #### `catalogos`
 
 Listas desplegables por empresa (motivos de pausa y de cancelación) que se llenan con lo que los usuarios escriben en "Otro".
@@ -374,7 +398,7 @@ def init_db(app):
 - En Docker, la aplicación llega a la base por el nombre del contenedor: `mongodb://mongo:27017`.
 - `GET /health` responde si el servidor está arriba.
 
-**Cómo se comprueba que funciona.** El proyecto tiene 462 pruebas automáticas (`python -m pytest`) que ejercitan los modelos, los servicios y las rutas sobre una base en memoria, con los mismos índices de la base real.
+**Cómo se comprueba que funciona.** El proyecto tiene 484 pruebas automáticas (`python -m pytest`) que ejercitan los modelos, los servicios y las rutas sobre una base en memoria, con los mismos índices de la base real.
 
 ### 2.4 Qué funciona hoy
 
@@ -382,10 +406,24 @@ def init_db(app):
 |---|---|
 | Todos | Iniciar y cerrar sesión; cada rol llega a su propia pantalla |
 | Superadmin | Registrar empresas con sus límites de usuarios y su logo, y crear sus Administradores |
-| Administrador | Crear usuarios y actividades; asignar a uno o varios operarios; ver la carga del equipo; crear turnos y validar la asistencia |
-| Operario | Marcar su entrada al llegar y su salida al terminar; ver su día como una línea de tiempo; iniciar, reanudar y finalizar actividades; ordenar sus actividades de horario flexible |
+| Administrador | Crear usuarios y actividades; asignar a uno o varios operarios; ver el registro y la evidencia de cada operario; ver la carga del equipo; crear turnos y validar la asistencia |
+| Operario | Marcar su entrada al llegar y su salida al terminar; ver su día como una línea de tiempo; iniciar, pausar con motivo, reanudar y finalizar actividades, con evidencia (observación, fotos y adjuntos); ordenar sus actividades de horario flexible |
 
 ---
+
+### 2.5 Las reglas viven en las clases
+
+Las reglas de negocio no dependen de que la pantalla esconda un botón: cada clase protege sus propios cambios de estado. Si se pide algo que el estado no permite, el método lanza un error antes de cambiar nada (una **precondición**), y la base de datos nunca queda en un estado inválido.
+
+| Clase | Método | Regla que protege |
+|---|---|---|
+| `Actividad` | `cancelar()` | No se cancela lo que ya terminó ni lo que alguien tiene en curso |
+| `Ejecucion` | `pausar()`, `reanudar()`, `finalizar()` | Solo se pausa lo que está en curso, solo se reanuda lo pausado y solo se finaliza lo que está en curso |
+| `Asistencia` | `corregir()` | Una corrección exige motivo y conserva las marcas originales |
+| `Usuario` | `desactivar()`, `reactivar()` | No se desactiva dos veces ni se reactiva a quien ya está activo |
+| `Evidencia` | `desde_archivo()` | Solo fotos o PDF, de 5 MB como máximo, reconocidos por su contenido |
+
+Las reglas que dependen de otros datos (por ejemplo, "una actividad que alguien ya inició no se edita" o "un operario con actividades sin terminar no se desactiva") las aplica el servicio, que consulta los repositorios. En el alcance hay una tabla con lo que se permite en cada estado de la actividad, y cada regla tiene su prueba automática.
 
 ## 3. Interfaz del sistema
 
@@ -460,7 +498,7 @@ Las capturas se tomaron de la aplicación corriendo, con datos de demostración.
 | Empresas y usuarios con tres roles | Terminado |
 | Asignación y prioridad | Terminado |
 | Actividades y proyectos | Parcial: las actividades funcionan completas; los proyectos ya están en la API y falta su pantalla |
-| Ejecución (iniciar, pausar, reanudar, finalizar) | Parcial: la API hace las cuatro; en pantalla solo se pausa al marcar la salida |
+| Ejecución (iniciar, pausar, reanudar, finalizar) | Terminado: las cuatro acciones en pantalla, con motivo de pausa y evidencia al finalizar |
 | Registro de tiempo | Parcial: el servidor lo calcula; falta compararlo en pantalla con el estimado |
 | Análisis de carga laboral | Parcial: carga por jornada y alerta al superar el 100 % |
 | Turnos y asistencia | Parcial: el operario marca entrada y salida y el Administrador las valida; falta el aviso de posible ausencia |
@@ -468,7 +506,7 @@ Las capturas se tomaron de la aplicación corriendo, con datos de demostración.
 
 ### 5.2 Qué falta por completar
 
-1. Pantalla del Operario: pausar con motivo, aviso de hora fija y devolver una actividad.
+1. Pantalla del Operario: aviso de hora fija y devolver una actividad.
 2. Pantallas del Administrador: tablero del turno y proyectos; retirar los requerimientos.
 3. Indicadores de cumplimiento.
 4. Aviso de posible ausencia y reasignación por ausencia.
@@ -480,3 +518,5 @@ Las capturas se tomaron de la aplicación corriendo, con datos de demostración.
 - **Cambiar el modelo con datos ya guardados.** Pasar de requerimientos a proyectos exigió un script de migración (`herramientas/migrar_etapa4.py`) para no perder la información existente.
 - **Turnos de noche.** Un turno que empieza un día y termina al siguiente obligó a definir la jornada como el día en que inicia el turno.
 - **La hora de los eventos.** Para que los tiempos sean confiables, la hora la pone siempre el servidor, nunca el navegador.
+- **Borrar o conservar.** Borrar una actividad, un usuario o una empresa dejaba registros sin dueño. Se decidió que nada se borra: las actividades se cancelan y los usuarios y las empresas se desactivan.
+- **Archivos que suben los usuarios.** Un archivo puede decir que es una foto y no serlo. Por eso el tipo se reconoce por sus primeros bytes, se limita su tamaño y la cantidad, y las fotos se reducen en el celular antes de subirlas.

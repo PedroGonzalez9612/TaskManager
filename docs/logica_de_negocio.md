@@ -32,6 +32,8 @@ Los usuarios de una empresa ven el logo y el nombre de su empresa en lugar de la
 
 ---
 
+**Dar de baja:** los usuarios y las empresas no se borran, se desactivan. Quien está desactivado no inicia sesión ni aparece para asignarle trabajo, pero su nombre y su historial se conservan, y se puede reactivar. Un operario con actividades sin terminar no se desactiva hasta que se le reasignen.
+
 ## 3. El recorrido completo
 
 ```mermaid
@@ -68,7 +70,9 @@ Una actividad es la unidad de trabajo. Tiene:
   - *Hora fija:* el Administrador le pone una hora y esa hora no se mueve.
   - *Horario flexible:* queda asignada al día y el Operario decide en qué momento hacerla.
 - **Proyecto** (opcional). Si no tiene, es una actividad independiente.
-- **Información de la actividad (pendiente):** pasos, herramientas y materiales, equipo, adjuntos y contacto. Cuando tiene todo lo que se le pidió, aparece como "Lista para iniciar".
+- **Información de la actividad:** además de la descripción, el Administrador elige qué bloques lleva: pasos (en orden), herramientas y materiales, equipo, precauciones de seguridad, contacto y adjuntos (manuales, planos o fotos de referencia). Herramientas, equipo, precauciones y contacto sugieren lo que la empresa ya escribió antes; lo nuevo queda en la lista para la próxima vez. La información se cambia solo mientras nadie haya iniciado la actividad.
+- **Lista para iniciar:** cuando cada bloque elegido tiene contenido. Si falta alguno, el Administrador ve "Falta información" y el Operario lo ve en el detalle. Es un aviso: no impide iniciar.
+- **Qué ve el Operario:** todo en el detalle de la actividad (también el proyecto al que pertenece). Mientras la tiene en curso, las precauciones y los pasos se ven en la tarjeta, sin abrir nada.
 
 ### Estados de una actividad
 
@@ -123,9 +127,11 @@ Cada operario tiene su propia **ejecución**: su hora de inicio, sus pausas y su
 | **Iniciar** | Solo si la actividad le está asignada, ya marcó la entrada de su jornada y no tiene otra en curso. Un operario tiene una sola actividad en curso a la vez; la base de datos lo garantiza aunque lleguen dos peticiones al mismo tiempo |
 | **Pausar** | Exige un motivo. Una actividad de hora fija no se puede pausar una vez iniciada |
 | **Reanudar** | Solo si no tiene otra en curso y su jornada sigue abierta (marcó la entrada y no ha marcado la salida) |
-| **Finalizar** | Puede dejar una observación |
+| **Finalizar** | Puede dejar evidencia de su trabajo: una observación, fotos y adjuntos (PDF o imágenes), todo opcional. Hasta 5 archivos de 5 MB como máximo cada uno |
 
 La hora de cada acción la pone el servidor, nunca el celular del operario.
+
+La evidencia es de cada operario: cada uno deja la suya en su propia ejecución. La ven él y el Administrador de su empresa, nadie más, y no se borra. El Administrador la encuentra en el detalle de la actividad, junto con el registro de cada operario: inicio, fin, tiempo trabajado y cada pausa con su motivo.
 
 ### Motivos
 
@@ -144,6 +150,13 @@ La hora de cada acción la pone el servidor, nunca el celular del operario.
 - **Cancelar:** solo el Administrador, solo si nadie la tiene en curso, y con motivo. La cancelada sale de la carga pero sigue consultable.
 
 ---
+
+### Qué se puede hacer en cada estado
+
+- Mientras nadie la ha iniciado (sin asignar, por iniciar o devuelta), el Administrador la edita, cambia sus operarios o la cancela.
+- En cuanto un operario la inicia, ya no se edita ni se reasigna: lo hecho queda como se hizo. El Administrador solo puede cancelarla, y únicamente si nadie la tiene en curso. Si el trabajo cambió, cancela y crea otra.
+- Una actividad finalizada, no realizada o cancelada ya no cambia.
+- Ninguna actividad se elimina.
 
 ## 6. La programación del día
 
@@ -204,6 +217,10 @@ Cuando termina la jornada, el sistema revisa lo que quedó abierto. Una jornada 
 - **Aviso de posible ausencia (pendiente):** si pasado un tiempo de tolerancia el operario no ha marcado entrada, el Administrador recibe un aviso con sus actividades del día para reasignarlas.
 
 ---
+
+### Cambiar un turno
+
+Las horas de un turno que ya tiene operarios no se cambian, porque cambiarían la capacidad de los días pasados. Se crea un turno nuevo y se asigna desde una fecha; el nombre sí se puede cambiar.
 
 ## 9. Carga, capacidad e indicadores
 

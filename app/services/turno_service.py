@@ -100,6 +100,14 @@ class TurnoService:
         if not cambios:
             raise ValidationError("No hay campos válidos para actualizar")
         datos = {**actual.to_dict(), **cambios}
+        # Las horas de un turno asignado no cambian: cambiarían la capacidad de los días pasados.
+        cambia_horario = any(str(datos[campo]) != str(actual.to_dict()[campo])
+                             for campo in ("hora_inicio", "hora_fin", "descanso_min") if campo in cambios)
+        if cambia_horario and self.asignacion_turno_repository.existe_de_turno(actual.id):
+            raise ValidationError(
+                "Este turno ya está asignado y su horario no se cambia. "
+                "Crea un turno nuevo y asígnalo desde la fecha en que empieza a regir."
+            )
         turno = Turno(datos["nombre"], datos["hora_inicio"], datos["hora_fin"], datos["descanso_min"],
                       actual.empresa_id, id=actual.id)
         self.turno_repository.update(turno.id, turno.to_dict())
@@ -171,6 +179,8 @@ class TurnoService:
         if not usuario or usuario.get("empresa_id") != solicitante["empresa_id"] \
                 or usuario.get("rol") != Rol.OPERARIO.value:
             raise NotFoundError("El operario no existe en tu empresa")
+        if usuario.get("activo") is False:
+            raise ValidationError(f"El usuario de {usuario['nombre']} está desactivado")
         return usuario
 
     def _zona_de(self, empresa_id: str) -> str:

@@ -3,22 +3,26 @@ necesita cada uno: las rutas y las pruebas piden aquí los servicios ya construi
 from types import SimpleNamespace
 
 from app.repositories.actividad_repository import ActividadRepository
+from app.repositories.adjunto_repository import AdjuntoRepository
 from app.repositories.asignacion_repository import AsignacionRepository
 from app.repositories.asistencia_repository import AsistenciaRepository
 from app.repositories.catalogo_repository import CatalogoRepository
 from app.repositories.ejecucion_repository import EjecucionRepository
 from app.repositories.empresa_repository import EmpresaRepository
+from app.repositories.evidencia_repository import EvidenciaRepository
 from app.repositories.orden_jornada_repository import OrdenJornadaRepository
 from app.repositories.proyecto_repository import ProyectoRepository
 from app.repositories.requerimiento_repository import RequerimientoRepository
 from app.repositories.turno_repository import AsignacionTurnoRepository, TurnoRepository
 from app.repositories.usuario_repository import UsuarioRepository
 from app.services.actividad_service import ActividadService
+from app.services.adjunto_service import AdjuntoService
 from app.services.asistencia_service import AsistenciaService
 from app.services.carga_service import CargaService
 from app.services.catalogo_service import CatalogoService
 from app.services.cierre_jornada_service import CierreJornadaService
 from app.services.ejecucion_service import EjecucionService
+from app.services.evidencia_service import EvidenciaService
 from app.services.programacion_service import ProgramacionService
 from app.services.proyecto_service import ProyectoService
 from app.services.turno_service import TurnoService
@@ -26,7 +30,7 @@ from app.services.turno_service import TurnoService
 
 def construir_servicios(db, reloj=None) -> SimpleNamespace:
     """Devuelve los servicios como atributos: actividades, ejecucion, carga, proyectos, catalogos,
-    cierre_jornada, programacion, turnos y asistencia.
+    cierre_jornada, programacion, turnos, asistencia, evidencias y adjuntos.
     "reloj" es para las pruebas; sin él, cada servicio usa la hora del servidor."""
     actividad_repository = ActividadRepository(db)
     asignacion_repository = AsignacionRepository(db)
@@ -50,11 +54,19 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
         reloj=reloj,
     )
     catalogos = CatalogoService(CatalogoRepository(db))
+    # Las actividades se presentan con la evidencia de cada operario.
+    evidencias = EvidenciaService(
+        EvidenciaRepository(db), ejecucion_repository, actividad_repository, asignacion_repository, reloj=reloj,
+    )
+    # Y con los adjuntos de su información.
+    adjuntos = AdjuntoService(
+        AdjuntoRepository(db), actividad_repository, asignacion_repository, ejecucion_repository, reloj=reloj,
+    )
     carga = CargaService(actividad_repository, asignacion_repository, usuario_repository, cierre_jornada, turnos)
     actividades = ActividadService(
         actividad_repository, RequerimientoRepository(db), asignacion_repository,
         usuario_repository, ejecucion_repository, empresa_repository, carga,
-        proyecto_repository, catalogos, cierre_jornada, reloj=reloj,
+        proyecto_repository, catalogos, cierre_jornada, evidencias, adjuntos, reloj=reloj,
     )
     ejecucion = EjecucionService(
         ejecucion_repository, actividad_repository, asignacion_repository, actividades, catalogos,
@@ -68,4 +80,5 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
     return SimpleNamespace(
         actividades=actividades, ejecucion=ejecucion, carga=carga, proyectos=proyectos, catalogos=catalogos,
         cierre_jornada=cierre_jornada, programacion=programacion, turnos=turnos, asistencia=asistencia,
+        evidencias=evidencias, adjuntos=adjuntos,
     )

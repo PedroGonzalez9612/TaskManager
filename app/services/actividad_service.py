@@ -3,6 +3,7 @@ from datetime import date, datetime, timezone
 from app.models.actividad import Actividad
 from app.models.asignacion import Asignacion
 from app.models.ejecucion import Ejecucion
+from app.models.informacion_actividad import InformacionActividad
 from app.models.enums import Categoria, EstadoActividad, EstadoAsignacion, EstadoEjecucion, Prioridad, Rol
 from app.services.catalogo_service import MOTIVO_CANCELACION, resolver_motivo
 from app.services.estado_actividad import calcular_estado_actividad, estado_para_operario
@@ -18,7 +19,7 @@ INTENTOS_RECALCULAR_ESTADO = 3
 ESTADOS_SIN_OPERARIO = (EstadoActividad.PENDIENTE.value, EstadoActividad.DEVUELTA.value)
 
 # Campos de una actividad que solo se revisan cuando vienen en la petición.
-CAMPOS_OPCIONALES = ("proyecto_id", "requerimiento_id", "hora_programada")
+CAMPOS_OPCIONALES = ("proyecto_id", "requerimiento_id", "hora_programada", "informacion")
 
 
 def _texto_obligatorio(valor, campo: str) -> str:
@@ -64,7 +65,8 @@ def _validar_tiempo_estimado(valor) -> int:
 class ActividadService:
     def __init__(self, actividad_repository, requerimiento_repository, asignacion_repository,
                  usuario_repository, ejecucion_repository, empresa_repository, carga_service,
-                 proyecto_repository, catalogo_service, cierre_jornada, reloj=None):
+                 proyecto_repository, catalogo_service, cierre_jornada, evidencia_service, adjunto_service,
+                 reloj=None):
         # La hora de todo evento la pone el servidor. Las pruebas pasan un reloj que ellas controlan.
         self.reloj = reloj or (lambda: datetime.now(timezone.utc))
         self.actividad_repository = actividad_repository
@@ -77,6 +79,10 @@ class ActividadService:
         self.proyecto_repository = proyecto_repository
         self.catalogo_service = catalogo_service
         self.cierre_jornada = cierre_jornada
+        # Para presentar las fotos y los adjuntos de cada ejecución.
+        self.evidencia_service = evidencia_service
+        # Para presentar los adjuntos de la información de cada actividad.
+        self.adjunto_service = adjunto_service
 
     # ---------- Crear, editar, cancelar y eliminar (Administrador) ----------
 
@@ -89,13 +95,17 @@ class ActividadService:
 
         consecutivo = self.empresa_repository.siguiente_consecutivo_actividad(empresa_id)
         # La clase deja la fecha original igual a la fecha programada.
+        informacion = campos.pop("informacion", None)
         actividad = Actividad(
             codigo=f"OT-{consecutivo:04d}",
             empresa_id=empresa_id,
             estado=EstadoActividad.ASIGNADA if operario_ids else EstadoActividad.PENDIENTE,
+            informacion=informacion,
             **campos,
         )
         actividad_id = self.actividad_repository.insert(actividad.to_dict())
+        if informacion:
+            self.catalogo_service.registrar_informacion(empresa_id, informacion)
         self._sincronizar_asignaciones(actividad_id, operario_ids, solicitante, self.reloj())
         return self._con_sobrecargas(self._consultar(actividad_id, solicitante))
 
@@ -107,6 +117,12 @@ class ActividadService:
                 "Esta actividad ya está cerrada (finalizada, no realizada o cancelada): "
                 "no se puede editar ni reasignar"
             )
+        # Lo hecho queda como se hizo (alcance, Sección 5.1): si el trabajo cambió, se cancela y se crea otra.
+        if self.ejecucion_repository.find_by_actividades([actividad_id]):
+            raise ValidationError(
+                "Alguien ya inició esta actividad: no se puede editar ni reasignar. "
+                "Si el trabajo cambió, cancélala cuando nadie la tenga en curso y crea una nueva."
+            )
         campos = self._validar_campos(data, solicitante["empresa_id"], parcial=True)
         if campos.get("fecha_programada", doc.get("fecha_programada")) != doc.get("fecha_programada"):
             self._exigir_fecha_vigente(campos["fecha_programada"], solicitante["empresa_id"])
@@ -115,8 +131,13 @@ class ActividadService:
         if "operario_ids" in data:
             operario_ids = self._validar_operarios(data.get("operario_ids") or [], solicitante["empresa_id"])
 
+        informacion = campos.pop("informacion", None)
+        if informacion:
+            campos["informacion"] = informacion.to_dict()
         if campos:
             self.actividad_repository.update(actividad_id, campos)
+        if informacion:
+            self.catalogo_service.registrar_informacion(solicitante["empresa_id"], informacion)
         if operario_ids is not None:
             self._sincronizar_asignaciones(actividad_id, operario_ids, solicitante, self.reloj())
         return self._con_sobrecargas(self._consultar(actividad_id, solicitante))
@@ -140,13 +161,6 @@ class ActividadService:
         self._cerrar_ejecuciones_abiertas(actividad_id, ahora)
         self.catalogo_service.registrar_motivo(solicitante["empresa_id"], MOTIVO_CANCELACION, elegido)
         return self._consultar(actividad_id, solicitante)
-
-    def eliminar_actividad(self, actividad_id: str, solicitante: dict) -> None:
-        # Se retira con los requerimientos: cancelar reemplaza al borrado (alcance, Sección 5.1).
-        self._buscar_de_la_empresa(actividad_id, solicitante["empresa_id"])
-        self.asignacion_repository.delete_by_actividad(actividad_id)
-        self.ejecucion_repository.delete_by_actividades([actividad_id])
-        self.actividad_repository.delete(actividad_id)
 
     # ---------- Consultar (Administrador y Operario) ----------
 
@@ -208,6 +222,7 @@ class ActividadService:
             "titulo": lambda valor: _texto_obligatorio(valor, "titulo"),
             "ubicacion": lambda valor: _texto_obligatorio(valor, "ubicacion"),
             "descripcion": lambda valor: (valor or "").strip(),
+            "informacion": InformacionActividad.desde_datos,
             # Una actividad sin proyecto es una actividad independiente. El requerimiento es el dato anterior
             # a los proyectos: sigue aceptándose, ya no es obligatorio, y se retira con ellos.
             "proyecto_id": lambda valor: self._validar_proyecto(valor, empresa_id),
@@ -250,9 +265,10 @@ class ActividadService:
         validos = {
             str(u["_id"]) for u in usuarios
             if u.get("empresa_id") == empresa_id and u.get("rol") == Rol.OPERARIO.value
+            and u.get("activo", True)
         }
         if len(validos) != len(operario_ids):
-            raise ValidationError("Solo se puede asignar a operarios de tu empresa")
+            raise ValidationError("Solo se puede asignar a operarios activos de tu empresa")
         return operario_ids
 
     def _buscar_de_la_empresa(self, actividad_id: str, empresa_id: str) -> dict:
@@ -365,6 +381,14 @@ class ActividadService:
             doc["asignacion_id"]: Ejecucion.desde_documento(doc)
             for doc in self.ejecucion_repository.find_by_actividades(ids) if doc.get("asignacion_id")
         }
+        evidencias = self.evidencia_service.de_ejecuciones([ejecucion.id for ejecucion in ejecuciones.values()])
+        adjuntos = self.adjunto_service.de_actividades(ids)
+        proyectos = {
+            str(proyecto["_id"]): proyecto["nombre"]
+            for proyecto in self.proyecto_repository.find_by_ids({doc.get("proyecto_id") for doc in docs} - {None})
+        }
+        # Iniciada: alguien empezó a trabajarla, aunque después se la hayan retirado.
+        iniciadas = {ejecucion.actividad_id for ejecucion in ejecuciones.values()}
 
         # Por actividad: (id del operario, nombre, su ejecución o None), solo de asignaciones activas.
         equipos = {actividad_id: [] for actividad_id in ids}
@@ -387,8 +411,14 @@ class ActividadService:
         for doc in docs:
             actividad = Actividad.from_doc(doc)
             actividad["dias_de_retraso"] = _dias_de_retraso(actividad)
+            actividad["proyecto_nombre"] = proyectos.get(actividad["proyecto_id"])
+            self._agregar_informacion(actividad, doc, adjuntos.get(actividad["id"], []))
             equipo = sorted(equipos[actividad["id"]], key=lambda fila: fila[1])
-            self._agregar_ejecucion(actividad, equipo, solicitante, ahora)
+            self._agregar_ejecucion(actividad, equipo, solicitante, ahora, evidencias)
+            # Qué puede hacer el Administrador con ella (alcance, Sección 5.1, reglas de estado).
+            estado_general = EstadoActividad(actividad["estado_general"])
+            actividad["editable"] = not estado_general.es_final and actividad["id"] not in iniciadas
+            actividad["cancelable"] = not estado_general.es_final and estado_general != EstadoActividad.EN_EJECUCION
             # Quién devolvió la actividad y por qué es información para el Administrador.
             actividad["devoluciones"] = [] if es_operario else sorted(
                 devoluciones[actividad["id"]], key=lambda devolucion: devolucion["fecha"],
@@ -402,12 +432,16 @@ class ActividadService:
         return actividades
 
     @staticmethod
-    def _agregar_ejecucion(actividad: dict, equipo: list, solicitante: dict, ahora) -> None:
-        """Agrega a la actividad lo que lleva cada operario y el resumen ("1 de 2 finalizaron")."""
+    def _agregar_ejecucion(actividad: dict, equipo: list, solicitante: dict, ahora, evidencias: dict) -> None:
+        """Agrega a la actividad lo que lleva cada operario, con su evidencia, y el resumen ("1 de 2
+        finalizaron")."""
         presentadas = []    # (id del operario, ejecución lista para la API), de los que ya iniciaron.
         for usuario_id, nombre, ejecucion in equipo:
             if ejecucion:
-                presentadas.append((usuario_id, {**ejecucion.presentar(ahora), "operario_nombre": nombre}))
+                presentadas.append((usuario_id, {
+                    **ejecucion.presentar(ahora), "operario_nombre": nombre,
+                    "evidencias": evidencias.get(ejecucion.id, []),
+                }))
 
         actividad["operarios"] = [
             {"id": usuario_id, "nombre": nombre, "estado_ejecucion": ejecucion.estado.value if ejecucion else None}
@@ -430,6 +464,14 @@ class ActividadService:
         else:
             abiertas = [p for _, p in presentadas if EstadoEjecucion(p["estado"]).esta_abierta]
             actividad["ejecucion"] = next(iter(abiertas or [p for _, p in presentadas]), None)
+
+    @staticmethod
+    def _agregar_informacion(actividad: dict, doc: dict, adjuntos: list) -> None:
+        """La información por bloques, con sus adjuntos, y si está lista para iniciar (alcance, 5.1)."""
+        informacion = InformacionActividad.desde_documento(doc.get("informacion"))
+        actividad["informacion"] = {**informacion.to_dict(), "adjuntos": adjuntos}
+        actividad["bloques_faltantes"] = [bloque.value for bloque in informacion.faltantes(len(adjuntos))]
+        actividad["lista_para_iniciar"] = not actividad["bloques_faltantes"]
 
     def _con_sobrecargas(self, actividad: dict) -> dict:
         """Agrega el aviso de sobrecarga: operarios que con esta actividad superan el 100 % de su jornada."""

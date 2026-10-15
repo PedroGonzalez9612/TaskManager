@@ -1,36 +1,46 @@
-// Vista "Actividades" del Administrador: requerimientos a la izquierda y, a la derecha,
-// las actividades del requerimiento elegido (o todas).
+// Vista "Actividades" del Administrador: filtros a la izquierda y, a la derecha, las actividades del
+// filtro elegido agrupadas por día (alcance, Sección 6.2). Una actividad es independiente o de un
+// proyecto; ya no hay requerimientos.
 
-let requerimientos = [];
+const ESTADOS_TERMINADOS = new Set(["COMPLETADA", "NO_REALIZADA", "CANCELADA"]);
+const terminada = (actividad) => ESTADOS_TERMINADOS.has(actividad.estado);
+
+// Cada filtro responde una pregunta del Administrador. El primero es el de todos los días.
+const FILTROS = [
+    { id: "por-hacer", nombre: "Por hacer", incluye: (a) => !terminada(a), recientesPrimero: false },
+    { id: "sin-asignar", nombre: "Sin asignar", incluye: (a) => !terminada(a) && a.operarios.length === 0, recientesPrimero: false },
+    { id: "en-curso", nombre: "En curso o pausadas", incluye: (a) => ["EN_EJECUCION", "PAUSADA"].includes(a.estado), recientesPrimero: false },
+    { id: "terminadas", nombre: "Terminadas", incluye: terminada, recientesPrimero: true },
+    { id: "todas", nombre: "Todas", incluye: () => true, recientesPrimero: true },
+];
+
 let actividades = [];
 let operarios = [];
-let seleccionado = null;    // id del requerimiento elegido; null = todas las actividades
+let proyectos = [];
+let filtroElegido = FILTROS[0];
 let formulario = null;
 
 const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
 
-// ---------- Requerimientos ----------
+// ---------- Filtros ----------
 
-function crearBotonRequerimiento(id, titulo, cantidad) {
-    const boton = crearElemento("button", "requerimiento");
+function crearBotonFiltro(filtro) {
+    const boton = crearElemento("button", "filtro");
     boton.type = "button";
-    boton.setAttribute("aria-pressed", String(seleccionado === id));
+    boton.setAttribute("aria-pressed", String(filtro === filtroElegido));
     boton.append(
-        crearElemento("span", "requerimiento-titulo", titulo),
-        crearElemento("span", "requerimiento-cantidad cifra", String(cantidad)),
+        crearElemento("span", "", filtro.nombre),
+        crearElemento("span", "filtro-cantidad cifra", String(actividades.filter((a) => filtro.incluye(a)).length)),
     );
     boton.addEventListener("click", () => {
-        seleccionado = id;
+        filtroElegido = filtro;
         pintar();
     });
     return boton;
 }
 
-function pintarRequerimientos() {
-    document.getElementById("lista-requerimientos").replaceChildren(
-        crearBotonRequerimiento(null, "Todas las actividades", actividades.length),
-        ...requerimientos.map((r) => crearBotonRequerimiento(r.id, r.titulo, r.actividades)),
-    );
+function pintarFiltros() {
+    document.getElementById("lista-filtros").replaceChildren(...FILTROS.map(crearBotonFiltro));
 }
 
 // ---------- Actividades ----------
@@ -48,14 +58,14 @@ function crearFilaActividad(actividad) {
     fila.type = "button";
 
     const titulo = crearElemento("span", "dato-doble");
-    const meta = crearElemento("span", "fila-meta");
+    const meta = crearElemento("span", "fila-meta datos-linea");
     meta.append(
         crearElemento("span", "codigo", actividad.codigo),
-        ` · ${NOMBRE_CATEGORIA[actividad.categoria]} · ${actividad.ubicacion}`,
+        crearElemento("span", "", NOMBRE_CATEGORIA[actividad.categoria]),
+        crearElemento("span", "", actividad.ubicacion),
     );
     titulo.append(crearElemento("span", "fila-nombre", actividad.titulo), meta);
 
-    const fecha = fechaCorta(fechaDesdeTexto(actividad.fecha_programada));
     const nombres = actividad.operarios.map((o) => o.nombre.split(" ")[0]);
     const operariosTexto = nombres.length ? nombres.slice(0, 2).join(", ") : "Sin asignar";
 
@@ -63,62 +73,88 @@ function crearFilaActividad(actividad) {
         titulo,
         crearSenalPrioridad(actividad.prioridad),
         crearDatoDoble(
-            actividad.hora_programada ? `${fecha} · ${actividad.hora_programada}` : fecha,
+            actividad.hora_programada ? `Hora fija ${actividad.hora_programada}` : "Horario flexible",
             duracionTexto(actividad.tiempo_estimado_min),
         ),
         crearDatoDoble(operariosTexto, nombres.length > 2 ? `y ${nombres.length - 2} más` : ""),
-        crearEtiquetaEstado(actividad.estado),
+        crearEstadoConInformacion(actividad),
     );
-    fila.addEventListener("click", () => formulario.abrirEdicion(actividad));
+    fila.addEventListener("click", () => formulario.abrirDetalle(actividad));
     elemento.append(fila);
     return elemento;
 }
 
-function pintarActividades() {
-    const requerimiento = requerimientos.find((r) => r.id === seleccionado);
-    const visibles = seleccionado ? actividades.filter((a) => a.requerimiento_id === seleccionado) : actividades;
+// El estado y, si a una actividad por hacer le falta información, el aviso debajo.
+function crearEstadoConInformacion(actividad) {
+    const celda = crearElemento("span", "dato-doble");
+    celda.append(crearEtiquetaEstado(actividad.estado));
+    if (!actividad.lista_para_iniciar && !terminada(actividad)) {
+        celda.append(crearEtiquetaFaltaInformacion(actividad));
+    }
+    return celda;
+}
 
-    const titulo = document.getElementById("titulo-requerimiento");
-    titulo.replaceChildren(
-        requerimiento ? requerimiento.titulo : "Todas las actividades",
+// "Hoy, miércoles 14 de octubre": el día que agrupa sus actividades (Gestalt: proximidad).
+function crearEncabezadoDia(fecha, cantidad) {
+    const hoy = fechaTexto(new Date());
+    const texto = fechaLarga(fechaDesdeTexto(fecha));
+    const encabezado = crearElemento("li", "grupo-dia");
+    encabezado.append(
+        crearElemento("span", "", fecha === hoy ? `Hoy, ${texto}` : texto.charAt(0).toUpperCase() + texto.slice(1)),
+        crearElemento("span", "cantidad cifra", String(cantidad)),
+    );
+    return encabezado;
+}
+
+function agruparPorDia(visibles) {
+    const grupos = new Map();
+    for (const actividad of visibles) {
+        if (!grupos.has(actividad.fecha_programada)) {
+            grupos.set(actividad.fecha_programada, []);
+        }
+        grupos.get(actividad.fecha_programada).push(actividad);
+    }
+    const fechas = [...grupos.keys()].sort((a, b) => a.localeCompare(b));
+    if (filtroElegido.recientesPrimero) {
+        fechas.reverse();
+    }
+    return fechas.map((fecha) => [fecha, ordenarActividades(grupos.get(fecha))]);
+}
+
+function pintarActividades() {
+    const visibles = actividades.filter((a) => filtroElegido.incluye(a));
+    document.getElementById("titulo-lista").replaceChildren(
+        filtroElegido.nombre,
         crearElemento("span", "cantidad cifra", visibles.length ? String(visibles.length) : ""),
     );
-    const descripcion = document.getElementById("descripcion-requerimiento");
-    descripcion.textContent = requerimiento?.descripcion || "";
-    descripcion.hidden = !requerimiento?.descripcion;
-
-    const eliminar = document.getElementById("eliminar-requerimiento");
-    eliminar.hidden = !requerimiento;
-    delete eliminar.dataset.confirmar;
-    eliminar.textContent = "Eliminar requerimiento";
 
     const lista = document.getElementById("lista-actividades");
     lista.hidden = visibles.length === 0;
     document.getElementById("encabezado-lista").hidden = visibles.length === 0;
     document.getElementById("sin-actividades").hidden = visibles.length > 0;
-    document.getElementById("sin-actividades-titulo").textContent =
-        requerimientos.length ? "Sin actividades" : "Empieza por un requerimiento";
-    document.getElementById("sin-actividades-texto").textContent = requerimientos.length
-        ? "Crea una actividad y asígnala a uno o varios operarios."
-        : "Registra el primer requerimiento con “Nuevo”; después podrás crearle actividades.";
-    lista.replaceChildren(...ordenarActividades(visibles).map(crearFilaActividad));
+    document.getElementById("sin-actividades-titulo").textContent = actividades.length
+        ? `Nada en “${filtroElegido.nombre}”`
+        : "Todavía no hay actividades";
+    document.getElementById("sin-actividades-texto").textContent = actividades.length
+        ? "Elige otro filtro para ver las demás actividades."
+        : "Crea una actividad con “Nueva actividad” y asígnala a uno o varios operarios.";
+    lista.replaceChildren(...agruparPorDia(visibles).flatMap(([fecha, delDia]) =>
+        [crearEncabezadoDia(fecha, delDia.length), ...delDia.map(crearFilaActividad)]));
 }
 
 function pintarResumen() {
-    const sinAsignar = actividades.filter((a) => a.operarios.length === 0).length;
-    const partes = [
-        plural(requerimientos.length, "requerimiento", "requerimientos"),
-        plural(actividades.length, "actividad", "actividades"),
-    ];
+    const porHacer = actividades.filter((a) => !terminada(a));
+    const sinAsignar = porHacer.filter((a) => a.operarios.length === 0).length;
+    const partes = [plural(porHacer.length, "actividad por hacer", "actividades por hacer")];
     if (sinAsignar) {
         partes.push(`${sinAsignar} sin asignar`);
     }
-    document.getElementById("resumen").textContent = partes.join(" · ");
+    document.getElementById("resumen").textContent = partes.join(", ");
 }
 
 function pintar() {
     pintarResumen();
-    pintarRequerimientos();
+    pintarFiltros();
     pintarActividades();
 }
 
@@ -126,66 +162,29 @@ function pintar() {
 
 async function cargar() {
     try {
-        [requerimientos, actividades] = await Promise.all([pedirApi("/requerimientos"), pedirApi("/actividades")]);
-        if (seleccionado && !requerimientos.some((r) => r.id === seleccionado)) {
-            seleccionado = null;
-        }
+        actividades = await pedirApi("/actividades");
         pintar();
     } catch (error) {
         mostrarAviso(`No se pudieron cargar las actividades: ${error.message}`, "advertencia");
     }
 }
 
-async function cargarOperarios(usuario) {
-    const usuarios = await pedirApi(`/usuarios?empresa_id=${encodeURIComponent(usuario.empresa_id)}`);
-    operarios = usuarios.filter((u) => u.rol === "OPERARIO");
-}
-
-function configurarRequerimientos() {
-    const dialogo = document.getElementById("dialogo-requerimiento");
-    configurarDialogo(document.querySelectorAll("[data-abrir-requerimiento]"), dialogo);
-    dialogo.querySelector("form").addEventListener("submit", (evento) => {
-        evento.preventDefault();
-        enviarFormularioDialogo(
-            dialogo,
-            (datos) => (datos.titulo.trim() ? null : "Escribe el título del requerimiento."),
-            async (datos) => {
-                const requerimiento = await enviarJson("/requerimientos", "POST", datos);
-                seleccionado = requerimiento.id;
-                await cargar();
-                return `Requerimiento "${requerimiento.titulo}" registrado. Ya puedes crearle actividades.`;
-            },
-        );
-    });
-
-    // Eliminar pide una segunda confirmación en el mismo botón, porque también borra sus actividades.
-    const eliminar = document.getElementById("eliminar-requerimiento");
-    eliminar.addEventListener("click", async () => {
-        if (eliminar.dataset.confirmar !== "si") {
-            eliminar.dataset.confirmar = "si";
-            eliminar.textContent = "Se borrarán sus actividades. Confirmar";
-            return;
-        }
-        try {
-            await pedirApi(`/requerimientos/${seleccionado}`, { method: "DELETE" });
-            seleccionado = null;
-            await cargar();
-            mostrarAviso("Requerimiento eliminado.");
-        } catch (error) {
-            mostrarAviso(error.message, "advertencia");
-        }
-    });
+async function cargarOperariosYProyectos(usuario) {
+    const [usuarios, listaProyectos] = await Promise.all([
+        pedirApi(`/usuarios?empresa_id=${encodeURIComponent(usuario.empresa_id)}`),
+        pedirApi("/proyectos"),
+    ]);
+    operarios = usuarios.filter((u) => u.rol === "OPERARIO" && u.activo !== false);
+    proyectos = listaProyectos;
 }
 
 iniciarPaginaProtegida(["ADMINISTRADOR"]).then(async (usuario) => {
-    configurarRequerimientos();
     formulario = crearFormularioActividad({
-        obtenerRequerimientos: () => requerimientos,
+        obtenerProyectos: () => proyectos,
         obtenerOperarios: () => operarios,
         alGuardar: cargar,
     });
-    document.getElementById("nueva-actividad").addEventListener("click", () =>
-        formulario.abrirNueva({ requerimiento_id: seleccionado || undefined }));
+    document.getElementById("nueva-actividad").addEventListener("click", () => formulario.abrirNueva());
 
-    await Promise.all([cargar(), cargarOperarios(usuario)]);
+    await Promise.all([cargar(), cargarOperariosYProyectos(usuario)]);
 });
