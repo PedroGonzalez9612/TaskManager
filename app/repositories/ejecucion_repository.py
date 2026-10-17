@@ -84,6 +84,3 @@ class EjecucionRepository(BaseRepository):
     def find_by_actividad(self, actividad_id: str):
         return self.collection.find_one({"actividad_id": actividad_id})
 
-    # Se retira cuando el servicio deje de usarlo: las ejecuciones ya no se borran.
-    def delete_by_actividades(self, actividad_ids: list) -> None:
-        self.collection.delete_many({"actividad_id": {"$in": actividad_ids}})

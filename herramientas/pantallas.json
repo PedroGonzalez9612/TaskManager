@@ -22,7 +22,7 @@
             "rol": "administrador",
             "nombre": "equipo",
             "ruta": "/static/admin/equipo.html",
-            "esperar": ".ec-toolbar"
+            "esperar": ".tablero-fila"
         },
         {
             "rol": "administrador",
@@ -33,6 +33,12 @@
             "rol": "administrador",
             "nombre": "usuarios",
             "ruta": "/static/admin/usuarios.html"
+        },
+        {
+            "rol": "operario",
+            "nombre": "inicio",
+            "ruta": "/static/operario/inicio.html",
+            "esperar": "#inicio-panel:not([hidden])"
         },
         {
             "rol": "operario",

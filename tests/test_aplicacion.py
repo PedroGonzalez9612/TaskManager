@@ -206,12 +206,24 @@ def test_un_limite_no_baja_de_los_usuarios_que_ya_hay(superadmin, admin, empresa
 
 def test_una_empresa_que_no_existe_da_404(superadmin):
     assert superadmin.get("/empresas/000000000000000000000000").status_code == 404
-    assert superadmin.delete("/empresas/no-es-un-id").status_code == 404
+    assert superadmin.post("/empresas/no-es-un-id/desactivar").status_code == 404
 
 
-def test_eliminar_una_empresa(superadmin, empresa):
-    assert superadmin.delete(f"/empresas/{empresa['id']}").status_code == 204
-    assert superadmin.get(f"/empresas/{empresa['id']}").status_code == 404
+def test_una_empresa_no_se_borra_se_desactiva(aplicacion, superadmin, admin, empresa):
+    """Sus usuarios no inician sesión, pero la empresa y su historial se conservan (alcance, Sección 4)."""
+    assert superadmin.delete(f"/empresas/{empresa['id']}").status_code == 405    # Ya no existe borrar.
+    desactivada = superadmin.post(f"/empresas/{empresa['id']}/desactivar")
+    assert desactivada.status_code == 200
+    assert desactivada.get_json()["activa"] is False
+    assert superadmin.post(f"/empresas/{empresa['id']}/desactivar").status_code == 400
+
+    entrada = Cliente(aplicacion).post("/auth/login", {"correo": "ana@prueba.co", "contraseña": CLAVE})
+    assert entrada.status_code == 401
+    assert "empresa está desactivada" in entrada.get_json()["error"]
+    assert superadmin.get(f"/empresas/{empresa['id']}").get_json()["nombre"] == "Metálicas SAS"
+
+    assert superadmin.post(f"/empresas/{empresa['id']}/reactivar").get_json()["activa"] is True
+    Cliente(aplicacion, "ana@prueba.co")    # Vuelve a entrar.
 
 
 # ---------- Zona horaria ----------
@@ -284,7 +296,8 @@ def test_sin_logo_no_hay_nada_que_servir(superadmin, empresa):
 
 
 def test_un_archivo_enorme_se_rechaza_antes_de_leerlo(superadmin, empresa):
-    respuesta = superadmin.subir_logo(empresa["id"], b"0" * (2 * 1024 * 1024))
+    # Más que el máximo de una petición (6 MB, para que quepa una evidencia de 5 MB).
+    respuesta = superadmin.subir_logo(empresa["id"], b"0" * (7 * 1024 * 1024))
     assert respuesta.status_code == 413
     assert respuesta.get_json() == {"error": "El archivo es demasiado grande"}
 
@@ -323,7 +336,7 @@ def test_no_se_supera_el_limite_de_usuarios(admin):
     assert "límite de 2 operarios" in respuesta.get_json()["error"]
 
 
-def test_listar_consultar_editar_y_eliminar_usuarios(aplicacion, superadmin, admin, empresa):
+def test_listar_consultar_editar_y_desactivar_usuarios(aplicacion, superadmin, admin, empresa):
     carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
 
     assert sorted(u["nombre"] for u in admin.get("/usuarios").get_json()) == ["Ana", "Carlos"]
@@ -336,10 +349,45 @@ def test_listar_consultar_editar_y_eliminar_usuarios(aplicacion, superadmin, adm
     assert admin.get("/usuarios/000000000000000000000000").status_code == 404
 
     yo = admin.get("/auth/sesion").get_json()["id"]
-    assert admin.delete(f"/usuarios/{yo}").status_code == 400                      # No se elimina a sí mismo.
+    assert admin.post(f"/usuarios/{yo}/desactivar").status_code == 400            # No se desactiva a sí mismo.
     assert Cliente(aplicacion, "carlos@prueba.co").get("/usuarios").status_code == 403
-    assert admin.delete(f"/usuarios/{carlos['id']}").status_code == 204
-    assert admin.get(f"/usuarios/{carlos['id']}").status_code == 404
+    assert admin.delete(f"/usuarios/{carlos['id']}").status_code == 405           # Ya no existe borrar.
+
+    desactivado = admin.post(f"/usuarios/{carlos['id']}/desactivar")
+    assert desactivado.status_code == 200
+    assert desactivado.get_json()["activo"] is False
+    assert admin.get(f"/usuarios/{carlos['id']}").get_json()["nombre"] == "Carlos Ramírez"    # Se conserva.
+    entrada = Cliente(aplicacion).post("/auth/login", {"correo": "carlos@prueba.co", "contraseña": CLAVE})
+    assert entrada.status_code == 401
+    assert "desactivado" in entrada.get_json()["error"]
+    # Un desactivado no ocupa cupo: con límite de 2 operarios caben dos más.
+    assert crear_usuario(admin, "Dora", "OPERARIO").status_code == 201
+    assert crear_usuario(admin, "Eva", "OPERARIO").status_code == 201
+    # Y por eso no se puede reactivar mientras no haya cupo.
+    assert "límite" in admin.post(f"/usuarios/{carlos['id']}/reactivar").get_json()["error"]
+
+
+def test_un_operario_con_actividades_sin_terminar_no_se_desactiva(aplicacion, admin):
+    carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
+    actividad = admin.post("/actividades", {
+        "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "OPERACION", "tiempo_estimado_min": 60,
+        "fecha_programada": FECHA, "operario_ids": [carlos["id"]],
+    }).get_json()
+
+    respuesta = admin.post(f"/usuarios/{carlos['id']}/desactivar")
+    assert respuesta.status_code == 400
+    assert "1 actividad sin terminar" in respuesta.get_json()["error"]
+
+    admin.post(f"/actividades/{actividad['id']}/cancelar", {"motivo": "Otro", "detalle": "Ya no se hará"})
+    assert admin.post(f"/usuarios/{carlos['id']}/desactivar").status_code == 200
+    # A un desactivado no se le asignan actividades.
+    nueva = admin.post("/actividades", {
+        "titulo": "Limpiar", "ubicacion": "Línea 1", "categoria": "ATENCION", "tiempo_estimado_min": 30,
+        "fecha_programada": FECHA, "operario_ids": [carlos["id"]],
+    })
+    assert nueva.status_code == 400
+    assert "activos" in nueva.get_json()["error"]
+    assert admin.post(f"/usuarios/{carlos['id']}/reactivar").get_json()["activo"] is True
 
 
 def test_un_administrador_no_ve_los_usuarios_ni_el_logo_de_otra_empresa(aplicacion, superadmin, admin):
@@ -376,19 +424,25 @@ def test_un_requerimiento_de_otra_empresa_no_existe_para_mi(aplicacion, superadm
     assert admin.get(f"/requerimientos/{ajeno['id']}").status_code == 404
 
 
-def test_eliminar_un_requerimiento_se_lleva_sus_actividades(admin):
+def test_un_requerimiento_con_actividades_no_se_elimina(admin):
     carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
     requerimiento = admin.post("/requerimientos", {"titulo": "General"}).get_json()
     actividad = admin.post("/actividades", {
-        "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "MANTENIMIENTO", "tiempo_estimado_min": 60,
+        "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "OPERACION", "tiempo_estimado_min": 60,
         "fecha_programada": FECHA, "requerimiento_id": requerimiento["id"], "operario_ids": [carlos["id"]],
     })
     assert actividad.status_code == 201
     assert admin.get(f"/requerimientos/{requerimiento['id']}").get_json()["actividades"] == 1
 
-    assert admin.delete(f"/requerimientos/{requerimiento['id']}").status_code == 204
-    assert admin.get(f"/actividades/{actividad.get_json()['id']}").status_code == 404
-    assert admin.get("/requerimientos").get_json() == []
+    # Las actividades no se borran (alcance, Sección 5.1): el requerimiento tampoco, mientras las tenga.
+    rechazo = admin.delete(f"/requerimientos/{requerimiento['id']}")
+    assert rechazo.status_code == 400
+    assert "no se borran" in rechazo.get_json()["error"]
+    assert admin.get(f"/actividades/{actividad.get_json()['id']}").status_code == 200
+    assert admin.delete(f"/actividades/{actividad.get_json()['id']}").status_code == 405    # Ya no existe.
+
+    vacio = admin.post("/requerimientos", {"titulo": "Vacío"}).get_json()
+    assert admin.delete(f"/requerimientos/{vacio['id']}").status_code == 204
 
 
 # ---------- Carga laboral ----------
@@ -397,7 +451,7 @@ def test_la_carga_suma_lo_programado_y_avisa_la_sobrecarga(aplicacion, admin):
     carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
     for minutos in (300, 240):
         admin.post("/actividades", {
-            "titulo": "Producción", "ubicacion": "Línea 1", "categoria": "PRODUCCION",
+            "titulo": "Producción", "ubicacion": "Línea 1", "categoria": "REVISION",
             "tiempo_estimado_min": minutos, "fecha_programada": FECHA, "operario_ids": [carlos["id"]],
         })
 

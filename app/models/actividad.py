@@ -1,4 +1,5 @@
 from app.models.enums import Categoria, EstadoActividad, Prioridad
+from app.models.informacion_actividad import InformacionActividad
 from app.models.registros import Reprogramacion, Cancelacion
 from app.utils.errors import ValidationError
 
@@ -13,12 +14,14 @@ class Actividad:
     def __init__(self, codigo, titulo, descripcion, empresa_id, categoria, ubicacion,
                  tiempo_estimado_min, fecha_programada, hora_programada=None,
                  prioridad=Prioridad.MEDIA, estado=EstadoActividad.PENDIENTE,
-                 proyecto_id=None, requerimiento_id=None):
+                 proyecto_id=None, requerimiento_id=None, informacion=None):
         # Una actividad nueva no tiene id ni historial: eso lo pone desde_documento al leerla.
         self.id = None
         self.codigo = codigo                    # Consecutivo por empresa, por ejemplo "OT-0042".
         self.titulo = titulo
         self.descripcion = descripcion
+        # Lo que el Administrador deja para hacer el trabajo, por bloques (pasos, herramientas...).
+        self.informacion = informacion or InformacionActividad()
         self.proyecto_id = proyecto_id          # None: es una actividad independiente.
         self.requerimiento_id = requerimiento_id    # Dato anterior a los proyectos; se retira con ellos.
         self.empresa_id = empresa_id
@@ -88,6 +91,7 @@ class Actividad:
             "codigo": self.codigo,
             "titulo": self.titulo,
             "descripcion": self.descripcion,
+            "informacion": self.informacion.to_dict(),
             "proyecto_id": self.proyecto_id,
             "requerimiento_id": self.requerimiento_id,
             "empresa_id": self.empresa_id,
@@ -120,6 +124,7 @@ class Actividad:
             hora_programada=doc.get("hora_programada"),
             prioridad=doc.get("prioridad", Prioridad.MEDIA.value),
             estado=doc.get("estado", EstadoActividad.PENDIENTE.value),
+            informacion=InformacionActividad.desde_documento(doc.get("informacion")),
         )
         actividad.id = str(doc["_id"])
         cancelacion = doc.get("cancelacion")
@@ -139,6 +144,7 @@ class Actividad:
             "codigo": doc.get("codigo", ""),
             "titulo": doc["titulo"],
             "descripcion": doc.get("descripcion", ""),
+            "informacion": InformacionActividad.desde_documento(doc.get("informacion")).to_dict(),
             "proyecto_id": doc.get("proyecto_id"),
             "requerimiento_id": doc.get("requerimiento_id"),
             "empresa_id": doc.get("empresa_id"),

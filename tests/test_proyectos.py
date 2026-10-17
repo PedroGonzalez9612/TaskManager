@@ -3,8 +3,11 @@ import pytest
 
 from app.utils.errors import NotFoundError, ValidationError
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 DATOS_ACTIVIDAD = {
-    "titulo": "Montar la banda", "ubicacion": "Línea 1", "categoria": "PRODUCCION",
+    "titulo": "Montar la banda", "ubicacion": "Línea 1", "categoria": "OPERACION",
     "tiempo_estimado_min": 60, "fecha_programada": "2026-10-10",
 }
 

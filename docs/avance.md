@@ -11,10 +11,10 @@ Leyenda: ✅ terminado · 🟡 parcial · ⬜ pendiente
 | 1 | Empresa y usuarios (tres roles, cada uno con su interfaz) | ✅ | Además: límites de usuarios por empresa y marca blanca |
 | 2 | Actividades y proyectos | 🟡 | La API ya permite actividades independientes y proyectos con su avance en horas. Las pantallas del Administrador todavía crean las actividades dentro de requerimientos (Etapa 6 del rediseño) |
 | 3 | Asignación y prioridad | ✅ | Uno o varios operarios, cuatro prioridades, tiempo estimado, fecha y hora programada, con alerta de sobrecarga |
-| 4 | Ejecución (iniciar, pausar, reanudar, finalizar) | 🟡 | La API hace las cuatro acciones por operario, con motivo en cada pausa y observación al finalizar. En pantalla solo están iniciar y finalizar; faltan pausar y reanudar (Etapa 5 del rediseño) |
+| 4 | Ejecución (iniciar, pausar, reanudar, finalizar) | ✅ | Las cuatro acciones en pantalla, por operario: pausa con motivo, "Pausar y atender" para la urgente y evidencia al finalizar (observación, fotos y adjuntos). El Administrador ve el registro de cada operario en el detalle de la actividad |
 | 5 | Registro de tiempo | 🟡 | El servidor registra inicio, pausas y fin de cada operario y calcula el tiempo real sin pausas. Falta mostrarlo en pantalla y compararlo con el estimado |
 | 6 | Análisis de carga laboral | 🟡 | Carga por jornada de cada operario y alerta al superar el 100 %. La capacidad es provisional (7 h) hasta que existan los turnos |
-| 7 | Turnos y asistencia | 🟡 | El Administrador crea turnos, los asigna y valida o corrige la asistencia (pantalla Usuarios); el Operario marca entrada y salida en Hoy; la capacidad sale del turno. Falta el aviso de posible ausencia por tolerancia y la reasignación por ausencia |
+| 7 | Turnos y asistencia | 🟡 | El Administrador crea turnos, los asigna y valida o corrige la asistencia (pantalla Usuarios); el Operario marca entrada y salida en Hoy, que ahora abre con el inicio de la jornada y cierra con su resumen; la capacidad sale del turno. Falta el aviso de posible ausencia por tolerancia y la reasignación por ausencia |
 | 8 | Indicadores de cumplimiento | ⬜ | |
 
 ## Etapa 1 — Inicio de sesión, empresas y usuarios (2026-09-26) ✅
@@ -268,11 +268,220 @@ En resumen: **3 criterios completos, 4 a medias y 1 sin empezar** (el 7 avanzó 
 
 Programación dinámica del día, cierre de jornada con reprogramación automática, zona horaria por empresa, motivos que se aprenden, protección contra CSRF, análisis con SonarQube y el glosario. Todo está registrado en la bitácora del alcance.
 
-## Estado del repositorio (2026-10-10)
+## Momento 2 de las dos materias: inicio y cierre de la jornada, correcciones y entregables (2026-10-12) ✅
 
-- Las ramas de funcionalidades anteriores ya están integradas en `main` (Pull Request #7) y se borraron.
-- Todo el trabajo del rediseño "Calma operativa" (Etapas 1 a 3 y lo hecho de la Etapa 4) está en la copia local de `main`, **sin confirmar en Git** por decisión del equipo: se sube cuando se termine. Incluye archivos nuevos sin seguimiento: `tests/`, `docs/disenos/`, `docs/plan_rediseno_calma_operativa.md`, los modelos, repositorios, servicios y rutas nuevos, las fuentes Figtree y `herramientas/migrar_etapa4.py`.
+Rama: `feature/correcciones-usabilidad-2026-10-12`.
+
+### Inicio y cierre de la jornada del Operario
+
+La marca de entrada y de salida no se veía en un día con varias actividades. Ahora la pantalla Hoy tiene tres estados según la asistencia de la jornada vigente (alcance, Secciones 5.1, 6.1 y 6.2):
+
+- **Antes de marcar la entrada:** saludo, turno, resumen de lo programado (actividades, tiempo estimado y urgentes) y "Marcar entrada" como única acción.
+- **Con la entrada marcada:** el día, con "Marcar salida" siempre visible en el encabezado.
+- **Después de marcar la salida:** cierre de la jornada, con las marcas, el tiempo presente, el tiempo en actividades y lo que quedó sin finalizar.
+
+Reglas nuevas, validadas en el servidor:
+
+- Para iniciar o reanudar una actividad hay que tener marcada la entrada y no haber marcado la salida. El turno no limita la hora de la entrada.
+- No se marca la salida con una actividad en curso. La pantalla la pausa con el motivo "Fin de jornada" (o la finaliza, si es de hora fija) y marca la salida en el mismo paso.
+- Aviso informativo desde 15 minutos antes del inicio y del fin del turno.
+
+Resuelve los casos E1 y E2 de `casos_por_definir.md`.
+
+### Correcciones de usabilidad (revisión contra las heurísticas de Nielsen)
+
+- Hoy abre ubicada en "Ahora": la actividad en curso ya no queda debajo de lo finalizado.
+- Los botones `boton-pequeno` y `boton-texto` miden 44 px de alto, como pide el alcance.
+- `pedirApi` muestra "No hay conexión con el servidor…" o "No se pudo completar la acción…" en lugar de textos técnicos.
+- Los estados de asistencia del Administrador llevan color, ícono y texto.
+
+### Entregables
+
+| Materia | Carpeta | Contenido |
+|---|---|---|
+| Diseño de Interfaces | `docs/diseno_interfaces/momento_2/` | `actividad.md` (enunciado de la Fase 2), `documento_diseno.md` y su PDF, y `capturas/` |
+| Diseño Orientado a Objetos | `docs/diseno_orientado_objetos/momento_2/` | `actividad.md` (enunciado del Momento 2) y `avance_momento_2.md` con su PDF: modelo lógico y físico de la base, implementación, interfaz, equipo y socialización |
+
+Herramienta nueva: `herramientas/documento_pdf.py` convierte un documento Markdown en PDF, con sus diagramas e imágenes.
+
+### Cómo se verificó
+
+- 462 pruebas automáticas (11 nuevas, en `tests/test_entrada_y_salida.py`) y SonarQube en verde: 0 hallazgos y 98 % de cobertura. Las pruebas que ejecutan actividades usan la preparación `con_entrada_marcada` de `tests/conftest.py`.
+- Recorrido en la aplicación de prueba con datos de demostración (empresa "Café La Montaña": un Administrador y tres Operarios): inicio de la jornada con el aviso de turno, el día con una urgente, salida con una actividad en curso y cierre de la jornada. Capturas en celular y escritorio, sin errores de JavaScript.
+
+### Pendiente de esta entrega
+
+- En el documento de DOO falta el segundo integrante y la tabla de roles y responsabilidades del equipo.
+- `docs/enunciados/diseno_interfaces_fase2.md` es una transcripción anterior del enunciado de la Fase 2; la vigente es `docs/diseno_interfaces/momento_2/actividad.md`.
+
+## Etapa 5 (parte 1): pausar, atender la urgente, registro y evidencia (2026-10-14) ✅
+
+Rama: `feature/pausar-y-atender-2026-10-14`, que sale de `feature/correcciones-usabilidad-2026-10-12`.
+
+### Operario
+
+- **Pausar con motivo:** la actividad en curso tiene "Pausar" y "Finalizar". El motivo sale de la lista de la empresa; lo escrito en "Otro" queda en la lista. Una de hora fija no tiene "Pausar".
+- **Llega una urgente:** con una de horario flexible en curso, "Pausar y atender" la pausa con el motivo "Actividad urgente" e inicia la urgente en un solo toque. Con una de hora fija en curso, la urgente no la interrumpe y se explica por qué. Sin nada en curso, "Iniciar la urgente". Una urgente pausada dice "Urgente · en pausa" y ofrece reanudarla.
+- **Finalizar con evidencia:** observación, fotos y adjuntos (PDF o imágenes), todo opcional. Las fotos se reducen en el celular antes de subirlas (una foto de 4000 × 3000 px quedó en 40 KB).
+- **Tu registro:** el detalle de la actividad muestra inicio, fin, tiempo trabajado, cada pausa con su motivo, la observación y la evidencia.
+
+### Administrador
+
+- Al tocar una actividad (en Equipo o en Actividades) se abre primero su detalle, con el registro y la evidencia de cada operario; "Editar" abre el formulario.
+
+### Servidor
+
+- Regla nueva en el alcance (Sección 5.1 y glosario): **evidencia de la ejecución**. Hasta 5 archivos por ejecución y 5 MB por archivo; la ven el operario dueño y el Administrador de su empresa; no se borra.
+- Clase `Evidencia` (`app/models/evidencia.py`), `EvidenciaRepository` (colección `evidencias`, el archivo dentro del documento) y `EvidenciaService`. El tipo del archivo se reconoce por su contenido (`app/utils/archivos.py`, compartido con el logo).
+- Rutas: `POST /actividades/<id>/evidencias` (Operario, archivo en el campo `archivo`) y `GET /actividades/<id>/evidencias/<id>` (Operario dueño o Administrador de la empresa).
+- El máximo de una petición sube de 1 MB a 6 MB para que quepa una evidencia de 5 MB.
+
+### Cómo se verificó
+
+- 482 pruebas automáticas (20 nuevas, en `tests/test_evidencias.py`) y SonarQube en verde: 0 hallazgos y 98 % de cobertura.
+- Recorrido en la aplicación de prueba como Andrés (entrada, iniciar, "Pausar y atender", pausar con "Otro", reanudar, finalizar con observación, foto y PDF) y como Laura (detalle con el registro y la evidencia, y "Editar"), sin errores de JavaScript.
+
+## Reglas de estado de cada rol (2026-10-14) ✅
+
+Revisión con el usuario de lo que cada rol puede hacer en cada estado. Las decisiones quedaron en el alcance (Secciones 4 y 5.1, con una tabla de reglas de estado de la actividad) y en el glosario (Desactivar, Actividad iniciada).
+
+| Regla | Antes | Ahora |
+|---|---|---|
+| Editar o reasignar una actividad iniciada (en curso, pausada, o que alguien ya trabajó) | Se permitía | No se permite. El detalle lo explica y solo ofrece cancelar, si nadie la tiene en curso |
+| Eliminar una actividad | Borraba la actividad, su registro y su evidencia | Ya no existe: se cancela con motivo, desde el detalle de la actividad |
+| Eliminar un requerimiento con actividades | Borraba también sus actividades | No se permite; solo se elimina un requerimiento vacío |
+| Eliminar un usuario | Lo borraba, y su historial quedaba sin dueño | Se desactiva: no inicia sesión, no recibe trabajo, libera su cupo y conserva su historial. Se reactiva si hay cupo. No se desactiva a sí mismo ni a un operario con actividades sin terminar |
+| Eliminar una empresa | Borraba solo la empresa; sus datos quedaban sueltos | Se desactiva: ninguno de sus usuarios inicia sesión. Se reactiva |
+| Cambiar las horas de un turno asignado | Cambiaba hacia atrás la capacidad de los días pasados | No se permite; se crea otro turno y se asigna desde una fecha. El nombre sí se cambia |
+
+Rutas: `POST /usuarios/<id>/desactivar` y `/reactivar`; `POST /empresas/<id>/desactivar` y `/reactivar`. Se retiran `DELETE /actividades/<id>`, `DELETE /usuarios/<id>` y `DELETE /empresas/<id>`. Las actividades presentadas traen `editable` y `cancelable`, y la interfaz muestra solo las acciones permitidas.
+
+Verificación: 484 pruebas automáticas (las que comprobaban el borrado ahora comprueban la regla nueva) y SonarQube en verde (0 hallazgos, 98,4 % de cobertura). Recorrido como Laura: detalle de una actividad sin iniciar (Cancelar y Editar) y de una iniciada (solo Cancelar, con la explicación), cancelación con motivo "Otro", formulario sin "Eliminar", Diana rechazada al desactivarla por tener una actividad sin terminar, y un operario de prueba desactivado que ya no puede iniciar sesión.
+
+## Auditoría de diseño y usabilidad y sus correcciones (2026-10-14) ✅
+
+Auditoría de las pantallas de los tres roles (32 capturas en celular y escritorio, contrastes medidos con `herramientas/contraste.py` y revisión contra las heurísticas de Nielsen, Gestalt y las reglas de la Sección 6 del alcance). Lo que se corrigió:
+
+| Hallazgo | Corrección |
+|---|---|
+| C1. La metáfora central no existía en el Administrador | Equipo es el tablero del turno: una fila por persona, las horas de izquierda a derecha, la línea "Ahora", fuera del turno rayado en gris, lo que pasa del turno en coral y "Por atender" (sin asignar y devueltas, con "Asignar"). Tocar un espacio libre crea una actividad para esa persona a esa hora |
+| C2. "Requerimientos" seguía en pantalla | Actividades sin requerimientos; el formulario tiene "Proyecto (opcional)" |
+| C3. Equipo en celular, cortado | El tablero se desplaza de lado con los nombres fijos y abre en "Ahora" |
+| C4. El horario dibujaba como trabajo los ratos en pausa | Lo trabajado se dibuja por ratos reales, sin las pausas, en el tablero y en Semana |
+| M1. Con una urgente, la actividad en curso no tenía acciones | La tarjeta compacta tiene "Ver detalle" y "Finalizar" |
+| M2. Barra superior cortada y de ancho distinto entre vistas | La barra tiene siempre el mismo ancho (`--ancho-barra`) |
+| M3. Botones de las ventanas desalineados en celular | A todo el ancho, uno debajo del otro, la acción principal arriba |
+| M4. Acciones de baja con el mismo peso que las demás | En rojo y al final: "Desactivar", "Desactivar empresa", "Cancelar actividad" |
+| M5. Asistencia "Por validar" de quien sigue en turno | Se muestra "En turno" hasta que marca la salida |
+| M6. Lista de actividades sin filtros | Filtros "Por hacer", "Sin asignar", "En curso o pausadas", "Terminadas" y "Todas", y agrupada por día |
+| M7. El formulario no explicaba la hora fija | Ayuda bajo "Hora fija (opcional)" y campo de proyecto |
+| M8. Semana con muchos controles y rango fijo de 06:00 a 20:00 | Rango según el turno; "Colores y leyenda" plegable en celular |
+| Menores | Sin "Retraso" en lo finalizado; pausas de otro día con su fecha; ícono "i" en la información; estado del turno en su renglón; "Mostrar contraseña"; espacios de los avisos en la escala |
+
+Las reglas que faltaban quedaron en el alcance (Secciones 6.2 y 6.5): ancho de la barra superior, acciones de baja, botones de las ventanas en celular, listas largas, rango de horas de los horarios, lo trabajado sin pausas, tablero en celular y qué metáforas están construidas.
+
+Pendiente de la auditoría: el aviso de llegada tarde (necesita la tolerancia por empresa, que el alcance pide pero no define) y arrastrar una tarjeta del tablero a otra persona.
+
+## Exploración de identidad visual del Operario (2026-10-16), sin cerrar
+
+Estado en el que queda, para retomarlo (el usuario seguirá el diseño en otra herramienta):
+
+- **Hecho en código:** Hoy con bloques de tiempo por categoría (alto proporcional a la duración, lo
+  proyectado con borde punteado, lo terminado tenue, lo vencido en gris con borde ámbar); la "cinta del día"
+  (`crearCintaDelDia` en `operario/operario-comun.js`) en Hoy e Inicio; fuente Bricolage Grotesque para las
+  cifras (`--fuente-cifras`); lienzo blanco en las pantallas del Operario (`body.lienzo`); el rayado coral solo
+  para lo que pasa del turno.
+- **Categorías generales:** OPERACION, ATENCION, ADMINISTRATIVA, REVISION y TRASLADO reemplazan a las
+  industriales. Datos existentes: `python herramientas/migrar_categorias.py --aplicar`.
+- **Opinión del usuario:** la cinta y la tipografía de Inicio no le gustan ("la barra está horrible, la
+  letra del inicio super fea"). La dirección visual queda abierta: no se escribió en el alcance.
+- **Pendiente en el alcance:** registrar las categorías generales (Sección 5.1 y glosario), y la dirección
+  visual que se decida (fondo, tipografía, forma de la carga del día). Mientras no se decida, el alcance
+  sigue pidiendo fondo `#F4F6F5` y una sola familia de letra.
+- **Referencias elegidas por el usuario:** Float y Runn (planificadores de capacidad), conservando la lógica
+  de GestLab. GestLab no es mantenimiento ni órdenes de trabajo: es carga laboral de cualquier empresa.
+- **Observaciones pendientes** (de la revisión del 2026-10-16): Semana con cada actividad flexible en su hora
+  y programación para cualquier día (8 y 11), Semana propia y Resumen nuevo (9 y 12), Mi perfil (10) y barra
+  superior (13).
+
+## Observaciones del usuario, bloque A: la llegada y el encabezado (2026-10-16) ✅
+
+Resuelve las observaciones 1 a 7 y 14 de la revisión de la vista del Operario. Reglas en las Secciones 5.1,
+6.1, 6.2 y 14 del alcance (bitácora).
+
+- **Inicio (nueva vista, `operario/inicio.*`):** la primera pantalla después del login. Saludo según la hora,
+  la hora actual con la barra del turno, la barra de la jornada (trabajado, por hacer y libre; lo que pasa de
+  la capacidad, rayado en coral), cuántas actividades van finalizadas y cuál sigue. Acciones según la
+  asistencia: "Marcar entrada" (pasa a Hoy) y "Ver mi día sin marcar la entrada"; "Ir a mi día" y "Marcar
+  salida" al final; el cierre de la jornada después de la salida.
+- **Hoy:** encabezado con las mismas barras, sin "Tu turno, X" ni la frase de minutos. Sin entrada o después
+  de la salida, modo de lectura (sin iniciar ni reanudar, con aviso y enlace a Inicio). "Ordenar mi día" en
+  la línea de tiempo antes de lo que sigue. "Marcar salida" al final del día. Las actividades fuera del
+  turno dicen su horario y cuánto pasan; el fin del turno suma el total.
+- **Ordenar mi día:** cada fila muestra la hora en que quedaría (vista previa del servidor) y cuánto pasa
+  del turno; mientras se ordena, no se ve "Marcar salida".
+- **Llegada tarde:** alerta en ámbar en Inicio y en Hoy si el turno empezó hace más de 10 minutos sin entrada.
+- **Servidor:** `POST /orden-del-dia/vista-previa`; la programación del día trae `fuera_del_turno_min` por
+  tramo y en el resumen, `retraso_entrada_min` y `tolerancia_entrada_min`.
+- **Pruebas:** `tests/test_inicio_y_orden.py` (10). Total: 526.
+
+Pendiente de las observaciones: bloques B (cálculo de horas para cualquier día), C (Semana y Resumen) y
+D (Mi perfil y barra superior).
+
+## Información de la actividad por bloques (2026-10-14) ✅
+
+Construye la decisión D del 2026-10-10, que estaba en el alcance pero no en el sistema: el Operario
+solo tenía la descripción para saber qué hacer. Se suma el bloque "Precauciones de seguridad", que
+pidió el usuario. Reglas en la Sección 5.1 del alcance (bitácora).
+
+- **Modelo:** `InformacionActividad` (bloques elegidos, sus valores, qué falta y si está lista para
+  iniciar) y `Adjunto` (archivo de la actividad, no de la ejecución). Enum `BloqueInformacion`.
+- **Persistencia:** la información va dentro del documento de la actividad; los adjuntos, en la
+  colección nueva `adjuntos` (índice por actividad). Cuatro catálogos nuevos de sugerencias en
+  `catalogos`: herramienta, equipo, precaución y contacto.
+- **API:** `informacion` en crear y editar actividad; `POST /actividades/<id>/adjuntos` (Administrador);
+  `GET /actividades/<id>/adjuntos/<adjunto_id>` (Administrador y operarios asignados);
+  `GET /catalogos/informacion/<herramientas|equipo|precauciones|contacto>`. Las actividades
+  presentadas traen `informacion` (con sus adjuntos), `bloques_faltantes`, `lista_para_iniciar` y
+  `proyecto_nombre`.
+- **Administrador:** en el formulario, "Información para el operario": se eligen los bloques y cada uno
+  muestra su campo (pasos uno por renglón; los demás con sugerencias y "Agregar"; adjuntos que se suben
+  al guardar). "Falta información" en Actividades y en "Por atender" de Equipo.
+- **Operario:** el detalle muestra "Para hacer el trabajo" con cada bloque y el proyecto. En la tarjeta
+  en curso se ven las precauciones y los pasos.
+- **Pruebas:** `tests/test_informacion_actividad.py` (31). Total: 516.
+- **Datos de prueba:** información en "Limpiar la tostadora 1" (Sofía), "Revisar el sellado de las bolsas
+  de 500 g" (Mariana, con "Falta información": no tiene adjunto), "Cargar el camión de Almacenes La 14"
+  (Julián, le falta el contacto) y "Cambiar las bandas de la selladora" (Carlos, jueves, con un adjunto).
+
+Pendiente: el documento de Momento 2 de DOO debe sumar la colección `adjuntos` y el campo
+`informacion` al modelo físico.
+
+## Revisión con el plugin de diseño `frontend-design` (2026-10-14) ✅
+
+Se revisaron todas las pantallas buscando los rasgos que hacen ver una interfaz como plantilla o
+como hecha por IA. Las reglas nuevas quedaron en las Secciones 6.2 y 6.4 del alcance (bitácora).
+
+- **Sin letra monoespaciada:** los códigos (`OT-0063`) y el NIT van en Figtree, semibold y con números
+  de ancho fijo. Se quitó Atkinson Hyperlegible Mono de `estilos.css` (sus archivos siguen en `fuentes/`).
+- **Sin puntos medios:** los datos de un renglón se separan con espacio (`datos-linea`) y lo que es una
+  frase se escribe como frase ("Tomó 40 min de 45 estimados", "6 operarios y 1 administrador").
+- **Paneles con jerarquía:** los filtros de Actividades ("Mostrar actividades", antes "Ver") y "Por
+  atender" de Equipo van sobre el fondo, sin panel. Los indicadores de Resumen van en una sola franja.
+- **Tablero:** 8 rem por hora (6 en celular), título de la tarjeta en dos renglones y sin ícono en las
+  tarjetas de menos de una hora, para que se lea el nombre de las actividades cortas.
+- **Usuarios:** el rol va junto al correo y las acciones en un renglón a la derecha (las filas bajaron
+  de cuatro renglones a dos).
+
+Datos de prueba: Sofía, Mariana y Julián tienen actividades para hoy y no han marcado la entrada, para
+probar el día completo del Operario.
+
+## Estado del repositorio (2026-10-12)
+
+- `main` tiene todo el rediseño "Calma operativa" hecho hasta el 10 de octubre (Pull Request #8).
+- El trabajo del 12 de octubre está en la rama `feature/correcciones-usabilidad-2026-10-12`, pendiente de su Pull Request a `main`.
 - `develop` está atrasada respecto a `main` y debe sincronizarse (Pull Request `main` → `develop`).
+- Entornos de Docker: `docker compose up --build` levanta una base vacía (solo el Superadmin del `.env`); los datos de prueba están en el entorno `gestlab-prueba` (`docker compose -p gestlab-prueba up --build -d`).
 
 ## Decisiones abiertas
 
@@ -284,7 +493,6 @@ Programación dinámica del día, cierre de jornada con reprogramación automát
 - Una actividad pausada que se trabajó hoy solo muestra en la línea de tiempo lo que le falta, no el rato ya trabajado.
 - Si lo que está en curso se proyecta más allá del inicio de una de hora fija, las dos tarjetas se cruzan en la línea de tiempo sin un aviso de choque.
 - Casos de lógica por definir (hora fija antes de su hora, iniciar sin entrada, salida con algo en curso, horas fijas que se cruzan, registrar la asistencia de un operario sin marca, entre otros): ver [casos_por_definir.md](casos_por_definir.md).
-- Página inicial del Operario (turno, entrada y salida antes de la información del día): propuesta presentada al usuario, pendiente de su visto bueno.
 - Aviso al Administrador cuando una reprogramación automática deja una jornada por encima del 100 % (lo pide el alcance; hoy solo se ve en la carga del día).
 - ¿El tiempo de un operario retirado de una actividad suma al tiempo real de esa actividad? Hoy queda guardado pero no se suma; se recomienda sumarlo al construir los indicadores.
 
@@ -292,13 +500,18 @@ Resuelta el 2026-10-10: la ejecución pertenece a la asignación (operario + act
 
 ## Pendientes técnicos conocidos
 
-- Mientras las pantallas del Administrador usen requerimientos, una actividad puede tener requerimiento y proyecto a la vez, y sigue existiendo el borrado de actividades. Las dos cosas contradicen el alcance y se retiran con la pantalla nueva (Etapa 6).
+- Mientras las pantallas del Administrador usen requerimientos, una actividad puede tener requerimiento y proyecto a la vez; se retira con la pantalla nueva (Etapa 6). El borrado de actividades ya no existe.
+- Un usuario desactivado que ya tenía la sesión abierta la conserva hasta que salga; la regla se aplica al iniciar sesión.
+- Las actividades canceladas aparecen en la lista del Administrador con la etiqueta "Cancelada" (filtro "Terminadas"), pero su motivo solo se consulta por la API: el detalle todavía no lo muestra.
+- El Superadmin no tiene usuario de prueba en la base de demostración, así que desactivar y reactivar una empresa desde su pantalla solo está probado con las pruebas automáticas.
 - Si un operario inicia una actividad en el mismo instante en que el Administrador la cancela, puede quedar una ejecución en curso sobre una actividad cancelada. El cierre de jornada debe limpiarlo.
-- La pantalla Hoy ya muestra las pausadas, permite reanudarlas desde el detalle y ordenar el día, pero todavía no tiene el botón de pausar ni el aviso de hora fija (Etapa 5).
+- En la pantalla Hoy falta el aviso de hora fija 10 minutos antes y devolver una actividad (Etapa 5).
 - El formulario de empresa del Superadmin todavía no tiene el campo de zona horaria; por ahora solo se cambia por la API.
 - El botón de la actividad urgente lleva a un "Iniciar" desactivado cuando hay otra en curso; se resuelve con "Pausar y atender" (Etapa 5).
 - Espacios escritos a mano en reglas compartidas de `estilos.css` (`.aviso`, `.etiqueta`, `.boton`, navegación), fuera de la escala `--e1` a `--e7`.
-- Los usuarios de prueba `CAPTURAS_ADMINISTRADOR_*` y `CAPTURAS_OPERARIO_*` no están en el `.env`; sin ellos `herramientas/capturas.py` solo captura el login y el Superadmin.
+- El correo de los usuarios y el NIT de las empresas no tienen índice único: la regla solo la comprueba el servicio, y dos peticiones simultáneas podrían duplicarlos. Las demás reglas de unicidad sí tienen su índice.
+- Las pantallas Semana y Resumen del Operario dejan intentar iniciar una actividad sin haber marcado la entrada; el servidor lo rechaza con el mensaje "Marca tu entrada para empezar", pero el botón no se desactiva antes.
+- `herramientas/capturas.py` toma las páginas largas con la barra superior en medio de la imagen; para los documentos se usó una pantalla tan alta como el contenido.
 - En una base con datos anteriores a la Etapa 4 hay que ejecutar una vez `python herramientas/migrar_etapa4.py --aplicar`.
 
 ## Próximos pasos
@@ -308,7 +521,7 @@ En este orden (plan completo en [plan_rediseno_calma_operativa.md](plan_rediseno
 1. **Terminar la Etapa 4 (backend):**
    - bloques de información de la actividad (pasos, herramientas y materiales, equipo, adjuntos, contacto) y "Lista para iniciar";
    - indicadores de pendientes (reprogramadas, no realizadas, canceladas y devoluciones por motivo).
-2. **Etapa 5 — Operario:** pausar y reanudar con motivo, ordenar el día, aviso de hora fija, devolver una actividad y detalle de la orden.
+2. **Etapa 5 — Operario:** aviso 10 minutos antes de una actividad de hora fija y devolver una actividad. Ya están: pausar con motivo, "Pausar y atender", reanudar, ordenar el día, el inicio y cierre de la jornada, y la evidencia al finalizar.
 3. **Etapa 6 — Administrador:** tablero del turno y pantalla de proyectos; retirar los requerimientos y el borrado de actividades.
 4. **Etapa 7 — Validación y evidencias:** auditoría de todas las pantallas y capturas para el documento de la Fase 2 de Diseño de Interfaces (usabilidad, Gestalt, color y metáforas).
-5. **Turnos y asistencia** (criterio 7 del MVP), de los que depende la capacidad real de cada jornada, e **indicadores de cumplimiento** (criterio 8).
+5. **Turnos y asistencia** (criterio 7 del MVP): aviso de posible ausencia y reasignación por ausencia. **Indicadores de cumplimiento** (criterio 8).

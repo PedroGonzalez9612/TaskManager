@@ -79,10 +79,23 @@ def test_un_turno_de_otra_empresa_no_existe_para_mi(turnos, otra_empresa, manana
         turnos.editar_turno(manana["id"], {"nombre": "Ajeno"}, otra_empresa.admin)
 
 
-def test_la_asignacion_sigue_al_turno_editado(turnos, empresa, manana):
+def test_las_horas_de_un_turno_asignado_no_se_cambian(turnos, empresa, manana):
+    """Cambiarían la capacidad de los días pasados (alcance, Sección 5.1): se crea otro turno."""
+    turnos.editar_turno(manana["id"], {"descanso_min": 30}, empresa.admin)    # Sin asignar: se puede.
     turnos.asignar_turno(empresa.admin, empresa.ana["id"], manana["id"])
-    turnos.editar_turno(manana["id"], {"descanso_min": 0}, empresa.admin)
-    assert turnos.capacidad_de(empresa.ana["id"], HOY) == 480
+
+    for cambios in ({"descanso_min": 0}, {"hora_inicio": "07:00"}, {"hora_fin": "15:00"}):
+        with pytest.raises(ValidationError, match="ya está asignado"):
+            turnos.editar_turno(manana["id"], cambios, empresa.admin)
+    # El nombre sí, y repetir el mismo horario no es un cambio.
+    assert turnos.editar_turno(manana["id"], {"nombre": "Mañana A", "descanso_min": 30}, empresa.admin)["nombre"] == "Mañana A"
+    assert turnos.capacidad_de(empresa.ana["id"], HOY) == 450
+
+
+def test_a_un_operario_desactivado_no_se_le_asigna_turno(turnos, empresa, manana, db):
+    db.usuarios.update_one({"nombre": "Ana"}, {"$set": {"activo": False}})
+    with pytest.raises(ValidationError, match="desactivado"):
+        turnos.asignar_turno(empresa.admin, empresa.ana["id"], manana["id"])
 
 
 # ---------- Turno de cada operario ----------
@@ -169,13 +182,27 @@ def test_la_carga_usa_la_capacidad_del_turno_de_cada_operario(servicios, turnos,
     assert jornadas["Luis"]["sobrecarga"] is False
 
 
+def test_la_carga_dice_el_turno_de_cada_dia(servicios, turnos, empresa, manana, tarde):
+    """El tablero del Administrador dibuja el turno de ese día, no el de hoy."""
+    turnos.asignar_turno(empresa.admin, empresa.ana["id"], manana["id"])
+    turnos.asignar_turno(empresa.admin, empresa.ana["id"], tarde["id"], "2026-10-12")
+
+    carga = servicios.carga.consultar(HOY, "2026-10-12", empresa.admin)
+    ana = next(o for o in carga["operarios"] if o["id"] == empresa.ana["id"])
+    luis = next(o for o in carga["operarios"] if o["id"] == empresa.luis["id"])
+    assert ana["turnos"][HOY]["nombre"] == "Mañana"
+    assert ana["turnos"]["2026-10-12"]["nombre"] == "Tarde"
+    assert ana["turnos"]["2026-10-12"]["hora_inicio"] == TARDE["hora_inicio"]
+    assert luis["turnos"] == {HOY: None, "2026-10-11": None, "2026-10-12": None}
+
+
 def test_la_alerta_al_asignar_usa_la_capacidad_del_turno(servicios, turnos, empresa):
     corto = turnos.crear_turno({"nombre": "Corto", "hora_inicio": "06:00", "hora_fin": "08:00"}, empresa.admin)
     turnos.asignar_turno(empresa.admin, empresa.ana["id"], corto["id"])
     alertas = servicios.carga.sobrecargas(empresa.id, HOY, [empresa.ana["id"], empresa.luis["id"]])
     assert alertas == []
     servicios.actividades.crear_actividad({
-        "titulo": "Lubricar", "ubicacion": "Línea 1", "categoria": "MANTENIMIENTO", "tiempo_estimado_min": 180,
+        "titulo": "Lubricar", "ubicacion": "Línea 1", "categoria": "OPERACION", "tiempo_estimado_min": 180,
         "fecha_programada": HOY, "operario_ids": [empresa.ana["id"], empresa.luis["id"]],
         "requerimiento_id": empresa.requerimiento_id,
     }, empresa.admin)

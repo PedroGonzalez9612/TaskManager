@@ -7,7 +7,14 @@ const dialogoEditar = document.getElementById("dialogo-editar");
 let empresa = null;
 
 function pintarEmpresa() {
-    document.getElementById("nombre-empresa").textContent = empresa.nombre;
+    const titulo = document.getElementById("nombre-empresa");
+    titulo.textContent = empresa.nombre;
+    if (empresa.activa === false) {
+        titulo.append(" ", crearConIcono("span", "etiqueta", "minus", "Desactivada"));
+    }
+    const activa = document.getElementById("boton-activa");
+    activa.textContent = empresa.activa === false ? "Reactivar empresa" : "Desactivar empresa";
+    activa.classList.toggle("peligro", empresa.activa !== false);
     document.getElementById("migas-empresa").textContent = empresa.nombre;
     document.getElementById("meta-empresa").textContent = empresa.sector;
     document.getElementById("dato-nit").textContent = empresa.nit;
@@ -35,8 +42,45 @@ async function cargarEmpresa() {
 }
 
 async function cargarListaUsuarios() {
-    const usuarios = await cargarUsuarios(empresaId, lista, estadoVacio);
+    const usuarios = await cargarUsuarios(empresaId, lista, estadoVacio, null, {
+        alCambiar: async () => {
+            await cargarListaUsuarios();
+            await cargarEmpresa();
+        },
+    });
     document.getElementById("cantidad-usuarios").textContent = usuarios.length || "";
+}
+
+// Una empresa no se borra: se desactiva y se puede reactivar (alcance, Sección 4).
+function configurarActiva() {
+    const boton = document.getElementById("boton-activa");
+    boton.addEventListener("click", async () => {
+        if (empresa.activa === false) {
+            boton.disabled = true;
+            try {
+                await pedirApi(`/empresas/${encodeURIComponent(empresaId)}/reactivar`, { method: "POST" });
+                await cargarEmpresa();
+                mostrarAviso(`Se reactivó ${empresa.nombre}.`);
+            } catch (error) {
+                mostrarAviso(error.message, "advertencia");
+            }
+            boton.disabled = false;
+            return;
+        }
+        abrirDialogoAccion({
+            titulo: `Desactivar ${empresa.nombre}`,
+            campos: [crearElemento("p", "dialogo-actividad",
+                "Ninguno de sus usuarios podrá iniciar sesión. Sus datos y su historial se conservan, "
+                + "y la puedes reactivar cuando quieras.")],
+            textoConfirmar: "Desactivar empresa",
+            iconoConfirmar: "minus",
+            alConfirmar: async () => {
+                await pedirApi(`/empresas/${encodeURIComponent(empresaId)}/desactivar`, { method: "POST" });
+                await cargarEmpresa();
+                mostrarAviso(`Se desactivó ${empresa.nombre}.`);
+            },
+        });
+    });
 }
 
 function configurarEdicion() {
@@ -97,6 +141,7 @@ async function iniciarPantalla() {
     }
 
     configurarEdicion();
+    configurarActiva();
     configurarCreacionUsuario(
         document.querySelectorAll("[data-abrir-dialogo]"),
         document.getElementById("dialogo-usuario"),

@@ -2,38 +2,84 @@
 // Lo usan el Superadmin (dentro de una empresa) y el Administrador (en su propia empresa).
 // Necesita componentes.js.
 
+// Un usuario no se borra: se desactiva y se puede reactivar (alcance, Sección 4).
+function abrirDesactivar(usuario, alCambiar) {
+    abrirDialogoAccion({
+        titulo: `Desactivar a ${usuario.nombre}`,
+        campos: [crearElemento("p", "dialogo-actividad",
+            "No podrá iniciar sesión ni recibir actividades ni turnos, y su cupo queda libre. "
+            + "Su nombre y su historial se conservan, y puedes reactivar su usuario cuando quieras.")],
+        textoConfirmar: "Desactivar",
+        iconoConfirmar: "minus",
+        alConfirmar: async () => {
+            await pedirApi(`/usuarios/${encodeURIComponent(usuario.id)}/desactivar`, { method: "POST" });
+            await alCambiar();
+            mostrarAviso(`Se desactivó el usuario de ${usuario.nombre}.`);
+        },
+    });
+}
+
+async function reactivar(boton, usuario, alCambiar) {
+    boton.disabled = true;
+    try {
+        await pedirApi(`/usuarios/${encodeURIComponent(usuario.id)}/reactivar`, { method: "POST" });
+        await alCambiar();
+        mostrarAviso(`Se reactivó el usuario de ${usuario.nombre}.`);
+    } catch (error) {
+        mostrarAviso(error.message, "advertencia");
+        boton.disabled = false;
+    }
+}
+
 // "alAsignarTurno" (opcional): si viene, los operarios muestran su turno y un botón para cambiarlo.
-function crearFilaUsuario(usuario, alAsignarTurno = null) {
-    const fila = crearElemento("li", "fila-usuario");
+// "opciones.alCambiar" (opcional): si viene, cada fila ofrece desactivar o reactivar al usuario,
+// menos al que está usando la pantalla ("opciones.usuarioActualId").
+function crearFilaUsuario(usuario, alAsignarTurno = null, opciones = {}) {
+    const activo = usuario.activo !== false;
+    const fila = crearElemento("li", activo ? "fila-usuario" : "fila-usuario fila-desactivada");
     const textos = crearElemento("div");
-    textos.append(
-        crearElemento("span", "fila-nombre", usuario.nombre),
-        crearElemento("span", "fila-meta", usuario.correo),
-    );
-    const rol = crearElemento("span", "rol", NOMBRE_ROL[usuario.rol] || usuario.rol);
-    if (alAsignarTurno && usuario.rol === "OPERARIO") {
+    const nombre = crearElemento("span", "fila-nombre", usuario.nombre);
+    if (!activo) {
+        nombre.append(" ", crearConIcono("span", "etiqueta", "minus", "Desactivado"));
+    }
+    // El rol va con los datos de la persona; a la derecha quedan solo las acciones, en un renglón.
+    const meta = crearElemento("span", "fila-meta datos-linea");
+    meta.append(crearElemento("span", "", NOMBRE_ROL[usuario.rol] || usuario.rol), crearElemento("span", "", usuario.correo));
+    textos.append(nombre, meta);
+    const acciones = crearElemento("span", "fila-usuario-acciones");
+    if (alAsignarTurno && usuario.rol === "OPERARIO" && activo) {
         const turno = usuario.turno;
         textos.append(crearElemento("span", "fila-meta cifra",
             turno ? `Turno ${turno.nombre}, ${turno.hora_inicio} a ${turno.hora_fin}` : "Sin turno asignado"));
         const boton = crearElemento("button", "boton-texto", turno ? "Cambiar turno" : "Asignar turno");
         boton.type = "button";
         boton.addEventListener("click", () => alAsignarTurno(usuario));
-        rol.append(document.createElement("br"), boton);
+        acciones.append(boton);
     }
-    fila.append(crearAvatarNeutro(usuario.nombre), textos, rol);
+    if (opciones.alCambiar && usuario.id !== opciones.usuarioActualId) {
+        const baja = crearElemento("button", activo ? "boton-texto peligro" : "boton-texto", activo ? "Desactivar" : "Reactivar");
+        baja.type = "button";
+        baja.addEventListener("click", () => (activo
+            ? abrirDesactivar(usuario, opciones.alCambiar)
+            : reactivar(baja, usuario, opciones.alCambiar)));
+        acciones.append(baja);
+    }
+    fila.append(crearAvatarNeutro(usuario.nombre), textos, acciones);
     return fila;
 }
 
 // Llena la lista de usuarios o muestra el estado vacío si la empresa no tiene ninguno.
 // Devuelve los usuarios cargados.
-async function cargarUsuarios(empresaId, lista, estadoVacio, alAsignarTurno = null) {
+async function cargarUsuarios(empresaId, lista, estadoVacio, alAsignarTurno = null, opciones = {}) {
     try {
         const usuarios = await pedirApi(`/usuarios?empresa_id=${encodeURIComponent(empresaId)}`);
-        // Primero los administradores y, dentro de cada rol, por nombre.
-        usuarios.sort((a, b) => a.rol.localeCompare(b.rol) || a.nombre.localeCompare(b.nombre, "es"));
+        // Primero los activos; después, los administradores y, dentro de cada rol, por nombre.
+        const inactivo = (u) => (u.activo === false ? 1 : 0);
+        usuarios.sort((a, b) => inactivo(a) - inactivo(b) || a.rol.localeCompare(b.rol)
+            || a.nombre.localeCompare(b.nombre, "es"));
         lista.hidden = usuarios.length === 0;
         estadoVacio.hidden = usuarios.length > 0;
-        lista.replaceChildren(...usuarios.map((u) => crearFilaUsuario(u, alAsignarTurno)));
+        lista.replaceChildren(...usuarios.map((u) => crearFilaUsuario(u, alAsignarTurno, opciones)));
         return usuarios;
     } catch (error) {
         lista.hidden = true;

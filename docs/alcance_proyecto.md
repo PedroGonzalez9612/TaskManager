@@ -37,6 +37,8 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - **Administrador** (antes "Supervisor"): administra y da seguimiento a los proyectos y actividades del área, asigna responsables, establece prioridades y consulta la carga laboral del personal. Además, define los turnos de la empresa y asigna uno a cada operario, valida o corrige la asistencia diaria y reasigna actividades cuando un operario falta.
 - **Operario** (antes "Empleado"): consulta sus actividades, conoce la información necesaria para ejecutarlas, registra su ejecución y puede reportar actividades solicitadas por otras áreas para conocimiento y gestión del administrador. Además, marca su entrada y salida de cada jornada.
 
+**Dar de baja.** Ni los usuarios ni las empresas se borran: se **desactivan**, para conservar su nombre y su historial. Un usuario desactivado no puede iniciar sesión, no aparece para asignarle actividades ni turnos, no cuenta en la asistencia ni en la carga, y deja libre su cupo en el límite de su empresa. Se puede reactivar si hay cupo. Nadie se desactiva a sí mismo, y un operario con actividades sin terminar no se desactiva hasta que se le reasignen. El Superadmin desactiva una empresa y, con ella, ninguno de sus usuarios puede iniciar sesión.
+
 ---
 
 ## 5. Alcance funcional inicial
@@ -51,7 +53,9 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Organización del trabajo en actividades y proyectos. Una actividad es independiente o pertenece a un solo proyecto, nunca a los dos. Lo que antes se llamaba requerimiento es una actividad independiente.
 - Proyectos: un proyecto es un conjunto de actividades. Solo el Administrador lo crea, lo planifica de entrada y le puede agregar actividades después. Las actividades de un proyecto y las independientes suman por igual a la carga y a los indicadores. El avance de un proyecto se mide en horas: horas estimadas de sus actividades finalizadas sobre horas estimadas totales del proyecto. Las actividades canceladas salen del total; las no realizadas se quedan en él.
 - Creación y asignación de actividades a uno o varios operarios. La asignación es manual: el sistema solo sugiere reasignar cuando la carga de un operario supera la capacidad de su jornada.
-- Información de la actividad: el Administrador elige qué bloques lleva cada actividad (pasos, herramientas y materiales, equipo, adjuntos, contacto). Los catálogos de esos bloques son listas desplegables con la opción "Otro", que se van llenando con lo que se registra. La actividad muestra "Lista para iniciar" cuando tiene todos los bloques que se le pidieron.
+- Información de la actividad: además de la descripción, el Administrador elige qué bloques lleva cada actividad: **pasos** (en orden), **herramientas y materiales**, **equipo** (la máquina o el equipo en que se trabaja), **precauciones de seguridad**, **contacto** (a quién acudir) y **adjuntos** (manuales, planos o fotos de referencia: PDF o imagen, máximo 5 archivos de 5 MB). Herramientas, equipo, precauciones y contacto se llenan con un campo que sugiere lo que la empresa ya registró: se elige de la lista o se escribe un valor nuevo, que queda en la lista para la próxima vez. La información se edita mientras la actividad se puede editar (hasta que alguien la inicie) y no se borra.
+- "Lista para iniciar": la actividad lo está cuando cada bloque que el Administrador eligió tiene contenido. Si le falta alguno, el Administrador lo ve en Equipo y en Actividades ("Falta información") y el Operario lo ve en el detalle. Es un aviso: no impide iniciar, porque el Operario puede resolverlo en el sitio. Una actividad sin bloques elegidos está lista.
+- El Operario ve la información en el detalle de la actividad; mientras la tiene en curso, la tarjeta muestra las precauciones en una línea y los pasos plegados ("Ver los 4 pasos"), que se abren con un toque sin salir de Hoy. El detalle también dice a qué proyecto pertenece.
 - Clasificación de actividades por categoría. Las categorías son fijas en esta versión: Producción, Mantenimiento, Calidad, Limpieza y Logística.
 - Cada actividad recibe un código consecutivo por empresa (por ejemplo, `OT-0042`) y registra la ubicación donde se realiza (línea, máquina o área).
 - Definición de prioridad de las actividades en cuatro niveles: Baja, Media, Alta y Urgente. El nivel Urgente indica que la actividad debe interrumpir la tarea que el operario tenga en curso. La excepción es una actividad de hora fija en curso, que no se interrumpe: el Operario ve el aviso de la urgente y la atiende al terminar, y mientras tanto el Administrador puede asignarla a otra persona.
@@ -66,6 +70,7 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Consulta del estado y asignación de las actividades.
 - Posibilidad de que un operario registre una actividad solicitada por otra área y la socialice con su administrador.
 - Gestión de la ejecución de actividades, incluyendo inicio, pausa, reanudación y finalización. La ejecución pertenece a cada operario asignado: cada uno tiene su propio registro de tiempo, sus pausas y su observación final, así que la pausa de uno no pausa a los demás.
+- Evidencia de la ejecución: al finalizar una actividad, el operario puede dejar evidencia de su trabajo: una observación, fotos y adjuntos (PDF o imágenes). Todo es opcional. La evidencia pertenece a su ejecución (cada operario deja la suya), la ven él y el Administrador de su empresa, y no se borra. Se admiten hasta 5 archivos por ejecución, de 5 MB como máximo cada uno; las fotos se reducen en el celular antes de subirlas, para no gastar datos.
 - Una actividad con varios operarios queda finalizada cuando todos los asignados la finalizan. Mientras tanto se muestra cuántos han finalizado (por ejemplo, "1 de 2 finalizaron"), y al operario que ya terminó le aparece como hecha en su día.
 - Motivos de pausa: una lista desplegable por empresa. Trae cuatro motivos fijos (Actividad urgente, Actividad de hora fija, Fin de jornada y Otro) y se va llenando con lo que se escribe en "Otro".
 - Fin de la jornada: el Operario debe pausar lo que no alcance a terminar. Si no lo hace, al terminar la jornada el sistema pausa la actividad con el motivo "Fin de jornada", para no dañar el tiempo real, y la reprograma para la jornada siguiente. Una jornada termina a la medianoche (en la zona horaria de la empresa) o a la hora de fin del turno más tardío de sus operarios, lo que ocurra después; así un turno de noche no se cierra a mitad de camino.
@@ -79,16 +84,36 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Cancelar: solo el Administrador puede cancelar una actividad, y solo si está sin iniciar o pausada; mientras alguien la tenga en curso no se puede. Indica el motivo en una lista desplegable por empresa, que empieza solo con "Otro" y se va llenando con lo que se escribe. La actividad cancelada no se borra; queda en el historial con su motivo, quién la canceló y cuándo. Las actividades ya no se eliminan: cancelar reemplaza al borrado.
 - Devolver una actividad: el Operario puede devolver una actividad solo antes de iniciarla, indicando el motivo (Falta información, Me la asignaron por error, Falta herramienta o material, El equipo no está disponible, u Otro con texto). Si la actividad tiene varios operarios, solo sale el que la devuelve; si no queda ninguno, vuelve al Administrador.
 
+**Reglas de estado de la actividad.** Qué acción se permite en cada estado y quién la hace. Una actividad está **iniciada** cuando al menos un operario empezó a trabajarla, aunque después la haya pausado, finalizado o se la hayan retirado.
+
+| Estado | Editar (Administrador) | Asignar o retirar operarios (Administrador) | Cancelar (Administrador) | Iniciar o devolver (Operario) | Pausar, reanudar o finalizar (Operario) |
+|---|---|---|---|---|---|
+| Sin asignar | Sí | Sí | Sí | — | — |
+| Por iniciar (nadie la ha iniciado) | Sí | Sí | Sí | Sí | — |
+| Devuelta | Sí | Sí | Sí | — | — |
+| Iniciada y en curso | No | No | No | Iniciar: los operarios que aún no la inician; devolver: no | Sí, cada operario la suya |
+| Iniciada y pausada | No | No | Sí | Iniciar: los operarios que aún no la inician; devolver: no | Sí, cada operario la suya |
+| Finalizada, No realizada o Cancelada | No | No | No | No | No |
+
+- Una actividad iniciada no se edita ni se reasigna: lo hecho queda como se hizo. Si el trabajo cambió, el Administrador la cancela (cuando no está en curso) y crea una nueva.
+- Las actividades no se eliminan: se cancelan con motivo y quedan en el historial, con su registro y su evidencia.
+
 **Turnos y asistencia**
 - Definición, por parte de cada empresa, de un catálogo de turnos. Cada turno tiene un identificador, nombre, hora de inicio, hora de fin y tiempo de descanso.
 - Asignación de un único turno a cada operario. Cuando se cambia el turno de un operario, el sistema conserva la fecha del cambio, para que los indicadores de periodos anteriores se calculen con el turno vigente en ese momento.
+- Las horas y el descanso de un turno que ya está asignado a algún operario no se cambian, para no alterar la capacidad de las jornadas pasadas. Para cambiar el horario se crea un turno nuevo y se asigna desde una fecha; el nombre del turno sí se puede cambiar.
 - Una jornada pertenece al día en que inicia el turno, aunque el turno termine después de la medianoche.
 - El turno no limita el trabajo: el operario puede ejecutar actividades fuera de su turno, y ese tiempo se registra como tiempo adicional.
 - Registro de asistencia: el operario marca su entrada y su salida de cada jornada (la hora la registra el servidor), y el Administrador valida o corrige cada marca.
+- Para iniciar o reanudar una actividad, el operario debe tener marcada la entrada de su jornada vigente y no haber marcado la salida. El turno no limita: la entrada se puede marcar antes o después de la hora de inicio del turno.
+- No se puede marcar la salida con una actividad en curso. El operario la finaliza o la pausa con el motivo "Fin de jornada"; una de hora fija no se pausa, así que debe finalizarla. Las actividades pausadas no impiden la salida.
+- Aviso de inicio y de fin del turno: desde 15 minutos antes de la hora de inicio y desde 15 minutos antes de la hora de fin, el operario ve cuánto falta. El aviso es informativo y no obliga a marcar a esa hora; lo que trabaje después del fin del turno sigue siendo tiempo adicional.
+- Llegada tarde: si el turno ya empezó, pasó la tolerancia y el operario no ha marcado la entrada, el operario ve una alerta con cuánto tiempo lleva su turno sin iniciar. La tolerancia es de 10 minutos, igual para todas las empresas mientras no se defina por empresa.
+- Tiempo fuera del turno: cada actividad en curso o pendiente que la programación del día deja después de la hora de fin del turno dice cuántos minutos implica quedarse para hacerla, y la jornada suma el total.
 - Jornada vigente: es la del turno que el operario está trabajando. Si su turno cruza la medianoche, después de las 00:00 sigue siendo la jornada del día en que empezó, hasta la hora de fin del turno. Con ella se decide en qué jornada queda cada marca, qué actividades ve en Hoy y si está "En turno".
 - La entrada queda en la jornada vigente; hay una sola por jornada. La salida cierra la asistencia de la jornada vigente o, si esa no existe, la de la jornada inmediatamente anterior (turno nocturno o tiempo adicional), nunca una más antigua. Una asistencia que quedó sin salida no impide marcar la entrada de la jornada siguiente: queda como "Sin salida" para que el Administrador la corrija.
 - Atribución del tiempo: el tiempo trabajado en actividades se atribuye a la jornada en que se trabajó. Si una actividad se empieza en una jornada y se termina en otra, su tiempo se reparte entre las dos; así los indicadores de cada jornada solo cuentan lo que pasó en ella.
-- Aviso de posible ausencia: si pasado un tiempo de tolerancia desde el inicio del turno (configurable por empresa) el operario no ha marcado entrada, el Administrador recibe un aviso con las actividades programadas de ese operario para la jornada.
+- Aviso de posible ausencia: si pasado un tiempo de tolerancia desde el inicio del turno (10 minutos; más adelante, configurable por empresa) el operario no ha marcado entrada, el Administrador recibe un aviso con las actividades programadas de ese operario para la jornada.
 - Ante una ausencia confirmada, el Administrador reasigna manualmente las actividades a otros operarios.
 - Las actividades que no se reasignen siguen la misma regla de las pendientes: las que no tienen hora pasan a la siguiente jornada del operario como actividades reprogramadas, y las de hora fija quedan como No realizadas. La reprogramación queda registrada como un evento (con la jornada de origen), y si la jornada de destino supera el 100 % de la capacidad del operario, el Administrador recibe un aviso.
 
@@ -157,8 +182,12 @@ Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usua
 
 **Pantallas mínimas definidas para el flujo del Operario (sitio web responsive, vista móvil):**
 1. Bienvenida + Inicio de sesión (unificadas — el Operario no se autoregistra, según Sección 4)
-2. Hoy (su día ordenado y acceso a reportar una actividad externa). La actividad en curso se ejecuta en su lugar del día, con cronómetro, control de estado, historial de pausas y observación final; ya no hay una pantalla aparte de ejecución.
-3. Detalle de actividad (información completa antes de iniciar una tarea; desde aquí se inicia o se devuelve)
+2. Inicio: la página que recibe al Operario después de iniciar sesión; nunca llega directo a sus actividades. Muestra el saludo, la hora actual con la barra del turno (cuánto del turno ha pasado), la barra de la jornada (lo trabajado, lo que falta y lo libre; si el trabajo no cabe, la parte que pasa de la capacidad se ve rayada en coral), cuántas actividades tiene y cuál sigue, y los avisos del turno (15 minutos antes del inicio y del fin, y la llegada tarde). Sus acciones dependen de la asistencia:
+   - Antes de marcar la entrada: "Marcar entrada" como única acción principal (al marcarla pasa a Hoy) y "Ver mi día" para consultar Hoy en modo de lectura.
+   - Con la entrada marcada: "Ir a mi día" y, al final, "Marcar salida".
+   - Después de marcar la salida: el cierre de la jornada, con sus marcas, el tiempo trabajado, las actividades finalizadas y las que pasan a la siguiente jornada.
+3. Hoy: su día ordenado. El encabezado tiene la hora, la barra del turno y la barra de la jornada; no repite el saludo ni las cifras en una frase. La actividad en curso se ejecuta en su lugar del día, con cronómetro, control de estado, historial de pausas y observación final; ya no hay una pantalla aparte de ejecución. "Ordenar mi día" está en la línea de tiempo, justo antes de lo que sigue; mientras se ordena, cada actividad muestra la hora en que quedaría y no se puede marcar la salida. "Marcar salida" va al final del día, después del fin del turno. Sin la entrada marcada, o después de la salida, Hoy se ve en modo de lectura: el día completo, sin acciones para iniciar o reanudar.
+4. Detalle de actividad (información completa antes de iniciar una tarea; desde aquí se inicia o se devuelve)
 
 **Principios de usabilidad que orientan el diseño de la interfaz** (Diseño de Interfaces, Semana 7):
 - **Ley de Hick:** más opciones implican más tiempo para decidir; cada pantalla debe mostrar solo las opciones necesarias para el paso actual.
@@ -182,8 +211,8 @@ Cada rol ingresa por la misma pantalla de inicio de sesión y es llevado a su pr
 | Rol | Dispositivo principal | Opciones del menú |
 |---|---|---|
 | Superadmin | Computador | Empresas (lista, registro, detalle con usuarios, edición de datos, límites y logo) |
-| Administrador | Computador (también usable en celular) | **Equipo** (el tablero del turno: una fila por persona y las horas de izquierda a derecha, con lo que está por atender; el Administrador reasigna una actividad moviendo su tarjeta a la fila de otra persona, sin cambiarle la hora) · **Actividades** (todas, independientes o de un proyecto) · **Proyectos** (lista y detalle, con su avance en horas) · **Usuarios**. Pendientes: Turnos y asistencia · Indicadores |
-| Operario | Celular | **Hoy** (su fila del tablero en vertical: el día sobre una línea de tiempo, con la actividad en curso abierta en su hora) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios). Pendiente: marca de entrada y salida |
+| Administrador | Computador (también usable en celular) | **Equipo** (el tablero del turno: una fila por persona y las horas de izquierda a derecha, con lo que está por atender; el Administrador reasigna una actividad moviendo su tarjeta a la fila de otra persona, sin cambiarle la hora) · **Actividades** (todas, independientes o de un proyecto, con filtros "Por hacer", "Sin asignar", "En curso o pausadas", "Terminadas" y "Todas", agrupadas por día) · **Proyectos** (lista y detalle, con su avance en horas) · **Usuarios**. Pendientes: Turnos y asistencia · Indicadores |
+| Operario | Celular | **Inicio** (lo recibe: saludo, hora, barra del turno y de la jornada, marcar entrada y salida, y el cierre de la jornada) · **Hoy** (su fila del tablero en vertical: el día sobre una línea de tiempo, con la actividad en curso abierta en su hora; sin entrada, en modo de lectura) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios) |
 
 Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
 
@@ -194,16 +223,23 @@ Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestr
 - **Primero la información:** cada pantalla muestra primero su lista o tabla. Crear o editar es una acción secundaria: un botón ("+ Nueva empresa", "+ Nuevo usuario") abre el formulario en una ventana (diálogo). Al guardar, la ventana se cierra y aparece una confirmación breve.
 - **Estados vacíos y límites explicados:** cuando no hay datos, la pantalla explica qué hacer y ofrece el botón para hacerlo. Cuando una acción no está disponible (por ejemplo, se alcanzó el límite de usuarios), el botón se desactiva y un aviso explica por qué.
 - **Paleta sobria con significado:** fondos casi neutros, un color principal para las acciones y un acento de marca (coral) reservado para el logo, el avatar y la sobrecarga. Los colores fuertes se reservan para lo que tiene significado (prioridades, estados, avisos) y siempre van acompañados de ícono y texto. El sistema de color completo se define en la Sección 6.3.
-- **Tipografía legible:** Figtree para todo lo que se lee, incluidas las cifras y el cronómetro (con números de ancho fijo), y Atkinson Hyperlegible Mono solo para los códigos de actividad y el NIT. Los tamaños dependen del dispositivo y se expresan en rem. El sistema tipográfico completo se define en la Sección 6.4.
+- **Tipografía legible:** Figtree para todo lo que se lee, incluidas las cifras, los códigos y el cronómetro (con números de ancho fijo). Los tamaños dependen del dispositivo y se expresan en rem. El sistema tipográfico completo se define en la Sección 6.4.
 
 **Sistema de composición** (para que la interfaz transmita calma y orden; aplica a todas las pantallas):
 - **Una sola escala de espacios:** todo relleno y toda separación sale de siete pasos (4, 8, 12, 16, 24, 32 y 48 px sobre la base de 16 px; en la interfaz se expresan en rem). No se usan valores sueltos.
-- **Una sola columna alineada:** la barra superior y el contenido comparten el mismo borde izquierdo y derecho. El ancho de la columna depende de lo que se muestra (angosto para leer una lista, medio para fichas y listados, amplio para horarios), nunca del ancho de la pantalla.
+- **Una sola columna alineada:** la barra superior tiene siempre el mismo ancho en todas las pantallas, para que la marca y el usuario no cambien de lugar al pasar de una vista a otra. El contenido va centrado debajo, y su ancho depende de lo que se muestra (angosto para leer una lista, medio para fichas y listados, amplio para horarios), nunca del ancho de la pantalla.
 - **Dos pesos de letra:** 600 para lo que identifica (título de la pantalla, nombre de la empresa o de la persona, acción) y 400 para todo lo demás. Los encabezados de tabla y las etiquetas de dato van en 400 y en el color de texto secundario.
-- **Una familia de letra por fila:** las cifras usan la misma fuente del texto; la fuente monoespaciada se reserva para los códigos de actividad y el NIT.
+- **Una sola familia de letra:** las cifras y los códigos usan la misma fuente del texto, con números de ancho fijo. El código se distingue por su peso, no por otra letra.
+- **Datos en un renglón sin separadores de adorno:** los datos de una fila (código, categoría, ubicación) se separan con espacio, no con puntos medios (·). Si los datos forman una frase, se escriben como frase ("Tomó 40 min de 45 estimados", "6 operarios, 22 h de trabajo para 42 h de capacidad").
+- **Paneles con jerarquía:** el panel (superficie blanca con borde) encierra la superficie de trabajo principal de la pantalla y lo que se consulta junto. Una lista de apoyo, como "Por atender" en Equipo, va sobre el fondo con su título. Los indicadores de un resumen van juntos en una sola franja, no en una tarjeta por número.
 - **Bordes suaves y sombras muy suaves:** los paneles se separan del fondo por el contraste de color, un borde tenue y una sombra apenas visible. Los controles (campos y botones secundarios) llevan un borde más marcado, con contraste de al menos 3:1.
 - **Filas de la misma altura:** en una lista, todas las filas miden lo mismo, tengan o no logo, límite o datos opcionales.
 - **Un solo botón principal por pantalla;** las demás acciones son secundarias.
+- **Acciones de baja** (cancelar una actividad, desactivar un usuario o una empresa): van al final de su grupo de acciones, en el color de error (texto rojo, o borde y texto rojos si es un botón), y siempre abren una ventana que dice qué va a pasar antes de hacerlo. Nunca son la acción principal.
+- **Botones de una ventana en celular:** van a todo el ancho, uno debajo del otro, con la acción principal arriba, al alcance del pulgar. En computador van en una fila, a la derecha, con la principal al final.
+- **Horarios y tablero:** las horas visibles van de la hora de inicio del turno más temprano a la de fin del más tardío (en Semana, de una hora antes a una hora después del turno del operario); si algo cae fuera, el rango se amplía. Lo trabajado se dibuja con sus horas reales y sin los ratos en pausa: una actividad pausada se ve en varias tarjetas, cada una en el momento en que se trabajó.
+- **Tablero en celular:** se desplaza de lado y el nombre de cada persona queda fijo a la izquierda; al abrir, se ubica en la línea "Ahora". La leyenda y el selector de colores de Semana se pliegan en "Colores y leyenda".
+- **Listas largas:** se ofrecen filtros por lo que el usuario necesita resolver (por ejemplo, "Por hacer" o "Sin asignar") y los elementos se agrupan por día, para no presentar todo de una vez (Ley de Miller).
 - **El color solo donde significa algo:** el estado normal no lleva color. Una advertencia se dice con un ícono y una frase, sin franjas de color que ocupen todo el ancho ni franjas de color a la izquierda de las tarjetas. El aviso de actividad Urgente (Sección 6.3) es un bloque acotado dentro de la columna, no una franja.
 
 **Relación con los principios de usabilidad (6.1) y las heurísticas de Nielsen:**
@@ -218,7 +254,7 @@ Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestr
 - **Semejanza:** todos los botones de acción principal comparten relleno y forma, los secundarios comparten borde, las etiquetas de rol y de prioridad comparten la forma de píldora y todos los enlaces comparten color. El usuario aprende un elemento una vez y lo reconoce en las demás pantallas.
 - **Continuidad:** el tablero del Administrador, de izquierda a derecha, y la línea de tiempo del Operario, de arriba abajo, siguen el paso de las horas; las tablas alinean cada dato en su columna para recorrerlo de arriba abajo; los formularios tienen una sola columna que termina en el botón de acción; las migas de pan ("Empresas / Metalicas SAS") muestran el camino recorrido.
 - **Figura y fondo:** los paneles blancos se separan del fondo gris neutro; al abrir un diálogo o el menú en celular, el resto de la pantalla se oscurece para que solo quede en primer plano lo que se está atendiendo.
-- **Cierre:** la línea de tiempo del Operario se lee como una sola línea continua aunque esté punteado después de "Ahora". Una actividad partida por una hora fija se muestra como "Parte 1" y "Parte 2" y se percibe como una sola actividad.
+- **Cierre:** la línea de tiempo del Operario se lee como una sola línea continua aunque esté punteado después de "Ahora". Una actividad partida por una hora fija se mostrará como "Parte 1" y "Parte 2", para que se perciba como una sola actividad (pendiente: llega con el aviso de hora fija, Etapa 5).
 
 
 ### 6.3 Identidad visual: sistema de color "Calma operativa" (Diseño de Interfaces)
@@ -321,16 +357,14 @@ Esta subsección define el sistema tipográfico del producto como parte de la id
 - **Interlineado:** entre 130 % y 150 % del tamaño de la letra, para no perder el renglón.
 - **Grosor:** evitar pesos delgados, sobre todo en tamaños pequeños.
 - **Caracteres inconfundibles:** en un sistema donde se leen códigos de actividad y el NIT de las empresas, la `l` minúscula, la `I` mayúscula y el `1`, así como la `O` y el `0`, no deben confundirse.
-- **Licencia libre para uso comercial:** ambas fuentes se distribuyen con la licencia SIL Open Font License 1.1, que permite usarlas en un producto comercial sin costo.
+- **Licencia libre para uso comercial:** la fuente se distribuye con la licencia SIL Open Font License 1.1, que permite usarlas en un producto comercial sin costo.
 
 **Fuentes elegidas y función de cada una:**
 
 | Fuente | Función | Motivo |
 |---|---|---|
 | **Figtree** | Todo lo que se *lee*: títulos, textos, botones, etiquetas, tablas y menús; también las cifras y el cronómetro | Fuente sin serifas de formas simples y aspecto neutro y amable. Es más angosta que Lexend, la fuente anterior, así que caben más datos por renglón en fichas y tablas. Licencia SIL Open Font License |
-| **Atkinson Hyperlegible Mono** | Solo lo que se *identifica carácter por carácter*: los códigos de actividad y el NIT | Diseñada por el Braille Institute para mejorar la legibilidad en personas con baja visión, con formas que diferencian cada carácter (la `l` con cola, el `1` con gancho, el `0` con barra) |
-
-**Conflicto identificado y cómo se resuelve:** en Figtree, la `I` mayúscula y la `l` minúscula se parecen. Por eso el contenido donde una confusión de caracteres causaría un error real (códigos de actividad y NIT) se escribe en Atkinson Hyperlegible Mono. Las cifras (cantidades, porcentajes, duraciones, horas y el cronómetro) y las referencias de equipos ("Sensor B2", "Línea 1"), que son texto corriente, no tienen ese riesgo y se quedan en Figtree, con números de ancho fijo (`tabular-nums`) para que se alineen en columnas y el cronómetro no "salte" mientras corre.
+**Conflicto identificado y cómo se resuelve:** en Figtree, la `I` mayúscula y la `l` minúscula se parecen. Ese riesgo no aparece en los datos que se leen carácter por carácter: el código de actividad tiene la forma `OT-0063` (dos letras fijas y cifras) y el NIT solo tiene cifras y guion. Por eso los códigos también van en Figtree, en semibold y con números de ancho fijo (`tabular-nums`), igual que las cifras (cantidades, porcentajes, duraciones, horas y el cronómetro), para que se alineen en columnas y el cronómetro no "salte" mientras corre. Si un formato nuevo de código llegara a usar letras que se confunden, se revisa esta decisión.
 
 **Tamaños por dispositivo.** El Operario lee en celular, de pie y a un brazo de distancia; el Administrador y el Superadmin leen en computador, sentados y con más información por pantalla. Por eso los tamaños no son los mismos:
 
@@ -353,7 +387,7 @@ La raíz del documento usa el tamaño que el usuario tenga configurado en su nav
 2. **Ningún texto por debajo de 13 px.** En celular el texto corrido no baja de 16 px.
 3. **Tamaños en rem, no en px fijos:** si el usuario agranda la letra en su dispositivo, toda la interfaz crece en proporción sin romperse (WCAG 2.1, criterio 1.4.4, cambio de tamaño del texto hasta 200 %).
 4. **El diseño soporta ajustes de espaciado del usuario** (interlineado 1,5, espacio entre párrafos de 2 veces el tamaño, espaciado entre letras de 0,12 y entre palabras de 0,16) sin perder contenido (WCAG 2.1, criterio 1.4.12).
-5. **Los códigos de actividad y el NIT van en Atkinson Hyperlegible Mono; las cifras y el cronómetro, en Figtree con números de ancho fijo.** Nunca se mezclan dos familias de letra para escribir un mismo dato.
+5. **Los códigos, las cifras y el cronómetro van en Figtree con números de ancho fijo.** Una sola familia de letra en toda la interfaz; el código se distingue con el peso semibold.
 6. **Texto alineado a la izquierda,** sin justificar, para mantener espacios regulares entre palabras.
 7. Todos los estilos se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`), igual que el color.
 
@@ -362,7 +396,7 @@ La raíz del documento usa el tamaño que el usuario tenga configurado en su nav
 - **Consistencia (usabilidad):** los mismos roles tipográficos se usan en las vistas de los tres roles.
 - **Semejanza (Gestalt):** todos los elementos del mismo tipo comparten estilo (por ejemplo, todos los títulos de tarjeta), así el usuario los reconoce como equivalentes.
 
-**Implementación:** como el despliegue es local (Sección 7) y la planta puede no tener conexión estable a internet, los archivos de ambas fuentes se incluyen dentro del proyecto (en formato `.woff2`, en la carpeta `app/static/fuentes/`) en lugar de cargarse desde Google Fonts. Si una fuente no carga, el sistema usa como respaldo la fuente sin serifas del dispositivo (`system-ui, sans-serif`) para Figtree y una monoespaciada del sistema (`ui-monospace, monospace`) para Atkinson Hyperlegible Mono.
+**Implementación:** como el despliegue es local (Sección 7) y la planta puede no tener conexión estable a internet, los archivos de la fuente se incluyen dentro del proyecto (en formato `.woff2`, en la carpeta `app/static/fuentes/`) en lugar de cargarse desde Google Fonts. Si la fuente no carga, el sistema usa como respaldo la fuente sin serifas del dispositivo (`system-ui, sans-serif`).
 
 ### 6.5 Metáforas de la interfaz (Diseño de Interfaces)
 
@@ -387,14 +421,17 @@ Reemplaza la metáfora del tanque de carga, que se probó en una propuesta inter
 | Cronómetro | El tiempo que lleva la actividad en curso | Visual | Hoy (Operario), en la actividad en curso |
 | Flecha de devolver, como al devolver un paquete | Devolver la actividad al Administrador | Funcional | Detalle de actividad (Operario) |
 | Lista de chequeo numerada | Los pasos de la actividad | Organizacional | Detalle de actividad (los dos roles) |
-| Clip | Adjuntos de la actividad | Visual | Detalle de actividad (los dos roles) |
+| Clip | Adjuntos de la actividad y de la evidencia | Visual | Detalle de actividad (los dos roles) y la ventana de Finalizar |
+| Cámara | Fotos de la evidencia | Visual | Ventana de Finalizar (Operario) |
 | Teléfono | Contacto de la actividad | Visual | Detalle de actividad (los dos roles) |
 | Marcador de mapa | Ubicación donde se hace el trabajo | Visual | Detalle de actividad y tarjeta de la actividad (los dos roles) |
 | Franjas diagonales de zona restringida, como las de seguridad industrial | Lo que queda fuera del turno | Visual | Equipo (Administrador) y Hoy (Operario), después de la hora de fin |
 | Puerta de salida | Cerrar sesión | Visual | Barra superior (los tres roles) |
-| Reorganizar tarjetas sobre una mesa (arrastrar y soltar) | Ordenar mi día; pasar una actividad a otra persona | Funcional | Hoy (Operario) y Equipo (Administrador) |
+| Reorganizar tarjetas sobre una mesa | Ordenar mi día (con flechas de subir y bajar); pasar una actividad a otra persona (arrastrando su tarjeta) | Funcional | Hoy (Operario) y Equipo (Administrador) |
 
-La captura de cada metáfora se toma en la Etapa 7 del rediseño, cuando las pantallas estén construidas, y va en el documento de diseño de la Fase 2.
+**Qué metáforas se ven hoy.** Construidas: la planilla del turno, completa en Equipo (Administrador) y en su renglón vertical en Hoy (Operario), el candado, los botones del reproductor (iniciar, pausar y finalizar), el cronómetro, el marcador de mapa, las franjas de fuera del turno, la puerta de salida, el clip, la cámara y ordenar mi día con flechas. Pendientes: la carpeta (pantalla de Proyectos), la flecha de devolver, la lista de chequeo y el teléfono (información de la actividad) y arrastrar una tarjeta a otra persona.
+
+La captura de cada metáfora construida va en el documento de diseño de la Fase 2.
 
 **Buenas prácticas de la clase que se aplican:**
 - **Usar metáforas universales:** cada objeto de la tabla se reconoce sin explicación.
@@ -544,12 +581,17 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 | Carga | Suma del tiempo estimado de las actividades de un operario en una jornada. Sobrecarga: carga por encima del 100 % de la capacidad |
 | Asignación | Vínculo entre una actividad y un operario. No se borra: termina cuando el operario la devuelve o el Administrador se la retira |
 | Ejecución | Registro del tiempo de un operario en una actividad: inicio, pausas con su motivo, fin y observación |
+| Evidencia | Observación, fotos y adjuntos que deja el operario al finalizar una actividad. Pertenece a su ejecución y no se borra |
+| Información de la actividad | Lo que el Administrador deja para hacer el trabajo, por bloques: pasos, herramientas y materiales, equipo, precauciones de seguridad, contacto y adjuntos. Se diferencia de la evidencia, que deja el Operario al terminar |
+| Lista para iniciar | Actividad que tiene contenido en todos los bloques de información que se le pidieron. Si no, "Falta información" |
 | Tiempo real | Tiempo trabajado en una actividad, sin contar las pausas |
 | Programación del día | Secuencia de las actividades de un operario en una jornada, con la hora de inicio y de fin de cada una: reales para lo ejecutado, proyectadas para lo pendiente. Se recalcula continuamente |
 | Orden del día | El orden que el Operario eligió para sus actividades de horario flexible. Si no eligió ninguno, vale el sugerido: urgentes, prioridad y hora |
 | Fin proyectado | Hora en la que terminaría una actividad en curso o pendiente, según el tiempo estimado que le falta |
 | Turno | Horario de trabajo del catálogo de la empresa: hora de inicio, hora de fin y descanso. Cada operario tiene uno a la vez |
 | Asistencia | Marca de entrada y de salida de un operario en una jornada. Estados: Por validar, Validada, Corregida; "Sin marca" si tiene turno y no marcó entrada |
+| Desactivar | Dar de baja un usuario o una empresa sin borrarlos: no inician sesión, pero se conservan su nombre y su historial. Se puede reactivar |
+| Actividad iniciada | Actividad que al menos un operario empezó a trabajar, aunque después la haya pausado, finalizado o se la hayan retirado. Ya no se edita ni se reasigna |
 | Jornada vigente | La jornada del turno que el operario está trabajando. En un turno de noche, después de la medianoche sigue siendo la del día en que empezó |
 | Tiempo presente | Tiempo entre la entrada y la salida de una jornada |
 | Cierre de jornada | Lo que hace el sistema cuando termina el día: pausa lo que quedó en curso, reprograma lo de horario flexible y marca como No realizado lo de hora fija |
@@ -563,6 +605,9 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 | Límite de usuarios | Máximo de Administradores y de Operarios que puede tener una empresa |
 | Tablero del turno | Vista del Administrador: una fila por persona y las horas de izquierda a derecha |
 | Línea de tiempo | Vista del Operario: las horas del día de arriba abajo, con sus actividades |
+| Inicio | Página que recibe al Operario después de iniciar sesión: su turno, su jornada y la marca de entrada y de salida |
+| Llegada tarde | El turno empezó hace más que la tolerancia (10 minutos) y el operario no ha marcado la entrada |
+| Tiempo fuera del turno | Minutos de las actividades en curso o pendientes que la programación deja después de la hora de fin del turno |
 | Tarjeta | Recuadro que representa una actividad en el tablero o en la línea de tiempo |
 | Intervalo disponible | Tiempo sin actividades entre dos tarjetas de la línea de tiempo |
 
@@ -651,6 +696,15 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 | 2026-10-10 | POO | Secciones 5.1, 5.2 y 14 | Programación dinámica del día: lo ejecutado se mide con sus horas reales de inicio y fin, no con el estimado, y lo pendiente se reacomoda cuando una actividad termina antes o se demora. Se define el tiempo disponible de la jornada. La carga sigue siendo un dato de planeación, con estimados | Decisión del usuario: la estimación es una cosa y la ejecución es otra |
 | 2026-10-10 | Ambas | Sección 14 | Se agregan al glosario Turno, Asistencia (con sus estados) y Tiempo presente | Construcción del criterio 7 del MVP (turnos y asistencia) |
 | 2026-10-10 | POO | Secciones 5.1 y 14 | Jornada vigente para turnos que cruzan la medianoche; la salida cierra la asistencia de la jornada vigente o de la anterior, y una asistencia sin salida no bloquea la jornada siguiente; el tiempo trabajado se atribuye a la jornada en que se trabajó; la jornada se cierra a la medianoche o al fin del turno más tardío, lo que ocurra después | Decisiones del usuario: con un turno de noche, a las 02:00 el sistema mostraba el turno equivocado y cerraba la jornada antes de tiempo ("es ilógico"); y las actividades deben quedar asociadas al día en que se trabajaron para los indicadores |
+| 2026-10-12 | Ambas | Secciones 5.1, 6.1 y 6.2 | Para iniciar o reanudar una actividad hay que tener la entrada marcada; no se marca la salida con una actividad en curso; aviso de 15 minutos antes del inicio y del fin del turno. Hoy pasa a tener tres estados: inicio de la jornada (saludo y "Marcar entrada"), el día, y cierre de la jornada | Decisión del usuario: la marca de entrada y de salida no se veía en un día con varias actividades. Resuelve los casos E1 y E2 de `casos_por_definir.md` |
+| 2026-10-14 | Ambas | Secciones 5.1 y 14 | Evidencia de la ejecución: al finalizar, el operario puede dejar observación, fotos y adjuntos; la ven él y el Administrador de su empresa, y no se borra. Límite de 5 archivos por ejecución y 5 MB por archivo. Se agrega Evidencia al glosario | Decisión del usuario: el operario necesita demostrar lo que hizo (hallazgo del mapa de empatía, Sección 6.1) y el Administrador debe poder verlo |
+| 2026-10-14 | Diseño de Interfaces | Secciones 6.2 y 6.5 (tablero) | Equipo pasa a ser el tablero del turno: una fila por persona, las horas de izquierda a derecha, la línea "Ahora", lo de fuera del turno rayado y "Por atender". Reglas nuevas del rango de horas de los horarios, de lo trabajado sin los ratos en pausa y del tablero en celular. Actividades sin requerimientos, con filtros y agrupada por día | Auditoría de diseño: la metáfora central no estaba construida en el Administrador, el horario dibujaba como trabajo los ratos en pausa y en celular las columnas de Equipo quedaban cortadas |
+| 2026-10-14 | Diseño de Interfaces | Secciones 6.2 y 6.5 | La barra superior tiene el mismo ancho en todas las pantallas. Reglas nuevas: acciones de baja, botones de las ventanas en celular y listas largas con filtros y agrupadas por día. El cierre con "Parte 1 / Parte 2" queda como pendiente. La tabla de metáforas suma la cámara y el clip de la evidencia, y un párrafo dice cuáles están construidas y cuáles faltan | Auditoría de diseño y usabilidad de las pantallas: el nombre de la empresa se cortaba en Hoy y la barra cambiaba de ancho entre vistas; las acciones de baja se veían igual que las demás; los botones de las ventanas quedaban desalineados en el celular; y el documento describía como hechas metáforas que todavía no existen |
+| 2026-10-14 | POO | Secciones 4, 5.1 y 14 | Tabla de reglas de estado de la actividad. Una actividad iniciada no se edita ni se reasigna. Las actividades no se eliminan: se cancelan. Usuarios y empresas no se borran: se desactivan. Las horas de un turno asignado no se cambian; se crea otro. Se agregan al glosario Desactivar y Actividad iniciada | Revisión de la lógica de cada rol con el usuario: el Administrador podía editar una actividad en curso, y eliminar actividades, usuarios y empresas borraba su historial. Resuelve el caso F6 de `casos_por_definir.md` |
+| 2026-10-16 | Ambas | Secciones 5.1, 6.1, 6.2 y 14 | El Operario llega a una página de Inicio propia (saludo, barras del turno y de la jornada, marcar entrada y salida, cierre). Hoy pierde los tres estados: sin entrada o después de la salida se ve en modo de lectura. Encabezado de Hoy con barras en lugar de frases; "Ordenar mi día" en la línea de tiempo con la hora de cada actividad; "Marcar salida" al final del día y oculta mientras se ordena. Alerta de llegada tarde con tolerancia de 10 minutos. Tiempo fuera del turno por actividad y total. Se agregan al glosario Inicio, Llegada tarde y Tiempo fuera del turno | Observaciones 1 a 7 y 14 del usuario al revisar la vista del Operario: entrar directo a las actividades saturaba y contradecía la calma; "Ordenar mi día" no tenía sentido en el encabezado; al ordenar había que adivinar la hora; no se sabía cuánto implicaba lo que quedaba fuera del turno ni había aviso de llegada tarde |
+| 2026-10-16 | Diseño de Interfaces | Sección 5.1 | En la tarjeta en curso, las precauciones van en una línea y los pasos se pliegan | Revisión del usuario antes de la presentación: con los pasos abiertos, la tarjeta ocupaba toda la pantalla del celular y contradecía la calma del diseño |
+| 2026-10-14 | Ambas | Secciones 5.1 y 14 | Se construye la información de la actividad por bloques y se agrega el bloque "Precauciones de seguridad". Los catálogos pasan de lista desplegable con "Otro" a un campo con sugerencias que se va llenando. "Lista para iniciar" es un aviso, no impide iniciar. Pasos y precauciones a la vista en la tarjeta en curso; proyecto en el detalle. Se agregan al glosario Información de la actividad y Lista para iniciar | Revisión del usuario: el Operario solo tenía un texto libre para saber qué hacer y la decisión D del 2026-10-10 no estaba construida. El usuario pidió sumar las precauciones de seguridad. El campo con sugerencias evita el paso extra de elegir "Otro" para cada herramienta |
+| 2026-10-14 | Diseño de Interfaces | Secciones 6.2 y 6.4 | Atkinson Hyperlegible Mono sale del sistema: los códigos van en Figtree, semibold y con números de ancho fijo. Reglas nuevas: datos en un renglón sin puntos medios, y paneles con jerarquía (una lista de apoyo va sobre el fondo; los indicadores, en una sola franja) | Revisión con el enfoque del plugin de diseño `frontend-design`: la letra monoespaciada en datos pequeños, los puntos medios entre datos y un panel igual para todo son rasgos de plantilla que hacen ver la interfaz genérica. Los formatos de código y NIT no tienen los caracteres que se confunden en Figtree |
 
 ### Texto original de las secciones modificadas (para referencia)
 

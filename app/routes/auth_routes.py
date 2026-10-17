@@ -9,7 +9,7 @@ from app.utils.seguridad import guardar_sesion, requiere_rol, usuario_actual
 
 def create_blueprint(db):
     bp = Blueprint("auth", __name__, url_prefix="/auth")
-    service = AuthService(UsuarioRepository(db))
+    service = AuthService(UsuarioRepository(db), EmpresaRepository(db))
     empresa_service = EmpresaService(EmpresaRepository(db), UsuarioRepository(db))
 
     @bp.post("/login")

@@ -30,6 +30,7 @@ class Empresa:
             "limite_administradores": self.limite_administradores,
             "limite_operarios": self.limite_operarios,
             "zona_horaria": self.zona_horaria,
+            "activa": True,
         }
 
     @staticmethod
@@ -47,4 +48,6 @@ class Empresa:
             "tiene_logo": bool(doc.get("logo_tipo")),
             # Las empresas anteriores a esta regla no la tienen guardada: usan la zona por defecto.
             "zona_horaria": doc.get("zona_horaria") or ZONA_POR_DEFECTO,
+            # Una empresa no se borra: se desactiva. Las anteriores a esta regla están activas.
+            "activa": doc.get("activa", True),
         }

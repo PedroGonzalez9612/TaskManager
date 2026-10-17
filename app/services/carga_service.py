@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import date, timedelta
 
 from app.models.enums import EstadoActividad, Rol
 from app.utils.errors import ProhibidoError
@@ -7,6 +8,23 @@ from app.utils.fechas import validar_fecha
 # Las canceladas no suman a la carga; las no realizadas sí, porque ocuparon su lugar en el día
 # (alcance, Sección 5.2).
 ESTADOS_QUE_SUMAN = [estado.value for estado in EstadoActividad if estado != EstadoActividad.CANCELADA]
+
+# Días como máximo para los que se informa el turno de cada operario (el tablero pide uno; Semana, siete).
+DIAS_MAXIMOS_CON_TURNO = 31
+
+
+def _dias(fecha_desde: str, fecha_hasta: str) -> list:
+    desde, hasta = date.fromisoformat(fecha_desde), date.fromisoformat(fecha_hasta)
+    cantidad = min((hasta - desde).days + 1, DIAS_MAXIMOS_CON_TURNO)
+    return [(desde + timedelta(days=dia)).isoformat() for dia in range(max(0, cantidad))]
+
+
+def _resumen_turno(turno) -> dict | None:
+    """El horario del turno de ese día, o None si el operario no tiene turno."""
+    if turno is None:
+        return None
+    return {"nombre": turno.nombre, "hora_inicio": turno.hora_inicio, "hora_fin": turno.hora_fin}
+
 
 # Capacidad provisional de una jornada en minutos (turno de 8 h menos 1 h de descanso). Se usa para
 # los operarios que todavía no tienen turno; con turno, la capacidad es la de su turno vigente en
@@ -75,6 +93,9 @@ class CargaService:
                     "nombre": operario["nombre"],
                     "jornadas": [self._jornada(fecha, total, turnos.capacidad_de(usuario_id, fecha))
                                  for fecha, total in sorted(minutos[usuario_id].items())],
+                    # El turno de cada día del rango: un cambio de turno rige desde su fecha.
+                    "turnos": {fecha: _resumen_turno(turnos.turno_de(usuario_id, fecha))
+                               for fecha in _dias(fecha_desde, fecha_hasta)},
                 }
                 for operario, usuario_id in zip(operarios, ids)
             ],

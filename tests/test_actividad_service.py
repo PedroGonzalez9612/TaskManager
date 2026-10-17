@@ -3,6 +3,9 @@ import pytest
 
 from app.utils.errors import ProhibidoError, ValidationError
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 HOY = "2026-10-10"    # La fecha programada de las actividades que crea conftest.py.
 
 
@@ -51,22 +54,26 @@ def test_el_retirado_ya_no_ve_la_actividad_ni_puede_iniciarla(servicios, empresa
         servicios.ejecucion.iniciar(actividad["id"], empresa.luis)
 
 
-def test_al_retirar_a_quien_la_tenia_abierta_su_ejecucion_queda_cerrada(
-        servicios, repos, empresa, crear_actividad, reloj):
+def test_una_actividad_iniciada_no_se_reasigna_ni_se_edita(servicios, repos, empresa, crear_actividad, reloj):
+    """Lo hecho queda como se hizo (alcance, Sección 5.1): ni siquiera si ya la pausaron o la terminaron."""
     actividad = crear_actividad([empresa.ana, empresa.luis])
+    assert actividad["editable"]
+    assert actividad["cancelable"]
     servicios.ejecucion.iniciar(actividad["id"], empresa.luis)
     reloj.avanzar(12)
 
-    vista = reasignar(servicios, empresa, actividad, [empresa.ana])
+    for cambios in ({"operario_ids": [empresa.ana["id"]]}, {"titulo": "Otro título"}, {"hora_programada": "10:00"}):
+        with pytest.raises(ValidationError, match="ya inició"):
+            servicios.actividades.actualizar_actividad(actividad["id"], cambios, empresa.admin)
 
-    ejecucion = repos.ejecuciones.find_by_actividades([actividad["id"]])[0]
-    assert ejecucion["estado"] == "CERRADA"
-    assert ejecucion["fecha_fin"] == reloj.ahora.replace(tzinfo=None)
-    assert vista["estado"] == "ASIGNADA"       # Ana sigue sin iniciar.
-    assert vista["ejecuciones"] == []          # La del retirado queda en el historial, no en la vista.
-    # Luis queda libre para iniciar otra actividad.
-    otra = crear_actividad([empresa.luis], titulo="Limpiar la banda")
-    assert servicios.ejecucion.iniciar(otra["id"], empresa.luis)["estado"] == "EN_EJECUCION"
+    vista = servicios.actividades.obtener_actividad(actividad["id"], empresa.admin)
+    assert not vista["editable"]
+    assert not vista["cancelable"]     # En curso: tampoco se cancela.
+    servicios.ejecucion.pausar(actividad["id"], empresa.luis, "Actividad urgente")
+    vista = servicios.actividades.obtener_actividad(actividad["id"], empresa.admin)
+    assert not vista["editable"]
+    assert vista["cancelable"]         # Pausada: se cancela, pero no se edita.
+    assert len(repos.asignaciones.find_by_actividad(actividad["id"])) == 2
 
 
 def test_volver_a_asignar_crea_una_asignacion_nueva(servicios, repos, empresa, crear_actividad):

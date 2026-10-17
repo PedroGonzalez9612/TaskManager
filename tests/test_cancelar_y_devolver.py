@@ -3,6 +3,9 @@ import pytest
 
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 HOY = "2026-10-10"    # La fecha programada de las actividades que crea conftest.py.
 
 

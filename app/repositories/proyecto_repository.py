@@ -16,6 +16,10 @@ class ProyectoRepository(BaseRepository):
         # La única consulta de listado es "los proyectos de esta empresa".
         self.collection.create_index([("empresa_id", ASCENDING)], name="empresa")
 
+    def find_by_ids(self, ids) -> list:
+        oids = [oid for oid in map(self.to_object_id, ids) if oid]
+        return list(self.collection.find({"_id": {"$in": oids}})) if oids else []
+
     def find_by_empresa(self, empresa_id: str):
         """Los proyectos de la empresa, ordenados por nombre."""
         return list(self.collection.find({"empresa_id": empresa_id}).sort("nombre", ASCENDING))

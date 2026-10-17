@@ -52,15 +52,22 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   en `:root`, con los valores de las Secciones 6.3 y 6.4 del alcance); archivos de fuentes en `fuentes/`.
   Sistema de composición (alcance, Sección 6.2): espacios solo con `--e1` a `--e7`; ancho de la columna con
   `ancho-angosto` o `ancho-medio` en `<body>` (la barra superior se alinea sola); cifras con la clase
-  `cifra` (misma fuente, números de ancho fijo) y códigos con `codigo` (monoespaciada).
+  `cifra` (misma fuente, números de ancho fijo) y códigos con `codigo` (la misma fuente, en semibold; no hay
+  fuente monoespaciada). Datos de un renglón con `datos-linea` (separados por espacio, nunca con " · ").
+  El panel es para la superficie principal; filtros y listas de apoyo van con `seccion-apoyo`, sin panel.
   Componentes repetidos en `js/componentes.js` (logo, avatar, medidor de límite).
   ESTADO DEL REDISEÑO "Calma operativa" (plan en `docs/plan_rediseno_calma_operativa.md`): Etapa 1
   (alcance) y Etapa 2 (base visual: colores, Figtree, sombras, logo del tablero) y Etapa 3 (Hoy del Operario como línea de tiempo, en `operario/hoy.js`, clases `linea-*` y `tarjeta-*`) hechas, pendientes del visto bueno del
   usuario. Etapa 4 (backend) a medias: ver "Próximos pasos" en `docs/avance.md`. Etapas 5 a 7
-  pendientes. Ya existen turnos y asistencia (marca de entrada y salida en Hoy; turnos y validación
-  en Usuarios del Administrador) y el calendario rediseñado. Hasta que se apliquen, las pantallas siguen con requerimientos en lugar de proyectos,
-  Equipo como horario por columnas, y Hoy sin pausar, turnos, asistencia ni "Reportar actividad",
-  aunque la API ya tiene pausar, reanudar, cancelar, devolver y proyectos.
+  pendientes. Ya existen turnos y asistencia (turnos y validación en Usuarios del Administrador) y el
+  calendario rediseñado. El Operario llega a Inicio (`operario/inicio.js`): saludo, barras del turno y de la
+  jornada, "Marcar entrada" / "Marcar salida" y el cierre. Hoy (`operario/hoy.js`) es solo el día: sin entrada o
+  después de la salida, en modo de lectura. Lo que comparten (`estadoDeJornada`, `crearRelojDelTurno`,
+  `crearBarraJornada`, `abrirSalida`, avisos del turno) está en `operario/operario-comun.js`.
+  Equipo es el tablero del turno (`admin/equipo.js`, cuadrícula propia, clases `tablero-*`), no un
+  calendario; Semana del Operario sigue con EventCalendar. Actividades ya no muestra requerimientos:
+  filtros y lista agrupada por día. Falta en pantalla: Proyectos, "Reportar actividad", aviso de hora
+  fija y devolver (la API ya tiene proyectos y devolver).
   Se avanza etapa por etapa, con la aprobación del usuario.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
   Flask las sirve desde el mismo origen. NO se usan plantillas Jinja para generar pantallas.
@@ -102,17 +109,32 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   Lo garantiza un índice único en la base de datos, además del servicio.
 - La ejecución pertenece a la asignación (operario + actividad): cada operario tiene su tiempo, sus
   pausas y su observación. Una actividad con varios operarios termina cuando todos finalizan.
-- Nada se borra: las asignaciones se retiran o se devuelven, y las actividades se cancelan con motivo.
+- Nada se borra: las asignaciones se retiran o se devuelven, las actividades se cancelan con motivo, y los
+  usuarios y las empresas se desactivan (y se pueden reactivar).
+- Una actividad iniciada (alguien ya la trabajó) no se edita ni se reasigna; se cancela si no está en curso.
+  La tabla de reglas de estado está en la Sección 5.1 del alcance; las actividades presentadas traen
+  `editable` y `cancelable` para que la interfaz muestre solo lo permitido.
+- Las horas de un turno asignado no se cambian: se crea otro y se asigna desde una fecha.
 - Una actividad de hora fija no se pausa ni se reprograma; la urgente no la interrumpe.
 - Motivos de pausa y de cancelación: listas por empresa que se llenan con lo escrito en "Otro".
 - Capacidad de la jornada: la del turno vigente del operario (duración menos descanso). Sin turno, 7 h
   (`CAPACIDAD_JORNADA_MIN` en `carga_service.py`).
-- Cada pausa guarda su motivo. Al finalizar se puede dejar una observación. El historial de pausas es consultable.
+- Información de la actividad por bloques (pasos, herramientas y materiales, equipo, precauciones de
+  seguridad, contacto, adjuntos): clase `InformacionActividad`; adjuntos en la colección `adjuntos`
+  (`AdjuntoService`). "Lista para iniciar" es un aviso, no impide iniciar (alcance, Sección 5.1).
+- Cada pausa guarda su motivo. Al finalizar se puede dejar evidencia: observación, fotos y adjuntos
+  (colección `evidencias`, máximo 5 archivos de 5 MB). El historial de pausas es consultable.
+  El detalle de una actividad muestra el registro de cada operario (`crearRegistroEjecucion` en
+  `js/actividades-comun.js`); el Administrador abre primero el detalle y desde ahí "Editar".
 - La hora de todo evento (ejecución, asistencia) la pone el servidor, nunca el cliente.
 - Turnos: catálogo por empresa; un solo turno por operario, conservando la fecha de cada cambio.
 - Jornada: pertenece al día en que inicia el turno. Capacidad = duración del turno menos descanso.
 - La carga se calcula por jornada. Alerta cuando supera el 100% de la capacidad.
 - Asistencia: el operario marca entrada/salida; el Administrador valida o corrige.
+- Sin la entrada marcada no se inicia ni se reanuda una actividad. No se marca la salida con una
+  actividad en curso: se finaliza o se pausa con motivo "Fin de jornada". El turno no limita la hora
+  de la entrada ni de la salida; hay un aviso informativo 15 minutos antes del inicio y del fin del turno, y una
+  alerta de llegada tarde pasados 10 minutos sin entrada (`TOLERANCIA_ENTRADA_MIN` en `programacion_service.py`).
 - Indicadores agregados: sumar tiempos y dividir al final; nunca promediar porcentajes.
 
 ## Decisiones de diseño abiertas (no implementar sin resolverlas con el agente diseno-oo)
@@ -162,6 +184,9 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   `python herramientas/sonar_resumen.py` para ver la puerta de calidad y los hallazgos en la terminal.
   La puerta exige 0 hallazgos nuevos y 80 % de cobertura: antes de dar una etapa por terminada debe pasar.
   No se corrigen (están aceptados en SonarQube con su motivo): nombres con "ñ" y `await` de nivel superior.
+- `documento_pdf.py`: convierte un documento Markdown de `docs/` en PDF (imágenes y diagramas Mermaid).
+  Los entregables de cada materia van en `docs/diseno_interfaces/` y `docs/diseno_orientado_objetos/`,
+  en una carpeta por momento, junto al enunciado (`actividad.md`).
 - `migrar_etapa4.py`: migración de una sola vez para bases con datos anteriores a la Etapa 4
   (sin argumentos muestra lo que haría; con `--aplicar` lo hace).
 

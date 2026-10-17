@@ -22,13 +22,15 @@ class EjecucionService:
     devuelve la actividad tal como la ve ese operario."""
 
     def __init__(self, ejecucion_repository, actividad_repository, asignacion_repository,
-                 actividad_service, catalogo_service, cierre_jornada, reloj=None):
+                 actividad_service, catalogo_service, cierre_jornada, asistencia_service, reloj=None):
         self.ejecucion_repository = ejecucion_repository
         self.actividad_repository = actividad_repository
         self.asignacion_repository = asignacion_repository
         self.actividad_service = actividad_service
         self.catalogo_service = catalogo_service
         self.cierre_jornada = cierre_jornada
+        # Para iniciar o reanudar hay que tener la entrada marcada.
+        self.asistencia_service = asistencia_service
         self.reloj = reloj or (lambda: datetime.now(timezone.utc))
 
     # ---------- Eventos ----------
@@ -39,6 +41,7 @@ class EjecucionService:
         if EstadoActividad(actividad.get("estado", EstadoActividad.PENDIENTE.value)).es_final:
             raise ValidationError("Esta actividad ya está cerrada y no se puede iniciar")
         self._exigir_sin_ejecucion(asignacion_id)
+        self.asistencia_service.exigir_entrada_abierta(solicitante, ahora)
         self._exigir_sin_otra_en_curso(solicitante, "iniciar")
 
         ejecucion = Ejecucion(actividad_id=actividad_id, asignacion_id=asignacion_id,
@@ -69,6 +72,7 @@ class EjecucionService:
         ejecucion = self._ejecucion_iniciada(asignacion_id)
 
         ejecucion.reanudar(ahora)    # Valida que esté pausada.
+        self.asistencia_service.exigir_entrada_abierta(solicitante, ahora)
         self._exigir_sin_otra_en_curso(solicitante, "reanudar")
         if not self.ejecucion_repository.guardar(
                 ejecucion.id, ejecucion.to_dict(), estado_esperado=EstadoEjecucion.PAUSADA.value):

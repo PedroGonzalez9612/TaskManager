@@ -20,16 +20,9 @@
 }
 
 @font-face {
-    font-family: "Atkinson Hyperlegible Mono";
-    src: url("/static/fuentes/atkinson-hyperlegible-mono-500.woff2") format("woff2");
-    font-weight: 500;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Atkinson Hyperlegible Mono";
-    src: url("/static/fuentes/atkinson-hyperlegible-mono-600.woff2") format("woff2");
-    font-weight: 600;
+    font-family: "Bricolage Grotesque";
+    src: url("/static/fuentes/bricolage-grotesque-700.woff2") format("woff2");
+    font-weight: 700;
     font-display: swap;
 }
 
@@ -72,10 +65,9 @@
 
     /* ---- Tipografía (6.4). Tamaños de celular; los de escritorio están en la media query ---- */
     --fuente-texto: "Figtree", system-ui, sans-serif;
-    --fuente-codigo: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+    --fuente-cifras: "Bricolage Grotesque", var(--fuente-texto);   /* La hora y las cifras que mandan */
     --peso-normal: 400;
     --peso-fuerte: 600;
-    --peso-codigo: 500;
 
     --tamano-h1: 1.375rem;          /* 22 px en celular; 26 px en escritorio */
     --tamano-h2: 1.25rem;           /* 20 px en celular; 18 px en escritorio */
@@ -94,16 +86,16 @@
     --interlineado-etiqueta: 1.2;
 
     /* ---- Categorías de actividad: solo para los bloques del horario y el ícono de su etiqueta ---- */
-    --cat-produccion: #5B4B9A;
-    --cat-produccion-suave: #E8E3F4;
-    --cat-mantenimiento: #7A5038;
-    --cat-mantenimiento-suave: #EFE4DB;
-    --cat-calidad: #A33D72;
-    --cat-calidad-suave: #F6E1EC;
-    --cat-limpieza: #5C6B24;
-    --cat-limpieza-suave: #E9EDD3;
-    --cat-logistica: #3D5A6C;
-    --cat-logistica-suave: #DFE8EC;
+    --cat-operacion: #5B4B9A;
+    --cat-operacion-suave: #E8E3F4;
+    --cat-administrativa: #7A5038;
+    --cat-administrativa-suave: #EFE4DB;
+    --cat-revision: #A33D72;
+    --cat-revision-suave: #F6E1EC;
+    --cat-atencion: #5C6B24;
+    --cat-atencion-suave: #E9EDD3;
+    --cat-traslado: #3D5A6C;
+    --cat-traslado-suave: #DFE8EC;
 
     /* ---- Íconos de los mensajes (Lucide), como máscara para que tomen el color del texto ---- */
     --icono-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
@@ -120,6 +112,7 @@
 
     /* ---- Columna de contenido: la barra superior y la página comparten ancho y márgenes ---- */
     --ancho-contenido: 76rem;
+    --ancho-barra: 76rem;           /* La barra superior: igual en todas las pantallas */
     --margen: var(--e6);
 
     /* ---- Forma ---- */
@@ -208,12 +201,19 @@ a {
     font-variant-numeric: tabular-nums;
 }
 
-/* Códigos que se leen carácter por carácter (NIT, orden de trabajo): fuente monoespaciada. */
+/* Códigos que se leen carácter por carácter (NIT, código de actividad): la misma letra, en semibold
+   y con números de ancho fijo (6.4, regla 5). */
 .codigo {
-    font-family: var(--fuente-codigo);
-    font-size: max(0.92em, var(--tamano-etiqueta));    /* Nunca menos de 13 px (6.4, regla 2) */
-    font-weight: var(--peso-codigo);
-    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--peso-fuerte);
+}
+
+/* Datos de un renglón (código, categoría, ubicación): separados por espacio, sin puntos medios (6.2). */
+.datos-linea,
+.fila-meta.datos-linea {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--e3);
 }
 
 /* ================= Marco general: barra superior + vistas ================= */
@@ -226,8 +226,9 @@ a {
     align-items: center;
     gap: var(--e5);
     min-height: 3.75rem;
-    /* Mismo borde izquierdo y derecho que la columna de contenido de la página. */
-    padding-inline: max(var(--margen), calc((100% - var(--ancho-contenido)) / 2 + var(--margen)));
+    /* Siempre el ancho completo de la columna, en todas las pantallas: la marca y el usuario no
+       cambian de lugar al pasar de una vista a otra, aunque el contenido sea más angosto. */
+    padding-inline: max(var(--margen), calc((100% - var(--ancho-barra)) / 2 + var(--margen)));
     background: var(--superficie);
     border-bottom: 1px solid var(--borde);
 }
@@ -361,8 +362,7 @@ a {
     padding: var(--e6) var(--margen) var(--e7);
 }
 
-/* Ancho de la columna según lo que muestra la página. Va en <body> para que la barra superior
-   se alinee con el mismo ancho. */
+/* Ancho de la columna según lo que muestra la página. La barra superior no cambia: usa --ancho-barra. */
 body.ancho-medio {
     --ancho-contenido: 60rem;
 }
@@ -515,7 +515,7 @@ body.ancho-angosto {
 }
 
 .boton-pequeno {
-    min-height: 2.4rem;
+    min-height: var(--alto-control);
     padding: 0 0.8rem;
 }
 
@@ -689,10 +689,10 @@ body.ancho-angosto {
 .aviso {
     display: flex;
     align-items: flex-start;
-    gap: 0.5rem;
-    margin: 0.8rem 0 0;
-    padding: 0.6rem 0.8rem;
-    border-radius: 0.5rem;
+    gap: var(--e2);
+    margin: var(--e3) 0 0;
+    padding: var(--e2) var(--e3);
+    border-radius: var(--radio-control);
     font-size: var(--tamano-secundario);
     line-height: var(--interlineado-secundario);
 }
@@ -713,6 +713,123 @@ body.ancho-angosto {
     background: var(--advertencia-suave);
     color: var(--advertencia-texto);
     font-weight: var(--peso-fuerte);
+}
+
+/* Un usuario desactivado se ve atenuado: su fila queda, pero ya no trabaja. */
+.fila-desactivada .fila-nombre,
+.fila-desactivada .fila-meta {
+    color: var(--texto-secundario);
+}
+
+/* Acciones de la tarjeta compacta (lo que está en curso cuando llega una urgente). */
+.tarjeta-compacta-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e3);
+}
+
+.tarjeta-compacta-acciones .boton-texto {
+    margin-top: 0;
+    padding-inline: 0;
+}
+
+/* Mostrar la contraseña al iniciar sesión. */
+.opcion-mostrar {
+    display: flex;
+    align-items: center;
+    gap: var(--e2);
+}
+
+.formulario .opcion-mostrar {
+    margin-top: var(--e1);
+    font-weight: var(--peso-normal);
+}
+
+.formulario .opcion-mostrar input {
+    width: 1.25rem;
+    height: 1.25rem;
+    min-height: 0;
+    margin: 0;
+}
+
+/* Nombre de la actividad sobre la que actúa una ventana (pausar, finalizar). */
+.dialogo-actividad {
+    margin: 0;
+    color: var(--texto-secundario);
+}
+
+/* Historial de pausas en el detalle de la actividad. */
+.lista-pausas {
+    display: grid;
+    gap: var(--e2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lista-pausas li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+}
+
+.lista-pausas li .icono {
+    margin-top: 0.2em;
+}
+
+.lista-pausas-textos {
+    display: grid;
+}
+
+/* Evidencia de la ejecución: fotos en miniatura y adjuntos como enlaces. */
+.evidencia-fotos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e2);
+}
+
+.evidencia-fotos img {
+    display: block;
+    width: 5rem;
+    height: 5rem;
+    object-fit: cover;
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-control);
+}
+
+.evidencia-adjuntos,
+.evidencia-elegida {
+    display: grid;
+    gap: var(--e2);
+    margin: var(--e2) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.evidencia-adjuntos a,
+.evidencia-elegida li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    overflow-wrap: anywhere;
+}
+
+.evidencia-elegida li {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.formulario .etiqueta-archivos {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+}
+
+/* Información que no pide una acción inmediata. */
+.aviso-info {
+    background: var(--info-suave);
+    color: var(--info-texto);
 }
 
 .aviso-bloque {
@@ -773,11 +890,11 @@ body.ancho-angosto {
     color: var(--texto);
 }
 
-.categoria-produccion .icono    { color: var(--cat-produccion); }
-.categoria-mantenimiento .icono { color: var(--cat-mantenimiento); }
-.categoria-calidad .icono       { color: var(--cat-calidad); }
-.categoria-limpieza .icono      { color: var(--cat-limpieza); }
-.categoria-logistica .icono     { color: var(--cat-logistica); }
+.categoria-operacion .icono    { color: var(--cat-operacion); }
+.categoria-administrativa .icono { color: var(--cat-administrativa); }
+.categoria-revision .icono       { color: var(--cat-revision); }
+.categoria-atencion .icono      { color: var(--cat-atencion); }
+.categoria-traslado .icono     { color: var(--cat-traslado); }
 
 .carga {
     color: var(--texto-secundario);
@@ -836,6 +953,27 @@ fieldset.grupo-botones {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.6rem;
+}
+
+/* La leyenda y el selector de colores se pliegan en celular, para que el horario quede a la vista. */
+.opciones-horario > summary {
+    display: flex;
+    align-items: center;
+    min-height: var(--alto-control);
+    padding: var(--e2) var(--e5);
+    color: var(--principal);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.opciones-horario[open] > summary {
+    border-bottom: 1px solid var(--borde);
+}
+
+@media (max-width: 50em) {
+    .opciones-horario > summary {
+        padding-inline: var(--e4);
+    }
 }
 
 /* Barra del horario: la leyenda de colores y el control que los cambia van juntos, arriba del horario,
@@ -1070,6 +1208,23 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     margin-top: var(--e5);
 }
 
+/* En celular, los botones de una ventana van a todo el ancho, uno debajo del otro, y la acción
+   principal queda arriba, al alcance del pulgar (alcance, Sección 6.2). */
+@media (max-width: 30em) {
+    .dialogo-acciones {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dialogo-acciones > button {
+        width: 100%;
+    }
+
+    .dialogo-acciones > .boton {
+        order: -1;
+    }
+}
+
 /* Confirmación breve después de guardar (visibilidad del estado del sistema). */
 .aviso-flotante {
     position: fixed;
@@ -1269,19 +1424,10 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     margin: 0;
 }
 
-.turno-fecha,
-.turno-resumen {
+.turno-fecha {
     color: var(--texto-secundario);
     font-size: var(--tamano-secundario);
     line-height: var(--interlineado-secundario);
-}
-
-.turno-resumen {
-    margin-top: var(--e1);
-}
-
-.turno-resumen strong {
-    color: var(--texto);
 }
 
 .turno-encabezado .aviso {
@@ -1669,6 +1815,28 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     color: var(--texto-sobre-color);
 }
 
+/* "Ver detalle" dentro de un bloque de color: enlace en blanco, sin borde. */
+.tarjeta-en-curso .boton-texto,
+.tarjeta-urgente .boton-texto {
+    color: var(--texto-sobre-color);
+}
+
+.tarjeta-enlace {
+    margin-top: var(--e2);
+    padding-inline: 0;
+}
+
+.tarjeta-urgente .tarjeta-enlace {
+    width: 100%;
+    justify-content: center;
+}
+
+.tarjeta-nota-urgente {
+    margin-top: var(--e3);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
 /* Sobre un bloque de color, el anillo de foco va en blanco: el principal no se vería. */
 .tarjeta-en-curso :focus-visible,
 .tarjeta-urgente :focus-visible {
@@ -1677,7 +1845,9 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 
 /* ---------- Turno: estado, entrada, salida y fin del turno ---------- */
 
+/* El estado del turno va en su propio renglón: no se parte a la mitad en el celular. */
 .turno-estado {
+    display: block;
     color: var(--texto-secundario);
 }
 
@@ -1686,7 +1856,7 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     display: inline-block;
     width: var(--e2);
     height: var(--e2);
-    margin: 0 var(--e1) 0 var(--e2);
+    margin: 0 var(--e1) 0 0;
     border-radius: 50%;
     background: var(--neutro);
     vertical-align: 0.1em;
@@ -1700,8 +1870,25 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     background: var(--exito);
 }
 
-.turno-ordenar {
-    margin-top: var(--e3);
+/* Datos del cierre de la jornada, en Inicio (alcance, Sección 6.1). */
+.portada-datos {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--e2) var(--e4);
+}
+
+.portada-datos dt {
+    color: var(--texto-secundario);
+}
+
+.portada-datos dd {
+    margin: 0;
+    font-weight: var(--peso-fuerte);
+    text-align: right;
+}
+
+.portada-nota {
+    margin: 0;
 }
 
 .linea-marca {
@@ -2118,6 +2305,11 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     font-weight: var(--peso-normal);
 }
 
+/* En un bloque del horario los datos van en un solo renglón, cortado con "…" si no caben. */
+.bloque-detalle > * + * {
+    margin-inline-start: var(--e2);
+}
+
 .bloque-estado {
     font-weight: var(--peso-fuerte);
 }
@@ -2158,20 +2350,20 @@ html[data-color-bloques="prioridad"] .ec .bloque-prioridad-baja {
 }
 
 /* Modo "categoría": paleta propia de categorías, solo para los bloques del horario. */
-html[data-color-bloques="categoria"] .ec .bloque-categoria-produccion {
-    background-color: var(--cat-produccion-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-operacion {
+    background-color: var(--cat-operacion-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-mantenimiento {
-    background-color: var(--cat-mantenimiento-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-administrativa {
+    background-color: var(--cat-administrativa-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-calidad {
-    background-color: var(--cat-calidad-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-revision {
+    background-color: var(--cat-revision-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-limpieza {
-    background-color: var(--cat-limpieza-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-atencion {
+    background-color: var(--cat-atencion-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-logistica {
-    background-color: var(--cat-logistica-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-traslado {
+    background-color: var(--cat-traslado-suave); color: var(--texto);
 }
 
 /* En modo categoría lo urgente sigue destacando: borde rojo completo además de su ícono. Es una sombra
@@ -2244,19 +2436,34 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 
 /* ================= Resumen: indicadores y gráfica ================= */
 
+/* Los indicadores van juntos en una sola franja, no en una tarjeta por número (6.2). */
 .indicadores {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-    gap: 0.9rem;
-    margin-bottom: 1.3rem;
-}
-
-.indicador {
-    padding: 0.9rem 1.1rem;
+    margin-bottom: var(--e5);
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
     box-shadow: var(--sombra);
+}
+
+.indicador {
+    padding: var(--e4) var(--e5);
+}
+
+.indicador + .indicador {
+    border-top: 1px solid var(--borde);
+}
+
+@media (min-width: 50.01em) {
+    .indicadores {
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+    }
+
+    .indicador + .indicador {
+        border-top: none;
+        border-left: 1px solid var(--borde);
+    }
 }
 
 .indicador p {
@@ -2316,13 +2523,27 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     border-bottom: none;
 }
 
-/* ================= Administrador: requerimientos y actividades ================= */
+/* ================= Administrador: filtros y actividades ================= */
 
 .maestro-detalle {
     display: grid;
-    grid-template-columns: 17rem minmax(0, 1fr);    /* el 0 evita que la tabla ensanche la página */
+    grid-template-columns: 15rem minmax(0, 1fr);    /* el 0 evita que la tabla ensanche la página */
     align-items: start;
-    gap: 0 1.3rem;
+    gap: 0 var(--e6);
+}
+
+/* Lo que acompaña a la superficie principal (filtros, listas de apoyo): sobre el fondo, sin panel,
+   para que el panel marque lo principal de la pantalla (alcance, Sección 6.2: paneles con jerarquía). */
+.seccion-apoyo {
+    margin-bottom: var(--e5);
+}
+
+.seccion-apoyo > h2 {
+    margin: 0 0 var(--e3);
+}
+
+.filtros > h2 {
+    padding-block-start: var(--e4);
 }
 
 @media (max-width: 62em) {
@@ -2331,20 +2552,27 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     }
 }
 
-.lista-requerimientos {
+.lista-filtros {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.4rem;
+    gap: var(--e1);
 }
 
-.requerimiento {
+/* En celular los filtros van en fila y se acomodan: no empujan la lista hacia abajo. */
+@media (max-width: 62em) {
+    .lista-filtros {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+.filtro {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.6rem;
+    gap: var(--e3);
     min-height: var(--alto-control);
-    padding: 0.4rem 0.7rem;
+    padding: var(--e2) var(--e3);
     border: none;
     border-radius: 0.5rem;
     background: transparent;
@@ -2354,18 +2582,31 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     cursor: pointer;
 }
 
-.requerimiento:hover {
-    background: var(--fondo);
+.filtro:hover {
+    background: var(--superficie);
 }
 
-.requerimiento[aria-pressed="true"] {
+.filtro[aria-pressed="true"] {
     background: var(--principal-suave);
     color: var(--principal-hover);
     font-weight: var(--peso-fuerte);
 }
 
-.requerimiento-cantidad {
+.filtro-cantidad {
     color: var(--texto-secundario);
+}
+
+/* El día que agrupa sus actividades en la lista del Administrador. */
+.grupo-dia {
+    display: flex;
+    align-items: baseline;
+    gap: var(--e2);
+    padding: var(--e3) var(--e5) var(--e2);
+    background: var(--fondo);
+    border-bottom: 1px solid var(--borde);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
 }
 
 .tabla-clicable tbody tr {
@@ -2569,9 +2810,12 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     padding: var(--e3) var(--e5);
 }
 
-.fila-usuario .rol {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
+/* Acciones de la fila en un solo renglón; la de baja, al final (6.2). */
+.fila-usuario-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    column-gap: var(--e4);
 }
 
 /* Medidor de límite: cuánto se ha usado de un límite. */
@@ -2669,7 +2913,8 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     color: var(--advertencia-texto);
 }
 
-.etiqueta.asistencia-validada {
+.etiqueta.asistencia-validada,
+.etiqueta.asistencia-en_turno {
     background: var(--exito-suave);
     color: var(--exito-texto);
 }
@@ -2686,7 +2931,7 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     color: var(--error-texto);
 }
 
-.fila-usuario .rol .boton-texto {
+.fila-usuario-acciones .boton-texto {
     min-height: var(--alto-control);
     padding-inline: 0;
 }
@@ -2803,15 +3048,16 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    /* En celular el rol baja a un tercer renglón para no apretar el correo. */
+    /* En celular las acciones bajan a un renglón propio para no apretar el correo. */
     .fila-usuario {
         grid-template-columns: 2.5rem minmax(0, 1fr);
         gap: 0 var(--e3);
         padding-inline: var(--e4);
     }
 
-    .fila-usuario .rol {
+    .fila-usuario-acciones {
         grid-column: 2;
+        justify-content: flex-start;
     }
 
     .panel-encabezado,
@@ -2842,15 +3088,10 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 
 /* ================= Administrador: actividades como lista ================= */
 
-/* En el panel angosto de requerimientos, el título y su acción van siempre en un renglón. */
-.maestro-detalle > .panel:first-child .panel-encabezado {
-    flex-wrap: nowrap;
-    padding-right: var(--e3);
-}
-
+/* En el panel angosto de filtros, el título va siempre en un renglón. */
 .fila-actividad-admin {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 6rem 9.5rem 7.5rem 6.5rem;
+    grid-template-columns: minmax(0, 1fr) 6rem 9rem 6.5rem 8.5rem;   /* Estado: cabe "Falta información" */
     align-items: center;
     gap: var(--e4);
     width: 100%;
@@ -2885,7 +3126,7 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 
 .encabezado-lista {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 6rem 9.5rem 7.5rem 6.5rem;
+    grid-template-columns: minmax(0, 1fr) 6rem 9rem 6.5rem 8.5rem;   /* Estado: cabe "Falta información" */
     gap: var(--e4);
     padding: var(--e3) var(--e5);
     border-bottom: 1px solid var(--borde);
@@ -2897,7 +3138,7 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     display: inline-flex;
     align-items: center;
     gap: var(--e1);
-    min-height: 2.4rem;
+    min-height: var(--alto-control);
     padding: 0 var(--e2);
     border: none;
     border-radius: var(--radio-control);
@@ -2913,8 +3154,17 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     background: var(--principal-suave);
 }
 
-.boton-texto.peligro {
+.boton-texto.peligro,
+.boton-secundario.peligro {
     color: var(--error-texto);
+}
+
+.boton-secundario.peligro {
+    border-color: var(--error);
+}
+
+.boton-secundario.peligro:hover {
+    background: var(--error-suave);
 }
 
 .boton-texto.peligro:hover {
@@ -2935,4 +3185,1102 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     .fila-actividad-admin > :nth-child(1) {
         grid-column: 1 / -1;
     }
+}
+
+/* ================= Administrador: tablero del turno (alcance, Sección 6.5) =================
+   La planilla de la planta: una fila por persona, las horas de izquierda a derecha y la línea "Ahora".
+   En celular se desplaza de lado y el nombre de cada persona queda fijo a la izquierda. */
+
+.tablero-cabecera {
+    flex-wrap: wrap;
+}
+
+.leyenda-tablero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e2) var(--e4);
+    padding: var(--e3) var(--e5) 0;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.leyenda-tablero-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+}
+
+.leyenda-muestra {
+    display: inline-block;
+    width: var(--e5);
+    height: var(--e3);
+    border: 1px solid transparent;
+    border-radius: var(--e1);
+}
+
+.leyenda-muestra.tablero-pendiente {
+    border-color: var(--borde-control);
+    background: var(--superficie);
+}
+
+.leyenda-muestra.tablero-fuera-turno,
+.leyenda-muestra.tablero-sobrecarga {
+    position: static;
+}
+
+.aviso-tablero {
+    margin: var(--e3) var(--e5) 0;
+}
+
+.tablero-desplazable {
+    overflow-x: auto;
+    padding: var(--e3) 0 var(--e4);
+}
+
+.tablero {
+    --ancho-persona: 13rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-width: calc(var(--ancho-persona) + var(--horas-tablero, 12) * 8rem);   /* 30 min caben en 4 rem */
+}
+
+.tablero-fila {
+    display: grid;
+    grid-template-columns: var(--ancho-persona) minmax(0, 1fr);
+    border-bottom: 1px solid var(--borde);
+}
+
+.tablero-fila:last-child {
+    border-bottom: none;
+}
+
+.tablero-persona {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--e1);
+    padding: var(--e3) var(--e4) var(--e3) var(--e5);
+    background: var(--superficie);
+    border-right: 1px solid var(--borde);
+}
+
+.tablero-nombre {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tablero-horas-persona {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.tablero-persona-sobrecarga {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--error-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.tablero-barra {
+    height: var(--e1);
+    border-radius: 999px;
+    background: var(--neutro-suave);
+    overflow: hidden;
+}
+
+.tablero-barra-relleno {
+    display: block;
+    height: 100%;
+    background: var(--principal);
+}
+
+.tablero-barra-relleno.sobrecarga {
+    background: var(--error);
+}
+
+.tablero-carril {
+    position: relative;
+    min-height: 4rem;
+    cursor: copy;
+}
+
+.tablero-horas .tablero-carril {
+    min-height: var(--e6);
+    cursor: default;
+}
+
+.tablero-horas .tablero-persona {
+    padding-block: 0;
+}
+
+.tablero-hora {
+    position: absolute;
+    top: var(--e2);
+    transform: translateX(-50%);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.tablero-hora:first-child {
+    transform: none;
+    padding-left: var(--e1);
+}
+
+.tablero-linea-hora {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px dotted var(--borde);
+}
+
+/* Lo que no es turno, rayado en gris; lo que pasa del fin del turno, rayado en coral (sobrecarga). */
+.tablero-fuera-turno,
+.tablero-sobrecarga {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+.tablero-fuera-turno {
+    background: repeating-linear-gradient(135deg, var(--neutro-suave) 0 var(--e1), transparent var(--e1) var(--e3));
+}
+
+.tablero-sobrecarga {
+    z-index: 2;
+    background: repeating-linear-gradient(135deg, var(--marca) 0 var(--e1), transparent var(--e1) var(--e3));
+    opacity: 0.55;
+}
+
+/* La línea "Ahora", en el color principal, cruza todas las filas (Gestalt: continuidad). */
+.tablero-ahora {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 2;
+    border-left: 2px solid var(--principal);
+    pointer-events: none;
+}
+
+.tablero-ahora-etiqueta {
+    position: absolute;
+    bottom: 0;
+    transform: translateX(-50%);
+    padding: 0 var(--e2);
+    border-radius: var(--e1);
+    background: var(--principal);
+    color: var(--texto-sobre-color);
+    font-size: var(--tamano-etiqueta);
+    white-space: nowrap;
+}
+
+/* Cada actividad es una tarjeta en su hora. */
+/* El título va en dos renglones como máximo: una actividad corta se reconoce por su nombre, no por "Insp…". */
+.tarjeta-tablero {
+    position: absolute;
+    top: var(--e2);
+    height: 2.75rem;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--e1);
+    min-width: var(--e2);
+    padding: 0 var(--e2);
+    overflow: hidden;
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+    font-size: var(--tamano-etiqueta);
+    font-weight: var(--peso-fuerte);
+    line-height: 1.2;
+    text-align: start;
+    cursor: pointer;
+}
+
+.tarjeta-tablero > span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
+.tarjeta-angosta .icono {
+    display: none;
+}
+
+.tarjeta-tablero .icono {
+    flex-shrink: 0;
+}
+
+.tablero-en-curso {
+    border-color: var(--principal);
+    background: var(--principal);
+    color: var(--texto-sobre-color);
+}
+
+.tablero-proyeccion {
+    border: 1px dashed var(--principal);
+    background: var(--principal-suave);
+    color: var(--principal-hover);
+}
+
+.tablero-trabajada {
+    border-color: transparent;
+    background: var(--advertencia-suave);
+    color: var(--advertencia-texto);
+}
+
+.tablero-hecha {
+    border-color: transparent;
+    background: var(--exito-suave);
+    color: var(--exito-texto);
+}
+
+.tablero-aproximada {
+    border-style: dashed;
+}
+
+/* Solo lo urgente por hacer es un bloque rojo lleno (alcance, Sección 6.3). */
+.tablero-urgente {
+    border-color: var(--error);
+    background: var(--error);
+    color: var(--texto-sobre-color);
+}
+
+.tarjeta-tablero:focus-visible {
+    outline: 3px solid var(--principal);
+    outline-offset: 2px;
+}
+
+/* Las de horario flexible de otro día, que todavía no tienen hora. */
+.tablero-sin-hora {
+    position: sticky;
+    left: 0;
+    grid-column: 1 / -1;
+    max-width: var(--ancho-visible, 100%);
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e2);
+    padding: 0 var(--e5) var(--e3);
+}
+
+.tablero-sin-hora-titulo {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.tablero-ficha-sin-hora {
+    position: static;
+    min-height: var(--alto-control);
+}
+
+/* Por atender: actividades del día sin nadie (nunca asignadas o devueltas). */
+.fila-por-atender {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+    padding: var(--e3) var(--e5);
+    border-bottom: 1px solid var(--borde);
+}
+
+.fila-por-atender:last-child {
+    border-bottom: none;
+}
+
+.fila-por-atender p {
+    margin: var(--e1) 0 0;
+}
+
+.seccion-apoyo .fila-por-atender {
+    padding-inline: 0;
+}
+
+.seccion-apoyo .fila-por-atender:first-child {
+    border-top: 1px solid var(--borde);
+}
+
+/* Sin panel, el mensaje vacío va pegado a su título, alineado a la izquierda. */
+.seccion-apoyo .estado-vacio {
+    padding: 0;
+    text-align: start;
+}
+
+@media (max-width: 50em) {
+    .tablero {
+        --ancho-persona: 8.5rem;
+        min-width: calc(var(--ancho-persona) + var(--horas-tablero, 12) * 6rem);
+    }
+
+    .tablero-persona {
+        padding-inline: var(--e4) var(--e2);
+    }
+
+    .leyenda-tablero,
+    .tablero-sin-hora,
+    .fila-por-atender {
+        padding-inline: var(--e4);
+    }
+
+    .aviso-tablero {
+        margin-inline: var(--e4);
+    }
+}
+
+/* ================= Información de la actividad (alcance, Sección 5.1) ================= */
+
+/* Editor del Administrador: primero se eligen los bloques; cada bloque elegido muestra su campo. */
+.selector-bloques {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e2);
+    margin-top: var(--e3);
+}
+
+.formulario .opcion-bloque {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    min-height: var(--alto-control);
+    margin: 0;
+    padding: 0 var(--e3);
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    font-weight: var(--peso-normal);
+    cursor: pointer;
+}
+
+.formulario .opcion-bloque:has(input:checked) {
+    border-color: var(--principal);
+    background: var(--principal-suave);
+    color: var(--principal-hover);
+    font-weight: var(--peso-fuerte);
+}
+
+.campos-informacion {
+    display: grid;
+    gap: var(--e4);
+    margin-top: var(--e4);
+}
+
+.campos-informacion > [hidden] {
+    display: none;
+}
+
+.lista-valores-entrada {
+    display: flex;
+    gap: var(--e2);
+    margin-top: var(--e1);
+}
+
+.lista-valores-entrada input {
+    flex: 1;
+    min-width: 0;
+}
+
+.valores-elegidos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e2);
+    margin: var(--e2) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.valores-elegidos li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    padding-inline-start: var(--e3);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-control);
+    background: var(--fondo);
+    font-size: var(--tamano-secundario);
+}
+
+.formulario .etiqueta-campo {
+    margin: 0 0 var(--e1);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+/* Detalle: "Para hacer el trabajo", con un subtítulo por bloque. */
+.detalle-subtitulo-seccion {
+    margin-top: var(--e5);
+}
+
+.detalle-bloque {
+    margin: var(--e3) 0 var(--e1);
+    font-size: var(--tamano-secundario);
+    color: var(--texto-secundario);
+}
+
+.lista-informacion {
+    margin: 0;
+    padding-inline-start: var(--e5);
+}
+
+.lista-informacion li + li {
+    margin-top: var(--e1);
+}
+
+.lista-precauciones {
+    padding: 0;
+    list-style: none;
+}
+
+.lista-precauciones li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+}
+
+.lista-precauciones .icono {
+    flex-shrink: 0;
+    margin-top: 0.2em;
+}
+
+/* "Falta información": ámbar suave, porque pide una acción del Administrador. */
+.etiqueta.etiqueta-falta-informacion {
+    background: var(--advertencia-suave);
+    color: var(--advertencia-texto);
+}
+
+/* En la tarjeta en curso: las precauciones en una línea y los pasos plegados, para que la tarjeta
+   no ocupe toda la pantalla. */
+.tarjeta-precauciones,
+.tarjeta-pasos {
+    margin: var(--e2) 0 0;
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
+.tarjeta-precauciones {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+}
+
+.tarjeta-precauciones .icono {
+    flex-shrink: 0;
+    margin-top: 0.15em;
+}
+
+.tarjeta-pasos summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    min-height: var(--alto-control);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+    list-style: none;
+}
+
+.tarjeta-pasos summary::-webkit-details-marker {
+    display: none;
+}
+
+.tarjeta-pasos .lista-informacion {
+    margin-bottom: var(--e2);
+}
+
+/* En la columna de estado de Actividades, "Falta información" va debajo del estado, a su medida. */
+.dato-doble > .etiqueta {
+    display: flex;
+    width: fit-content;
+}
+
+.dato-doble > .etiqueta + .etiqueta {
+    margin-top: var(--e1);
+}
+
+.tarjeta-pasos + .tarjeta-tiempo,
+.tarjeta-precauciones + .tarjeta-tiempo {
+    margin-top: var(--e3);
+}
+
+/* ================= Operario: Inicio y encabezado de Hoy (alcance, Sección 6.1) ================= */
+
+.inicio-encabezado {
+    margin-bottom: var(--e4);
+}
+
+.inicio-encabezado h1,
+.inicio-encabezado p {
+    margin: 0;
+}
+
+.inicio-encabezado + .aviso {
+    margin-bottom: var(--e4);
+}
+
+.inicio-panel {
+    display: grid;
+    gap: var(--e4);
+    padding: var(--e5);
+}
+
+.inicio-panel > * {
+    margin: 0;
+}
+
+.inicio-subtitulo {
+    margin: var(--e2) 0 0;
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
+}
+
+.inicio-nota {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+/* Lo que sigue: se toca para ir a Hoy. */
+.inicio-sigue {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--e3);
+    min-height: var(--alto-control);
+    padding: var(--e3) var(--e4);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-control);
+    color: var(--texto);
+    text-decoration: none;
+}
+
+.inicio-sigue:hover {
+    border-color: var(--borde-control);
+}
+
+.inicio-sigue-textos {
+    display: grid;
+    gap: var(--e1);
+}
+
+.inicio-sigue-etiqueta {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.inicio-acciones {
+    display: grid;
+    justify-items: center;
+    gap: var(--e3);
+}
+
+.inicio-acciones .boton-bloque {
+    width: 100%;
+}
+
+/* La hora, grande, y la barra del turno: cuánto del turno ya pasó. */
+.reloj-turno > * {
+    margin: 0;
+}
+
+.reloj-hora {
+    font-size: var(--tamano-cronometro);
+    font-weight: var(--peso-fuerte);
+    line-height: 1.1;
+}
+
+.reloj-estado {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-turno {
+    height: var(--e2);
+    margin-top: var(--e3);
+    overflow: hidden;
+    border-radius: var(--e1);
+    background: var(--neutro-suave);
+}
+
+.barra-turno-relleno {
+    height: 100%;
+    background: var(--principal);
+}
+
+.barra-extremos {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--e1);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+/* La jornada en una barra: lo trabajado, lo que falta y, si no cabe, lo que pasa rayado en coral. */
+.barra-jornada-pista {
+    position: relative;
+    display: flex;
+    height: var(--e4);
+    overflow: hidden;
+    border-radius: var(--e1);
+    background: var(--neutro-suave);
+}
+
+.barra-trabajado {
+    background: var(--principal);
+}
+
+.barra-por-hacer {
+    background: color-mix(in srgb, var(--principal) 35%, var(--superficie));
+}
+
+.barra-exceso {
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    border-left: 2px solid var(--texto);
+    background: repeating-linear-gradient(135deg, var(--marca) 0 var(--e1), transparent var(--e1) var(--e3));
+}
+
+.barra-leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e1) var(--e4);
+    margin: var(--e2) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-leyenda li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+}
+
+.barra-leyenda li::before {
+    content: "";
+    width: var(--e4);
+    height: var(--e2);
+    border-radius: 2px;
+}
+
+.barra-leyenda strong {
+    color: var(--texto);
+}
+
+.leyenda-trabajado::before { background: var(--texto); }
+.leyenda-por-hacer::before { background: color-mix(in srgb, var(--texto) 30%, var(--superficie)); }
+.leyenda-libre::before { background: var(--neutro-suave); }
+.leyenda-exceso::before {
+    background: repeating-linear-gradient(135deg, var(--marca) 0 2px, transparent 2px 5px);
+    box-shadow: inset 0 0 0 1px var(--marca);
+}
+
+.barra-jornada-aviso {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+    margin: var(--e2) 0 0;
+    color: var(--advertencia-texto);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-jornada-aviso .icono {
+    flex-shrink: 0;
+    margin-top: 0.15em;
+}
+
+.turno-encabezado .reloj-turno + div {
+    margin-top: var(--e4);
+}
+
+.turno-encabezado #barra-jornada {
+    margin-top: var(--e4);
+}
+
+/* Hoy sin la entrada marcada, o después de la salida: modo de lectura. */
+.aviso-lectura {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e2) var(--e3);
+}
+
+.aviso-lectura-texto {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: var(--e2);
+}
+
+.aviso-lectura .boton-texto {
+    min-height: 0;
+    padding: 0;
+}
+
+/* "Ordenar mi día", en la línea de tiempo antes de lo que sigue. */
+.linea-ordenar {
+    grid-column: 2;
+    justify-self: start;
+    padding-inline: 0;
+}
+
+/* Lo que pasa del fin del turno: su horario y cuánto implica quedarse, con el coral de la sobrecarga. */
+.tarjeta-fuera-turno,
+.orden-horario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e1) var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.tarjeta-fuera-turno {
+    margin-top: var(--e1);
+}
+
+.etiqueta.etiqueta-fuera-turno {
+    background: var(--marca-suave);
+    color: var(--texto);
+}
+
+.linea-fin-turno-extra {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--texto);
+}
+
+/* El final del día: "Marcar salida", separada de lo demás. */
+.fin-del-dia {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+    margin-top: var(--e6);
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+}
+
+.fin-del-dia p {
+    margin: 0;
+    color: var(--texto-secundario);
+}
+
+/* ================= Dirección visual: la jornada como capacidad (Hoy del Operario) ================= */
+
+/* Lienzo blanco, como un planificador: el día se lee sobre la superficie, sin cajas con sombra. */
+body.lienzo {
+    background: var(--superficie);
+}
+
+.barra-jornada-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0 0 var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-jornada-total strong {
+    color: var(--texto);
+    font-size: var(--tamano-texto);
+}
+
+/* Bloque de tiempo: el tono suave de su categoría, su ícono y su duración. */
+.bloque-dia {
+    --tono: var(--neutro-suave);
+    --acento: var(--neutro);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--e1);
+    width: 100%;
+    padding: var(--e2) var(--e3);
+    border: 1px solid transparent;
+    border-radius: var(--radio-control);
+    background: var(--tono);
+    color: var(--texto);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.bloque-dia:hover {
+    border-color: var(--acento);
+}
+
+.bloque-cat-operacion    { --tono: var(--cat-operacion-suave);    --acento: var(--cat-operacion); }
+.bloque-cat-administrativa { --tono: var(--cat-administrativa-suave); --acento: var(--cat-administrativa); }
+.bloque-cat-revision       { --tono: var(--cat-revision-suave);       --acento: var(--cat-revision); }
+.bloque-cat-atencion      { --tono: var(--cat-atencion-suave);      --acento: var(--cat-atencion); }
+.bloque-cat-traslado     { --tono: var(--cat-traslado-suave);     --acento: var(--cat-traslado); }
+
+.bloque-cabeza {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
+.bloque-nombre {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: var(--e2);
+    line-height: var(--interlineado-h3);
+}
+
+.bloque-nombre .icono {
+    flex-shrink: 0;
+    margin-top: 0.15em;
+    color: var(--acento);
+}
+
+.bloque-duracion {
+    flex-shrink: 0;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+.bloque-datos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e1) var(--e2);
+    padding-left: calc(1.25rem + var(--e2));
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
+.bloque-dia .tarjeta-fuera-turno {
+    padding-left: calc(1.25rem + var(--e2));
+}
+
+/* Dentro del bloque, las señales van como texto con su ícono y su color, sin fondo: el bloque ya es
+   el color de fondo, y una píldora encima de otra satura (sigue la regla de color, ícono y texto). */
+.bloque-dia .etiqueta {
+    padding: 0;
+    background: none;
+    font-weight: var(--peso-fuerte);
+}
+
+.bloque-dia .etiqueta-retraso {
+    color: var(--advertencia-texto);
+}
+
+/* Sobre los tonos de categoría, las prioridades usan su texto oscuro: así cumplen 4,5:1. */
+.bloque-dia .prioridad-alta  { color: var(--alta-texto); }
+.bloque-dia .prioridad-media { color: var(--advertencia-texto); }
+
+/* Proyectado: hora aproximada. Rayado y con borde punteado, como lo tentativo de un planificador. */
+.bloque-proyectado {
+    border: 1px dashed var(--acento);
+}
+
+/* Terminado: el mismo tono, más tenue; el ícono pasa a ser la marca de visto. */
+.bloque-hecho {
+    background: color-mix(in srgb, var(--tono) 55%, var(--superficie));
+}
+
+.bloque-hecho .bloque-nombre {
+    color: var(--texto-secundario);
+    font-weight: var(--peso-normal);
+}
+
+.bloque-hecho .bloque-nombre .icono {
+    color: var(--exito);
+}
+
+/* Vencida: hora fija que pasó sin iniciarse. Sin el color de su categoría, para no confundirse con
+   lo que está por hacer ni con lo terminado. */
+.bloque-vencido {
+    --tono: var(--neutro-suave);
+    --acento: var(--advertencia-texto);
+    border: 1px solid var(--advertencia);
+}
+
+/* El tiempo libre ocupa espacio: el texto va centrado en su hueco. */
+.lienzo .linea-nodo-intervalo {
+    align-items: center;
+}
+
+.lienzo .linea-nodo-intervalo .linea-intervalo {
+    align-self: center;
+}
+
+/* ================= Cinta del día: el elemento firma (dirección visual "Cinta del día") ================= */
+
+/* La hora y las cifras que mandan llevan la voz de la marca. */
+.cifra-firma,
+.lienzo .linea-hora,
+.lienzo .cronometro {
+    font-family: var(--fuente-cifras);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.cinta-dia > * {
+    margin: 0;
+}
+
+.cinta-cabeza {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
+.cinta-hora {
+    font-size: 2.75rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.cinta-estado {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    text-align: right;
+}
+
+/* La cinta: el marco es el turno; dentro, una actividad por segmento; la aguja es la hora actual. */
+.cinta {
+    position: relative;
+    height: 1.75rem;
+    margin-top: var(--e4);
+}
+
+.cinta-marco {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    border: 1px solid var(--borde-control);
+    border-radius: 3px;
+    background: var(--neutro-suave);
+}
+
+.cinta-desborde {
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    border-radius: 0 3px 3px 0;
+    background: repeating-linear-gradient(135deg, var(--marca) 0 2px, var(--marca-suave) 2px 7px);
+}
+
+.cinta-segmento {
+    position: absolute;
+    inset-block: 4px;
+    border-radius: 2px;
+}
+
+.cinta-hecho,
+.cinta-curso {
+    background: var(--acento);
+}
+
+.cinta-pendiente {
+    background: var(--tono);
+    box-shadow: inset 0 0 0 1px var(--acento);
+}
+
+.cinta-urgente {
+    background: var(--error);
+    box-shadow: none;
+}
+
+.cinta-aguja {
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--texto);
+}
+
+.cinta-aguja::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--texto);
+}
+
+.cinta-escala {
+    position: relative;
+    height: 1.25rem;
+    margin-top: var(--e1);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.cinta-escala > span {
+    position: absolute;
+    top: 0;
+}
+
+.cinta-escala-inicio {
+    left: 0;
+}
+
+.cinta-escala-fin {
+    transform: translateX(-100%);
+}
+
+.cinta-escala-desborde {
+    padding-left: var(--e2);
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.cinta-total {
+    margin-top: var(--e3);
+    color: var(--texto-secundario);
+}
+
+.cinta-total strong {
+    color: var(--texto);
+    font-size: 1.5rem;
+    line-height: 1.2;
+}
+
+.cinta-dia .barra-leyenda {
+    margin-top: var(--e1);
+}
+
+/* El fin del turno: una línea fuerte. Lo que queda debajo, sobre la franja coral del desborde. */
+.lienzo .linea-fin-turno {
+    min-height: 0;
+    padding: var(--e2) 0 var(--e1);
+    border: 0;
+    border-top: 2px solid var(--texto);
+    border-radius: 0;
+    background: none;
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.lienzo .linea-nodo-desborde {
+    background: repeating-linear-gradient(135deg, var(--marca-suave) 0 6px, transparent 6px 12px);
+}
+
+/* Inicio sobre el lienzo: sin tarjeta; la cinta y las acciones bastan. */
+.lienzo .inicio-panel {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
 }

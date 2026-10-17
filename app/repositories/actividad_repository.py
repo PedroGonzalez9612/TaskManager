@@ -90,8 +90,11 @@ class ActividadRepository(BaseRepository):
         ])
         return {grupo["_id"]: grupo["cantidad"] for grupo in grupos}
 
-    def delete_by_requerimiento(self, requerimiento_id: str) -> None:
-        self.collection.delete_many({"requerimiento_id": requerimiento_id})
+    def contar_sin_terminar(self, actividad_ids: list) -> int:
+        """Cuántas de esas actividades no han llegado a un estado final."""
+        oids = [oid for oid in map(self.to_object_id, actividad_ids) if oid]
+        finales = [estado.value for estado in EstadoActividad if estado.es_final]
+        return self.collection.count_documents({"_id": {"$in": oids}, "estado": {"$nin": finales}}) if oids else 0
 
     def contar_por_estado(self, requerimiento_id: str = None):
         match_stage = {"$match": {"requerimiento_id": requerimiento_id}} if requerimiento_id else None

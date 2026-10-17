@@ -3,6 +3,9 @@ import pytest
 
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 
 def ver(servicios, actividad, solicitante):
     return servicios.actividades.obtener_actividad(actividad["id"], solicitante)

@@ -13,7 +13,7 @@ AHORA = datetime(2026, 10, 11, 5, 0, tzinfo=timezone.utc)
 
 def actividad(hora=None, estado=EstadoActividad.ASIGNADA):
     return Actividad(codigo="OT-0001", titulo="Calibrar sensor", descripcion="", empresa_id="emp1",
-                     categoria="MANTENIMIENTO", ubicacion="Línea 1", tiempo_estimado_min=60,
+                     categoria="OPERACION", ubicacion="Línea 1", tiempo_estimado_min=60,
                      fecha_programada="2026-10-10", hora_programada=hora, estado=estado)
 
 

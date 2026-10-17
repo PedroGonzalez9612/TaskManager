@@ -1,4 +1,6 @@
-from flask import Blueprint, jsonify, request
+from urllib.parse import quote
+
+from flask import Blueprint, Response, jsonify, request
 
 from app.models.enums import Rol
 from app.services.composicion import construir_servicios
@@ -11,6 +13,8 @@ def create_blueprint(db, reloj=None):
     servicios = construir_servicios(db, reloj=reloj)
     service = servicios.actividades
     ejecucion_service = servicios.ejecucion
+    evidencia_service = servicios.evidencias
+    adjunto_service = servicios.adjuntos
 
     @bp.post("")
     @requiere_rol(Rol.ADMINISTRADOR)
@@ -41,12 +45,6 @@ def create_blueprint(db, reloj=None):
     def actualizar_actividad(actividad_id):
         data = request.get_json(force=True, silent=True) or {}
         return jsonify(service.actualizar_actividad(actividad_id, data, usuario_actual())), 200
-
-    @bp.delete("/<actividad_id>")
-    @requiere_rol(Rol.ADMINISTRADOR)
-    def eliminar_actividad(actividad_id):
-        service.eliminar_actividad(actividad_id, usuario_actual())
-        return "", 204
 
     @bp.post("/<actividad_id>/cancelar")
     @requiere_rol(Rol.ADMINISTRADOR)
@@ -90,7 +88,48 @@ def create_blueprint(db, reloj=None):
             actividad_id, usuario_actual(), data.get("motivo"), data.get("detalle"),
         )), 200
 
+    # ---------- Evidencia de la ejecución: fotos y adjuntos ----------
+
+    @bp.post("/<actividad_id>/evidencias")
+    @requiere_rol(Rol.OPERARIO)
+    def agregar_evidencia(actividad_id):
+        # El archivo llega como multipart/form-data, en el campo "archivo".
+        archivo = request.files.get("archivo")
+        contenido = archivo.read() if archivo else b""
+        nombre = archivo.filename if archivo else ""
+        return jsonify(evidencia_service.agregar(actividad_id, usuario_actual(), contenido, nombre)), 201
+
+    @bp.get("/<actividad_id>/evidencias/<evidencia_id>")
+    @requiere_rol(Rol.OPERARIO, Rol.ADMINISTRADOR)
+    def obtener_evidencia(actividad_id, evidencia_id):
+        return _archivo(*evidencia_service.obtener(actividad_id, evidencia_id, usuario_actual()))
+
+    # ---------- Adjuntos de la información de la actividad ----------
+
+    @bp.post("/<actividad_id>/adjuntos")
+    @requiere_rol(Rol.ADMINISTRADOR)
+    def agregar_adjunto(actividad_id):
+        archivo = request.files.get("archivo")
+        contenido = archivo.read() if archivo else b""
+        nombre = archivo.filename if archivo else ""
+        return jsonify(adjunto_service.agregar(actividad_id, usuario_actual(), contenido, nombre)), 201
+
+    @bp.get("/<actividad_id>/adjuntos/<adjunto_id>")
+    @requiere_rol(Rol.OPERARIO, Rol.ADMINISTRADOR)
+    def obtener_adjunto(actividad_id, adjunto_id):
+        return _archivo(*adjunto_service.obtener(actividad_id, adjunto_id, usuario_actual()))
+
     return bp
+
+
+def _archivo(contenido: bytes, tipo: str, nombre: str) -> Response:
+    """Un archivo guardado (evidencia o adjunto), para verlo en el navegador."""
+    respuesta = Response(contenido, mimetype=tipo)
+    respuesta.headers["X-Content-Type-Options"] = "nosniff"
+    respuesta.headers["Cache-Control"] = "private, max-age=3600"
+    # "inline": el navegador lo muestra (foto o PDF) en lugar de descargarlo.
+    respuesta.headers["Content-Disposition"] = f"inline; filename*=UTF-8''{quote(nombre)}"
+    return respuesta
 
 
 def _cuerpo_json() -> dict:

@@ -15,9 +15,13 @@ function crearFilaEmpresa(empresa) {
     fila.href = `/static/superadmin/empresa.html?id=${encodeURIComponent(empresa.id)}`;
 
     const textos = crearElemento("span");
-    const meta = crearElemento("span", "fila-meta");
-    meta.append(crearElemento("span", "codigo", empresa.nit), ` · ${empresa.sector}`);
-    textos.append(crearElemento("span", "fila-nombre", empresa.nombre), meta);
+    const meta = crearElemento("span", "fila-meta datos-linea");
+    meta.append(crearElemento("span", "codigo", empresa.nit), crearElemento("span", "", empresa.sector));
+    const nombre = crearElemento("span", "fila-nombre", empresa.nombre);
+    if (empresa.activa === false) {
+        nombre.append(" ", crearConIcono("span", "etiqueta", "minus", "Desactivada"));
+    }
+    textos.append(nombre, meta);
 
     const medidores = crearElemento("span", "medidores");
     medidores.append(...crearMedidoresEmpresa(empresa));
@@ -35,7 +39,7 @@ function pintarResumen() {
         plural(empresas.length, "empresa", "empresas"),
         plural(sumar("ADMINISTRADOR"), "administrador", "administradores"),
         plural(sumar("OPERARIO"), "operario", "operarios"),
-    ].join(" · ");
+    ].join(", ");
 }
 
 function pintarLista() {

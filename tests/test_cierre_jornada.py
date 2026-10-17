@@ -12,6 +12,9 @@ from app.models.pausa import Pausa
 from app.services.cierre_jornada_service import momento_de_cierre
 from app.utils.errors import ValidationError
 
+# Las pruebas de este módulo ejecutan actividades: los operarios ya marcaron su entrada.
+pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
+
 HOY = "2026-10-10"          # La fecha programada de las actividades que crea conftest.py.
 MANANA = "2026-10-11"
 MEDIANOCHE = datetime(2026, 10, 11, 5, 0)    # Fin del día 10 en Bogotá, en UTC. Mongo guarda sin zona.
@@ -257,7 +260,7 @@ def test_no_toca_las_terminadas_ni_las_de_hoy(servicios, empresa, crear_activida
 
 
 def actividad_de(servicios, admin, titulo="Ajena"):
-    datos = {"titulo": titulo, "ubicacion": "Bodega", "categoria": "LOGISTICA", "tiempo_estimado_min": 30,
+    datos = {"titulo": titulo, "ubicacion": "Bodega", "categoria": "TRASLADO", "tiempo_estimado_min": 30,
              "fecha_programada": HOY}
     return servicios.actividades.crear_actividad(datos, admin)
 

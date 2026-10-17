@@ -1,6 +1,7 @@
 from typing import NamedTuple
 
 from app.models.enums import MOTIVOS_DEVOLUCION, MOTIVOS_PAUSA_FIJOS, TipoCatalogo
+from app.models.informacion_actividad import InformacionActividad
 from app.utils.errors import NotFoundError, ValidationError
 
 OPCION_OTRO = "Otro"
@@ -19,6 +20,11 @@ _MOTIVOS_FIJOS = {
 }
 # Las listas que se van llenando con lo que se escribe en "Otro".
 _TIPOS_QUE_SE_LLENAN = (MOTIVO_PAUSA, MOTIVO_CANCELACION)
+# Las sugerencias de la información de la actividad: sin valores fijos y sin "Otro" (se escribe directo).
+TIPOS_DE_SUGERENCIA = (
+    TipoCatalogo.HERRAMIENTA.value, TipoCatalogo.EQUIPO.value, TipoCatalogo.PRECAUCION.value,
+    TipoCatalogo.CONTACTO.value,
+)
 
 
 def _clave(texto) -> str:
@@ -69,6 +75,19 @@ class CatalogoService:
                 vistos.add(_clave(motivo))
                 lista.append(motivo)
         return lista + [OPCION_OTRO]
+
+    def sugerencias(self, solicitante: dict, tipo: str) -> list:
+        """Lo que la empresa ya registró en un bloque de la información de la actividad (herramientas,
+        equipo, precauciones o contacto), en orden alfabético."""
+        if tipo not in TIPOS_DE_SUGERENCIA:
+            raise NotFoundError("Esa lista no existe")
+        return self.catalogo_repository.listar(solicitante["empresa_id"], tipo)
+
+    def registrar_informacion(self, empresa_id: str, informacion: InformacionActividad) -> None:
+        """Guarda en las listas de la empresa lo escrito en la información de una actividad, para
+        sugerirlo la próxima vez. Lo que ya estaba no se repite (lo garantiza el repositorio)."""
+        for tipo, valor in informacion.valores_de_catalogo():
+            self.catalogo_repository.registrar(empresa_id, tipo.value, valor)
 
     def registrar_motivo(self, empresa_id: str, tipo: str, elegido: MotivoElegido) -> None:
         """Agrega a la lista de la empresa el motivo que alguien escribió en "Otro". No hace nada

@@ -35,14 +35,16 @@ async function iniciarPantalla() {
     const estadoVacio = document.getElementById("estado-vacio");
 
     const recargar = async () => {
-        const usuarios = await cargarUsuarios(usuario.empresa_id, lista, estadoVacio, abrirAsignarTurno);
+        const usuarios = await cargarUsuarios(usuario.empresa_id, lista, estadoVacio, abrirAsignarTurno,
+            { usuarioActualId: usuario.id, alCambiar: recargar });
         await Promise.all([cargarTurnos(), cargarAsistencia()]);
-        const contar = (rol) => usuarios.filter((u) => u.rol === rol).length;
+        // El subtítulo cuenta a quienes trabajan hoy: los desactivados no.
+        const contar = (rol) => usuarios.filter((u) => u.rol === rol && u.activo !== false).length;
         const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
         document.getElementById("subtitulo").textContent = [
             plural(contar("OPERARIO"), "operario", "operarios"),
             plural(contar("ADMINISTRADOR"), "administrador", "administradores"),
-        ].join(" · ");
+        ].join(" y ");
         pintarLimites(await pedirApi(`/empresas/${encodeURIComponent(usuario.empresa_id)}`));
     };
     configurarCreacionUsuario(

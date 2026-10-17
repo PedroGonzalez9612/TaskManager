@@ -12,3 +12,5 @@ pytest-cov==5.0.0
 pysonar==1.9.0.5762
 # Base de datos en memoria para probar servicios y rutas sin un MongoDB real.
 mongomock==4.3.0
+# Documentos de entrega en PDF a partir de Markdown: python herramientas/documento_pdf.py
+markdown==3.11

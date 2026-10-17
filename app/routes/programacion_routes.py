@@ -24,6 +24,14 @@ def create_blueprint(db, reloj=None):
         actividad_ids = data.get("actividad_ids") if isinstance(data, dict) else None
         return jsonify(service.guardar_orden(usuario_actual(), actividad_ids)), 200
 
+    @bp.post("/orden-del-dia/vista-previa")
+    @requiere_rol(Rol.OPERARIO)
+    def vista_previa_orden():
+        """La programación con un orden que todavía no se guarda."""
+        data = request.get_json(force=True, silent=True)
+        actividad_ids = data.get("actividad_ids") if isinstance(data, dict) else None
+        return jsonify(service.vista_previa_orden(usuario_actual(), actividad_ids)), 200
+
     @bp.delete("/orden-del-dia")
     @requiere_rol(Rol.OPERARIO)
     def restablecer_orden():

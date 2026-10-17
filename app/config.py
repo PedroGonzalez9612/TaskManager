@@ -14,8 +14,9 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_HTTPONLY = True
 
-    # Tamaño máximo de una petición (protege la subida del logo). El límite del logo es menor (512 KB).
-    MAX_CONTENT_LENGTH = 1024 * 1024
+    # Tamaño máximo de una petición: protege las subidas de archivos. Cada uno tiene su límite, menor:
+    # 512 KB el logo y 5 MB cada evidencia; el resto es margen para el formulario.
+    MAX_CONTENT_LENGTH = 6 * 1024 * 1024
 
     # Superadmin que se crea la primera vez que arranca el sistema (si aún no existe ninguno).
     SUPERADMIN_NOMBRE = os.environ.get("SUPERADMIN_NOMBRE", "Superadmin")
