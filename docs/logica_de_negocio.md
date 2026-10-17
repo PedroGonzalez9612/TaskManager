@@ -62,7 +62,7 @@ flowchart LR
 Una actividad es la unidad de trabajo. Tiene:
 
 - **Código** consecutivo por empresa (por ejemplo, `OT-0042`), título, descripción y ubicación (línea, máquina o área).
-- **Categoría:** Producción, Mantenimiento, Calidad, Limpieza o Logística.
+- **Categoría:** Operación, Atención, Administrativa, Revisión o Traslado. Sirven para cualquier empresa.
 - **Prioridad:** Baja, Media, Alta o Urgente. Urgente significa que debe interrumpir lo que el operario esté haciendo. El sistema ordena por un peso numérico de la prioridad, nunca comparando textos.
 - **Tiempo estimado:** el de la actividad completa. Si la hacen tres operarios, cada uno la suma completa a su carga; no se divide.
 - **Fecha programada:** la jornada a la que pertenece. No puede ser un día que ya pasó.
