@@ -18,6 +18,7 @@ const VISTAS_POR_ROL = {
         { texto: "Usuarios", icono: "users", destino: "/static/admin/usuarios.html", rutas: ["/static/admin/usuarios.html"] },
     ],
     OPERARIO: [
+        { texto: "Inicio", icono: "house", destino: "/static/operario/inicio.html", rutas: ["/static/operario/inicio.html"] },
         { texto: "Hoy", icono: "list-checks", destino: "/static/operario/index.html", rutas: ["/static/operario/index.html"] },
         { texto: "Semana", icono: "calendar-days", destino: "/static/operario/semana.html", rutas: ["/static/operario/semana.html"] },
         { texto: "Resumen", icono: "chart-column", destino: "/static/operario/resumen.html", rutas: ["/static/operario/resumen.html"] },

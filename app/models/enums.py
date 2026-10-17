@@ -23,11 +23,12 @@ _PESO_PRIORIDAD = {"BAJA": 1, "MEDIA": 2, "ALTA": 3, "URGENTE": 4}
 
 
 class Categoria(str, Enum):
-    PRODUCCION = "PRODUCCION"
-    MANTENIMIENTO = "MANTENIMIENTO"
-    CALIDAD = "CALIDAD"
-    LIMPIEZA = "LIMPIEZA"
-    LOGISTICA = "LOGISTICA"
+    """Tipos de trabajo que sirven para cualquier empresa (alcance, Sección 5.1)."""
+    OPERACION = "OPERACION"             # El trabajo principal del área.
+    ATENCION = "ATENCION"               # Atender a clientes o a personas.
+    ADMINISTRATIVA = "ADMINISTRATIVA"   # Registros, trámites e informes.
+    REVISION = "REVISION"               # Controlar, verificar o inspeccionar.
+    TRASLADO = "TRASLADO"               # Mover, entregar o despachar.
 
 
 class EstadoRequerimiento(str, Enum):

@@ -118,7 +118,7 @@ def crear_actividad(servicios, empresa):
             "titulo": titulo,
             "ubicacion": "Línea 2",
             "requerimiento_id": empresa.requerimiento_id,
-            "categoria": "MANTENIMIENTO",
+            "categoria": "OPERACION",
             "prioridad": "MEDIA",
             "tiempo_estimado_min": 60,
             "fecha_programada": HOY,

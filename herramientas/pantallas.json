@@ -36,6 +36,12 @@
         },
         {
             "rol": "operario",
+            "nombre": "inicio",
+            "ruta": "/static/operario/inicio.html",
+            "esperar": "#inicio-panel:not([hidden])"
+        },
+        {
+            "rol": "operario",
             "nombre": "hoy",
             "ruta": "/static/operario/index.html"
         },

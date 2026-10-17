@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <title>Inicio — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando ancho-angosto lienzo">
+    <!-- Inicio: lo primero que ve el Operario después de iniciar sesión (alcance, Sección 6.1). Lo
+         recibe, le muestra su turno y su jornada, y le deja marcar la entrada y la salida. -->
+    <main class="principal">
+        <header class="inicio-encabezado">
+            <p id="fecha-inicio" class="turno-fecha"></p>
+            <h1 id="saludo">Hola</h1>
+        </header>
+        <output id="aviso-turno" class="aviso aviso-info" hidden></output>
+        <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando tu jornada…</p>
+        <section id="inicio-panel" class="panel inicio-panel" aria-labelledby="saludo" hidden></section>
+        <section id="inicio-salida" class="fin-del-dia" aria-label="Terminar la jornada" hidden></section>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/actividades-comun.js"></script>
+    <script src="/static/operario/operario-comun.js"></script>
+    <script src="/static/operario/inicio.js"></script>
+</body>
+</html>

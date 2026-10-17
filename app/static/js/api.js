@@ -7,7 +7,7 @@ const RUTA_LOGIN = "/static/login.html";
 const INICIO_POR_ROL = {
     SUPERADMIN: "/static/superadmin/empresas.html",
     ADMINISTRADOR: "/static/admin/equipo.html",
-    OPERARIO: "/static/operario/index.html",
+    OPERARIO: "/static/operario/inicio.html",
 };
 
 // El servidor rechaza las peticiones que cambian datos si no traen este encabezado: así sabe que
@@ -140,11 +140,11 @@ const NOMBRE_ESTADO = {
 };
 
 const NOMBRE_CATEGORIA = {
-    PRODUCCION: "Producción",
-    MANTENIMIENTO: "Mantenimiento",
-    CALIDAD: "Calidad",
-    LIMPIEZA: "Limpieza",
-    LOGISTICA: "Logística",
+    OPERACION: "Operación",
+    ATENCION: "Atención",
+    ADMINISTRATIVA: "Administrativa",
+    REVISION: "Revisión",
+    TRASLADO: "Traslado",
 };
 
 const NOMBRE_ROL = {

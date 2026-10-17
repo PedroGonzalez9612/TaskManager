@@ -16,6 +16,12 @@ from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc
 # Lo que el operario todavía tiene por hacer: es lo único que se puede ordenar.
 ESTADOS_PENDIENTES = (EstadoActividad.ASIGNADA.value, EstadoActividad.PAUSADA.value)
 
+# Minutos después del inicio del turno a partir de los cuales una entrada sin marcar es una llegada
+# tarde (alcance, Sección 5.1). Es la misma para todas las empresas mientras no se defina por empresa.
+TOLERANCIA_ENTRADA_MIN = 10
+# Lo que todavía ocupa tiempo del operario: lo que está en curso y lo pendiente.
+TRAMOS_CON_TIEMPO_POR_DELANTE = ("EN_CURSO", "PENDIENTE")
+
 
 def _motivo_para_no_ordenar(actividad):
     """Por qué esa actividad no puede entrar en el orden del día, o None si sí puede.
@@ -40,6 +46,25 @@ def _turno_de_hoy(turno, fecha: str, zona: str) -> dict | None:
         "inicio": turno.inicio_en(fecha, zona), "fin": turno.fin_en(fecha, zona),
         "capacidad_min": turno.capacidad_min,
     }
+
+
+def _minutos_fuera_del_turno(tramo: dict, fin_turno) -> int:
+    """Cuántos minutos del tramo caen después del fin del turno: el tiempo que el operario tendría
+    que quedarse para hacerlo. Lo ya terminado no cuenta."""
+    if fin_turno is None or tramo["tipo"] not in TRAMOS_CON_TIEMPO_POR_DELANTE or tramo["fin"] <= fin_turno:
+        return 0
+    return round((tramo["fin"] - max(tramo["inicio"], fin_turno)).total_seconds() / 60)
+
+
+def _minutos_de_retraso(turno_hoy, asistencia, fecha: str, ahora) -> int:
+    """Minutos que lleva el turno empezado sin la entrada marcada, si ya pasó la tolerancia; si no, 0.
+    Una asistencia de otra jornada (que quedó sin salida) no cuenta como entrada de hoy."""
+    if not turno_hoy or (asistencia and asistencia.get("jornada") == fecha):
+        return 0
+    if not turno_hoy["inicio"] <= ahora < turno_hoy["fin"]:
+        return 0
+    minutos = int((ahora - turno_hoy["inicio"]).total_seconds() // 60)
+    return minutos if minutos > TOLERANCIA_ENTRADA_MIN else 0
 
 
 def _validar_ids(actividad_ids) -> list:
@@ -92,12 +117,7 @@ class ProgramacionService:
         actividad_ids = _validar_ids(actividad_ids)
         ahora = self.reloj()
         jornada = self._jornada(solicitante, ahora)
-
-        por_id = {actividad["id"]: actividad for actividad in jornada.actividades}
-        for actividad_id in actividad_ids:
-            motivo = _motivo_para_no_ordenar(por_id.get(actividad_id))
-            if motivo:
-                raise ValidationError(motivo)
+        self._validar_orden(jornada, actividad_ids)
 
         orden = OrdenJornada(solicitante["id"], jornada.fecha, actividad_ids, fecha_actualizacion=ahora)
         if orden.es_personalizado:
@@ -105,6 +125,26 @@ class ProgramacionService:
         else:
             self.orden_jornada_repository.eliminar(solicitante["id"], jornada.fecha)
         return self._armar(solicitante, jornada, ahora)
+
+    def vista_previa_orden(self, solicitante: dict, actividad_ids) -> dict:
+        """La programación como quedaría con ese orden, sin guardarlo: mientras el operario ordena su
+        día, cada actividad muestra la hora en que quedaría (alcance, Sección 5.1). Las mismas reglas
+        que al guardar."""
+        self._exigir_operario(solicitante)
+        actividad_ids = _validar_ids(actividad_ids)
+        ahora = self.reloj()
+        jornada = self._jornada(solicitante, ahora)
+        self._validar_orden(jornada, actividad_ids)
+        orden = OrdenJornada(solicitante["id"], jornada.fecha, actividad_ids, fecha_actualizacion=ahora)
+        return self._armar(solicitante, jornada, ahora, orden)
+
+    @staticmethod
+    def _validar_orden(jornada, actividad_ids: list) -> None:
+        por_id = {actividad["id"]: actividad for actividad in jornada.actividades}
+        for actividad_id in actividad_ids:
+            motivo = _motivo_para_no_ordenar(por_id.get(actividad_id))
+            if motivo:
+                raise ValidationError(motivo)
 
     def restablecer_orden(self, solicitante: dict) -> dict:
         """Quita el orden que el operario eligió para su jornada vigente: vuelve a valer el sugerido."""
@@ -155,14 +195,23 @@ class ProgramacionService:
         )
         return _Jornada(fecha, zona, actividades, turnos)
 
-    def _armar(self, operario: dict, jornada: _Jornada, ahora) -> dict:
+    def _armar(self, operario: dict, jornada: _Jornada, ahora, orden=None) -> dict:
+        """La programación de la jornada. Con "orden" se usa ese orden (vista previa); sin él, el
+        que el operario guardó."""
         fecha, zona, turnos = jornada.fecha, jornada.zona, jornada.turnos
-        orden = self._orden_de(operario["id"], fecha)
+        orden = orden or self._orden_de(operario["id"], fecha)
         turno = turnos.turno_de(operario["id"], fecha)
         cierre = turnos.cierre_de([operario["id"]], fecha, zona)
         programacion = programar_dia(jornada.actividades, orden, ahora, fecha, zona,
                                      turnos.capacidad_de(operario["id"], fecha), cierre)
         turno_hoy = _turno_de_hoy(turno, fecha, zona)
+        asistencia = self.asistencia_service.actual(operario["id"], fecha, ahora)
+        # Lo que pasaría del fin del turno: cuánto tendría que quedarse el operario (alcance, Sección 5.1).
+        fin_turno = turno_hoy["fin"] if turno_hoy else None
+        for tramo in programacion["tramos"]:
+            tramo["fuera_del_turno_min"] = _minutos_fuera_del_turno(tramo, fin_turno)
+        programacion["resumen"]["fuera_del_turno_min"] = sum(
+            tramo["fuera_del_turno_min"] for tramo in programacion["tramos"])
         return {
             "fecha": fecha,
             "operario_id": operario["id"],
@@ -171,8 +220,10 @@ class ProgramacionService:
             "resumen": programacion["resumen"],
             "actividades": jornada.actividades,
             "turno": turno_hoy,
-            "asistencia": self.asistencia_service.actual(operario["id"], fecha, ahora),
+            "asistencia": asistencia,
             "en_turno": bool(turno_hoy) and turno_hoy["inicio"] <= ahora < turno_hoy["fin"],
+            "retraso_entrada_min": _minutos_de_retraso(turno_hoy, asistencia, fecha, ahora),
+            "tolerancia_entrada_min": TOLERANCIA_ENTRADA_MIN,
         }
 
     def _orden_de(self, usuario_id: str, fecha: str) -> OrdenJornada:

@@ -370,7 +370,7 @@ def test_listar_consultar_editar_y_desactivar_usuarios(aplicacion, superadmin, a
 def test_un_operario_con_actividades_sin_terminar_no_se_desactiva(aplicacion, admin):
     carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
     actividad = admin.post("/actividades", {
-        "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "MANTENIMIENTO", "tiempo_estimado_min": 60,
+        "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "OPERACION", "tiempo_estimado_min": 60,
         "fecha_programada": FECHA, "operario_ids": [carlos["id"]],
     }).get_json()
 
@@ -382,7 +382,7 @@ def test_un_operario_con_actividades_sin_terminar_no_se_desactiva(aplicacion, ad
     assert admin.post(f"/usuarios/{carlos['id']}/desactivar").status_code == 200
     # A un desactivado no se le asignan actividades.
     nueva = admin.post("/actividades", {
-        "titulo": "Limpiar", "ubicacion": "Línea 1", "categoria": "LIMPIEZA", "tiempo_estimado_min": 30,
+        "titulo": "Limpiar", "ubicacion": "Línea 1", "categoria": "ATENCION", "tiempo_estimado_min": 30,
         "fecha_programada": FECHA, "operario_ids": [carlos["id"]],
     })
     assert nueva.status_code == 400
@@ -428,7 +428,7 @@ def test_un_requerimiento_con_actividades_no_se_elimina(admin):
     carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
     requerimiento = admin.post("/requerimientos", {"titulo": "General"}).get_json()
     actividad = admin.post("/actividades", {
-        "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "MANTENIMIENTO", "tiempo_estimado_min": 60,
+        "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "OPERACION", "tiempo_estimado_min": 60,
         "fecha_programada": FECHA, "requerimiento_id": requerimiento["id"], "operario_ids": [carlos["id"]],
     })
     assert actividad.status_code == 201
@@ -451,7 +451,7 @@ def test_la_carga_suma_lo_programado_y_avisa_la_sobrecarga(aplicacion, admin):
     carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
     for minutos in (300, 240):
         admin.post("/actividades", {
-            "titulo": "Producción", "ubicacion": "Línea 1", "categoria": "PRODUCCION",
+            "titulo": "Producción", "ubicacion": "Línea 1", "categoria": "REVISION",
             "tiempo_estimado_min": minutos, "fecha_programada": FECHA, "operario_ids": [carlos["id"]],
         })
 

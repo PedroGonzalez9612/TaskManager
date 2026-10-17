@@ -382,6 +382,52 @@ Las reglas que faltaban quedaron en el alcance (Secciones 6.2 y 6.5): ancho de l
 
 Pendiente de la auditoría: el aviso de llegada tarde (necesita la tolerancia por empresa, que el alcance pide pero no define) y arrastrar una tarjeta del tablero a otra persona.
 
+## Exploración de identidad visual del Operario (2026-10-16), sin cerrar
+
+Estado en el que queda, para retomarlo (el usuario seguirá el diseño en otra herramienta):
+
+- **Hecho en código:** Hoy con bloques de tiempo por categoría (alto proporcional a la duración, lo
+  proyectado con borde punteado, lo terminado tenue, lo vencido en gris con borde ámbar); la "cinta del día"
+  (`crearCintaDelDia` en `operario/operario-comun.js`) en Hoy e Inicio; fuente Bricolage Grotesque para las
+  cifras (`--fuente-cifras`); lienzo blanco en las pantallas del Operario (`body.lienzo`); el rayado coral solo
+  para lo que pasa del turno.
+- **Categorías generales:** OPERACION, ATENCION, ADMINISTRATIVA, REVISION y TRASLADO reemplazan a las
+  industriales. Datos existentes: `python herramientas/migrar_categorias.py --aplicar`.
+- **Opinión del usuario:** la cinta y la tipografía de Inicio no le gustan ("la barra está horrible, la
+  letra del inicio super fea"). La dirección visual queda abierta: no se escribió en el alcance.
+- **Pendiente en el alcance:** registrar las categorías generales (Sección 5.1 y glosario), y la dirección
+  visual que se decida (fondo, tipografía, forma de la carga del día). Mientras no se decida, el alcance
+  sigue pidiendo fondo `#F4F6F5` y una sola familia de letra.
+- **Referencias elegidas por el usuario:** Float y Runn (planificadores de capacidad), conservando la lógica
+  de GestLab. GestLab no es mantenimiento ni órdenes de trabajo: es carga laboral de cualquier empresa.
+- **Observaciones pendientes** (de la revisión del 2026-10-16): Semana con cada actividad flexible en su hora
+  y programación para cualquier día (8 y 11), Semana propia y Resumen nuevo (9 y 12), Mi perfil (10) y barra
+  superior (13).
+
+## Observaciones del usuario, bloque A: la llegada y el encabezado (2026-10-16) ✅
+
+Resuelve las observaciones 1 a 7 y 14 de la revisión de la vista del Operario. Reglas en las Secciones 5.1,
+6.1, 6.2 y 14 del alcance (bitácora).
+
+- **Inicio (nueva vista, `operario/inicio.*`):** la primera pantalla después del login. Saludo según la hora,
+  la hora actual con la barra del turno, la barra de la jornada (trabajado, por hacer y libre; lo que pasa de
+  la capacidad, rayado en coral), cuántas actividades van finalizadas y cuál sigue. Acciones según la
+  asistencia: "Marcar entrada" (pasa a Hoy) y "Ver mi día sin marcar la entrada"; "Ir a mi día" y "Marcar
+  salida" al final; el cierre de la jornada después de la salida.
+- **Hoy:** encabezado con las mismas barras, sin "Tu turno, X" ni la frase de minutos. Sin entrada o después
+  de la salida, modo de lectura (sin iniciar ni reanudar, con aviso y enlace a Inicio). "Ordenar mi día" en
+  la línea de tiempo antes de lo que sigue. "Marcar salida" al final del día. Las actividades fuera del
+  turno dicen su horario y cuánto pasan; el fin del turno suma el total.
+- **Ordenar mi día:** cada fila muestra la hora en que quedaría (vista previa del servidor) y cuánto pasa
+  del turno; mientras se ordena, no se ve "Marcar salida".
+- **Llegada tarde:** alerta en ámbar en Inicio y en Hoy si el turno empezó hace más de 10 minutos sin entrada.
+- **Servidor:** `POST /orden-del-dia/vista-previa`; la programación del día trae `fuera_del_turno_min` por
+  tramo y en el resumen, `retraso_entrada_min` y `tolerancia_entrada_min`.
+- **Pruebas:** `tests/test_inicio_y_orden.py` (10). Total: 526.
+
+Pendiente de las observaciones: bloques B (cálculo de horas para cualquier día), C (Semana y Resumen) y
+D (Mi perfil y barra superior).
+
 ## Información de la actividad por bloques (2026-10-14) ✅
 
 Construye la decisión D del 2026-10-10, que estaba en el alcance pero no en el sistema: el Operario

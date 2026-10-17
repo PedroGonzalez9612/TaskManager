@@ -260,7 +260,7 @@ def test_no_toca_las_terminadas_ni_las_de_hoy(servicios, empresa, crear_activida
 
 
 def actividad_de(servicios, admin, titulo="Ajena"):
-    datos = {"titulo": titulo, "ubicacion": "Bodega", "categoria": "LOGISTICA", "tiempo_estimado_min": 30,
+    datos = {"titulo": titulo, "ubicacion": "Bodega", "categoria": "TRASLADO", "tiempo_estimado_min": 30,
              "fecha_programada": HOY}
     return servicios.actividades.crear_actividad(datos, admin)
 

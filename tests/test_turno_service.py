@@ -202,7 +202,7 @@ def test_la_alerta_al_asignar_usa_la_capacidad_del_turno(servicios, turnos, empr
     alertas = servicios.carga.sobrecargas(empresa.id, HOY, [empresa.ana["id"], empresa.luis["id"]])
     assert alertas == []
     servicios.actividades.crear_actividad({
-        "titulo": "Lubricar", "ubicacion": "Línea 1", "categoria": "MANTENIMIENTO", "tiempo_estimado_min": 180,
+        "titulo": "Lubricar", "ubicacion": "Línea 1", "categoria": "OPERACION", "tiempo_estimado_min": 180,
         "fecha_programada": HOY, "operario_ids": [empresa.ana["id"], empresa.luis["id"]],
         "requerimiento_id": empresa.requerimiento_id,
     }, empresa.admin)

@@ -7,28 +7,29 @@
     <title>Hoy — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
-<body class="cargando ancho-angosto">
+<body class="cargando ancho-angosto lienzo">
     <main class="principal">
+        <!-- El encabezado no repite el saludo ni las cifras en una frase: la hora, el turno y la
+             jornada se ven en barras (alcance, Sección 6.1). -->
         <header class="turno-encabezado">
-            <p class="turno-fecha"><span id="fecha-hoy"></span> <span id="turno-estado" class="turno-estado" hidden></span></p>
-            <h1 id="saludo">Tu turno</h1>
-            <p id="turno-resumen" class="turno-resumen cifra" aria-live="polite"></p>
+            <p id="fecha-hoy" class="turno-fecha"></p>
+            <h1 class="solo-lectores">Mi día</h1>
+            <!-- La cinta del día: el turno, la carga y la hora actual en un solo elemento. -->
+            <div id="cinta-dia"></div>
             <output id="aviso-turno" class="aviso aviso-info" hidden></output>
-            <div id="turno-acciones" class="turno-acciones" hidden>
-                <button type="button" id="ordenar-dia" class="boton-secundario" hidden></button>
-                <button type="button" id="marcar-salida" class="boton-secundario"></button>
-            </div>
-            <output id="turno-sobrecarga" class="aviso aviso-advertencia" hidden><span>El trabajo programado supera la capacidad de tu jornada. Infórmalo a tu administrador.</span></output>
+            <output id="aviso-lectura" class="aviso aviso-info aviso-lectura" hidden></output>
         </header>
-
-        <!-- Inicio y cierre de la jornada: lo que se ve antes de marcar la entrada y después de marcar la salida. -->
-        <section id="portada-jornada" class="panel portada-jornada" hidden></section>
 
         <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando actividades…</p>
         <!-- Su fila del tablero del turno, en vertical: un punto de la línea de tiempo por actividad, en orden. -->
         <ol id="linea-tiempo" class="linea-tiempo" aria-label="Programación del día" hidden></ol>
         <!-- Modo para ordenar el día: solo las actividades de horario flexible. -->
         <section id="ordenador" class="panel ordenador" aria-labelledby="titulo-ordenador" hidden></section>
+        <!-- El final del día: marcar la salida cuando ya se hizo todo o se intentó. -->
+        <section id="fin-del-dia" class="fin-del-dia" aria-label="Terminar la jornada" hidden>
+            <p>¿Terminaste tu jornada?</p>
+            <button type="button" id="marcar-salida" class="boton-secundario"></button>
+        </section>
     </main>
 
     <script src="/static/js/api.js"></script>

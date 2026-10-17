@@ -19,6 +19,13 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: "Bricolage Grotesque";
+    src: url("/static/fuentes/bricolage-grotesque-700.woff2") format("woff2");
+    font-weight: 700;
+    font-display: swap;
+}
+
 :root {
     /* ---- Color: base e identidad (6.3) ---- */
     --fondo: #F4F6F5;
@@ -58,6 +65,7 @@
 
     /* ---- Tipografía (6.4). Tamaños de celular; los de escritorio están en la media query ---- */
     --fuente-texto: "Figtree", system-ui, sans-serif;
+    --fuente-cifras: "Bricolage Grotesque", var(--fuente-texto);   /* La hora y las cifras que mandan */
     --peso-normal: 400;
     --peso-fuerte: 600;
 
@@ -78,16 +86,16 @@
     --interlineado-etiqueta: 1.2;
 
     /* ---- Categorías de actividad: solo para los bloques del horario y el ícono de su etiqueta ---- */
-    --cat-produccion: #5B4B9A;
-    --cat-produccion-suave: #E8E3F4;
-    --cat-mantenimiento: #7A5038;
-    --cat-mantenimiento-suave: #EFE4DB;
-    --cat-calidad: #A33D72;
-    --cat-calidad-suave: #F6E1EC;
-    --cat-limpieza: #5C6B24;
-    --cat-limpieza-suave: #E9EDD3;
-    --cat-logistica: #3D5A6C;
-    --cat-logistica-suave: #DFE8EC;
+    --cat-operacion: #5B4B9A;
+    --cat-operacion-suave: #E8E3F4;
+    --cat-administrativa: #7A5038;
+    --cat-administrativa-suave: #EFE4DB;
+    --cat-revision: #A33D72;
+    --cat-revision-suave: #F6E1EC;
+    --cat-atencion: #5C6B24;
+    --cat-atencion-suave: #E9EDD3;
+    --cat-traslado: #3D5A6C;
+    --cat-traslado-suave: #DFE8EC;
 
     /* ---- Íconos de los mensajes (Lucide), como máscara para que tomen el color del texto ---- */
     --icono-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
@@ -882,11 +890,11 @@ body.ancho-angosto {
     color: var(--texto);
 }
 
-.categoria-produccion .icono    { color: var(--cat-produccion); }
-.categoria-mantenimiento .icono { color: var(--cat-mantenimiento); }
-.categoria-calidad .icono       { color: var(--cat-calidad); }
-.categoria-limpieza .icono      { color: var(--cat-limpieza); }
-.categoria-logistica .icono     { color: var(--cat-logistica); }
+.categoria-operacion .icono    { color: var(--cat-operacion); }
+.categoria-administrativa .icono { color: var(--cat-administrativa); }
+.categoria-revision .icono       { color: var(--cat-revision); }
+.categoria-atencion .icono      { color: var(--cat-atencion); }
+.categoria-traslado .icono     { color: var(--cat-traslado); }
 
 .carga {
     color: var(--texto-secundario);
@@ -1416,19 +1424,10 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     margin: 0;
 }
 
-.turno-fecha,
-.turno-resumen {
+.turno-fecha {
     color: var(--texto-secundario);
     font-size: var(--tamano-secundario);
     line-height: var(--interlineado-secundario);
-}
-
-.turno-resumen {
-    margin-top: var(--e1);
-}
-
-.turno-resumen strong {
-    color: var(--texto);
 }
 
 .turno-encabezado .aviso {
@@ -1871,29 +1870,7 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     background: var(--exito);
 }
 
-.turno-acciones {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--e3);
-    margin-top: var(--e3);
-}
-
-/* Inicio y cierre de la jornada: una sola columna con los datos del turno y una acción (alcance, Sección 6.1). */
-.portada-jornada {
-    display: grid;
-    gap: var(--e4);
-    padding: var(--e5);
-}
-
-.portada-jornada > * {
-    margin: 0;
-}
-
-.portada-jornada h2 {
-    font-size: var(--tamano-h3);
-    line-height: var(--interlineado-h3);
-}
-
+/* Datos del cierre de la jornada, en Inicio (alcance, Sección 6.1). */
 .portada-datos {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -1908,13 +1885,6 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     margin: 0;
     font-weight: var(--peso-fuerte);
     text-align: right;
-}
-
-.portada-urgentes {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e2);
 }
 
 .portada-nota {
@@ -2380,20 +2350,20 @@ html[data-color-bloques="prioridad"] .ec .bloque-prioridad-baja {
 }
 
 /* Modo "categoría": paleta propia de categorías, solo para los bloques del horario. */
-html[data-color-bloques="categoria"] .ec .bloque-categoria-produccion {
-    background-color: var(--cat-produccion-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-operacion {
+    background-color: var(--cat-operacion-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-mantenimiento {
-    background-color: var(--cat-mantenimiento-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-administrativa {
+    background-color: var(--cat-administrativa-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-calidad {
-    background-color: var(--cat-calidad-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-revision {
+    background-color: var(--cat-revision-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-limpieza {
-    background-color: var(--cat-limpieza-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-atencion {
+    background-color: var(--cat-atencion-suave); color: var(--texto);
 }
-html[data-color-bloques="categoria"] .ec .bloque-categoria-logistica {
-    background-color: var(--cat-logistica-suave); color: var(--texto);
+html[data-color-bloques="categoria"] .ec .bloque-categoria-traslado {
+    background-color: var(--cat-traslado-suave); color: var(--texto);
 }
 
 /* En modo categoría lo urgente sigue destacando: borde rojo completo además de su ícono. Es una sombra
@@ -3688,16 +3658,42 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     color: var(--advertencia-texto);
 }
 
-/* En la tarjeta en curso, las precauciones y los pasos a la vista. */
-.tarjeta-guia {
-    margin-block: var(--e3) 0;
+/* En la tarjeta en curso: las precauciones en una línea y los pasos plegados, para que la tarjeta
+   no ocupe toda la pantalla. */
+.tarjeta-precauciones,
+.tarjeta-pasos {
+    margin: var(--e2) 0 0;
     font-size: var(--tamano-secundario);
     line-height: var(--interlineado-secundario);
 }
 
-.tarjeta-guia-titulo {
-    margin: 0 0 var(--e1);
+.tarjeta-precauciones {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+}
+
+.tarjeta-precauciones .icono {
+    flex-shrink: 0;
+    margin-top: 0.15em;
+}
+
+.tarjeta-pasos summary {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    min-height: var(--alto-control);
     font-weight: var(--peso-fuerte);
+    cursor: pointer;
+    list-style: none;
+}
+
+.tarjeta-pasos summary::-webkit-details-marker {
+    display: none;
+}
+
+.tarjeta-pasos .lista-informacion {
+    margin-bottom: var(--e2);
 }
 
 /* En la columna de estado de Actividades, "Falta información" va debajo del estado, a su medida. */
@@ -3710,6 +3706,581 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     margin-top: var(--e1);
 }
 
-.tarjeta-guia + .tarjeta-tiempo {
+.tarjeta-pasos + .tarjeta-tiempo,
+.tarjeta-precauciones + .tarjeta-tiempo {
+    margin-top: var(--e3);
+}
+
+/* ================= Operario: Inicio y encabezado de Hoy (alcance, Sección 6.1) ================= */
+
+.inicio-encabezado {
+    margin-bottom: var(--e4);
+}
+
+.inicio-encabezado h1,
+.inicio-encabezado p {
+    margin: 0;
+}
+
+.inicio-encabezado + .aviso {
+    margin-bottom: var(--e4);
+}
+
+.inicio-panel {
+    display: grid;
+    gap: var(--e4);
+    padding: var(--e5);
+}
+
+.inicio-panel > * {
+    margin: 0;
+}
+
+.inicio-subtitulo {
+    margin: var(--e2) 0 0;
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
+}
+
+.inicio-nota {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+/* Lo que sigue: se toca para ir a Hoy. */
+.inicio-sigue {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--e3);
+    min-height: var(--alto-control);
+    padding: var(--e3) var(--e4);
+    border: 1px solid var(--borde);
+    border-radius: var(--radio-control);
+    color: var(--texto);
+    text-decoration: none;
+}
+
+.inicio-sigue:hover {
+    border-color: var(--borde-control);
+}
+
+.inicio-sigue-textos {
+    display: grid;
+    gap: var(--e1);
+}
+
+.inicio-sigue-etiqueta {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.inicio-acciones {
+    display: grid;
+    justify-items: center;
+    gap: var(--e3);
+}
+
+.inicio-acciones .boton-bloque {
+    width: 100%;
+}
+
+/* La hora, grande, y la barra del turno: cuánto del turno ya pasó. */
+.reloj-turno > * {
+    margin: 0;
+}
+
+.reloj-hora {
+    font-size: var(--tamano-cronometro);
+    font-weight: var(--peso-fuerte);
+    line-height: 1.1;
+}
+
+.reloj-estado {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-turno {
+    height: var(--e2);
+    margin-top: var(--e3);
+    overflow: hidden;
+    border-radius: var(--e1);
+    background: var(--neutro-suave);
+}
+
+.barra-turno-relleno {
+    height: 100%;
+    background: var(--principal);
+}
+
+.barra-extremos {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--e1);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+/* La jornada en una barra: lo trabajado, lo que falta y, si no cabe, lo que pasa rayado en coral. */
+.barra-jornada-pista {
+    position: relative;
+    display: flex;
+    height: var(--e4);
+    overflow: hidden;
+    border-radius: var(--e1);
+    background: var(--neutro-suave);
+}
+
+.barra-trabajado {
+    background: var(--principal);
+}
+
+.barra-por-hacer {
+    background: color-mix(in srgb, var(--principal) 35%, var(--superficie));
+}
+
+.barra-exceso {
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    border-left: 2px solid var(--texto);
+    background: repeating-linear-gradient(135deg, var(--marca) 0 var(--e1), transparent var(--e1) var(--e3));
+}
+
+.barra-leyenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e1) var(--e4);
+    margin: var(--e2) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-leyenda li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+}
+
+.barra-leyenda li::before {
+    content: "";
+    width: var(--e4);
+    height: var(--e2);
+    border-radius: 2px;
+}
+
+.barra-leyenda strong {
+    color: var(--texto);
+}
+
+.leyenda-trabajado::before { background: var(--texto); }
+.leyenda-por-hacer::before { background: color-mix(in srgb, var(--texto) 30%, var(--superficie)); }
+.leyenda-libre::before { background: var(--neutro-suave); }
+.leyenda-exceso::before {
+    background: repeating-linear-gradient(135deg, var(--marca) 0 2px, transparent 2px 5px);
+    box-shadow: inset 0 0 0 1px var(--marca);
+}
+
+.barra-jornada-aviso {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+    margin: var(--e2) 0 0;
+    color: var(--advertencia-texto);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-jornada-aviso .icono {
+    flex-shrink: 0;
+    margin-top: 0.15em;
+}
+
+.turno-encabezado .reloj-turno + div {
     margin-top: var(--e4);
+}
+
+.turno-encabezado #barra-jornada {
+    margin-top: var(--e4);
+}
+
+/* Hoy sin la entrada marcada, o después de la salida: modo de lectura. */
+.aviso-lectura {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e2) var(--e3);
+}
+
+.aviso-lectura-texto {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: var(--e2);
+}
+
+.aviso-lectura .boton-texto {
+    min-height: 0;
+    padding: 0;
+}
+
+/* "Ordenar mi día", en la línea de tiempo antes de lo que sigue. */
+.linea-ordenar {
+    grid-column: 2;
+    justify-self: start;
+    padding-inline: 0;
+}
+
+/* Lo que pasa del fin del turno: su horario y cuánto implica quedarse, con el coral de la sobrecarga. */
+.tarjeta-fuera-turno,
+.orden-horario {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e1) var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.tarjeta-fuera-turno {
+    margin-top: var(--e1);
+}
+
+.etiqueta.etiqueta-fuera-turno {
+    background: var(--marca-suave);
+    color: var(--texto);
+}
+
+.linea-fin-turno-extra {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--texto);
+}
+
+/* El final del día: "Marcar salida", separada de lo demás. */
+.fin-del-dia {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+    margin-top: var(--e6);
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+}
+
+.fin-del-dia p {
+    margin: 0;
+    color: var(--texto-secundario);
+}
+
+/* ================= Dirección visual: la jornada como capacidad (Hoy del Operario) ================= */
+
+/* Lienzo blanco, como un planificador: el día se lee sobre la superficie, sin cajas con sombra. */
+body.lienzo {
+    background: var(--superficie);
+}
+
+.barra-jornada-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 0 0 var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.barra-jornada-total strong {
+    color: var(--texto);
+    font-size: var(--tamano-texto);
+}
+
+/* Bloque de tiempo: el tono suave de su categoría, su ícono y su duración. */
+.bloque-dia {
+    --tono: var(--neutro-suave);
+    --acento: var(--neutro);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: var(--e1);
+    width: 100%;
+    padding: var(--e2) var(--e3);
+    border: 1px solid transparent;
+    border-radius: var(--radio-control);
+    background: var(--tono);
+    color: var(--texto);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.bloque-dia:hover {
+    border-color: var(--acento);
+}
+
+.bloque-cat-operacion    { --tono: var(--cat-operacion-suave);    --acento: var(--cat-operacion); }
+.bloque-cat-administrativa { --tono: var(--cat-administrativa-suave); --acento: var(--cat-administrativa); }
+.bloque-cat-revision       { --tono: var(--cat-revision-suave);       --acento: var(--cat-revision); }
+.bloque-cat-atencion      { --tono: var(--cat-atencion-suave);      --acento: var(--cat-atencion); }
+.bloque-cat-traslado     { --tono: var(--cat-traslado-suave);     --acento: var(--cat-traslado); }
+
+.bloque-cabeza {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
+.bloque-nombre {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: var(--e2);
+    line-height: var(--interlineado-h3);
+}
+
+.bloque-nombre .icono {
+    flex-shrink: 0;
+    margin-top: 0.15em;
+    color: var(--acento);
+}
+
+.bloque-duracion {
+    flex-shrink: 0;
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+.bloque-datos {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e1) var(--e2);
+    padding-left: calc(1.25rem + var(--e2));
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    line-height: var(--interlineado-secundario);
+}
+
+.bloque-dia .tarjeta-fuera-turno {
+    padding-left: calc(1.25rem + var(--e2));
+}
+
+/* Dentro del bloque, las señales van como texto con su ícono y su color, sin fondo: el bloque ya es
+   el color de fondo, y una píldora encima de otra satura (sigue la regla de color, ícono y texto). */
+.bloque-dia .etiqueta {
+    padding: 0;
+    background: none;
+    font-weight: var(--peso-fuerte);
+}
+
+.bloque-dia .etiqueta-retraso {
+    color: var(--advertencia-texto);
+}
+
+/* Sobre los tonos de categoría, las prioridades usan su texto oscuro: así cumplen 4,5:1. */
+.bloque-dia .prioridad-alta  { color: var(--alta-texto); }
+.bloque-dia .prioridad-media { color: var(--advertencia-texto); }
+
+/* Proyectado: hora aproximada. Rayado y con borde punteado, como lo tentativo de un planificador. */
+.bloque-proyectado {
+    border: 1px dashed var(--acento);
+}
+
+/* Terminado: el mismo tono, más tenue; el ícono pasa a ser la marca de visto. */
+.bloque-hecho {
+    background: color-mix(in srgb, var(--tono) 55%, var(--superficie));
+}
+
+.bloque-hecho .bloque-nombre {
+    color: var(--texto-secundario);
+    font-weight: var(--peso-normal);
+}
+
+.bloque-hecho .bloque-nombre .icono {
+    color: var(--exito);
+}
+
+/* Vencida: hora fija que pasó sin iniciarse. Sin el color de su categoría, para no confundirse con
+   lo que está por hacer ni con lo terminado. */
+.bloque-vencido {
+    --tono: var(--neutro-suave);
+    --acento: var(--advertencia-texto);
+    border: 1px solid var(--advertencia);
+}
+
+/* El tiempo libre ocupa espacio: el texto va centrado en su hueco. */
+.lienzo .linea-nodo-intervalo {
+    align-items: center;
+}
+
+.lienzo .linea-nodo-intervalo .linea-intervalo {
+    align-self: center;
+}
+
+/* ================= Cinta del día: el elemento firma (dirección visual "Cinta del día") ================= */
+
+/* La hora y las cifras que mandan llevan la voz de la marca. */
+.cifra-firma,
+.lienzo .linea-hora,
+.lienzo .cronometro {
+    font-family: var(--fuente-cifras);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.cinta-dia > * {
+    margin: 0;
+}
+
+.cinta-cabeza {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
+.cinta-hora {
+    font-size: 2.75rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+}
+
+.cinta-estado {
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    text-align: right;
+}
+
+/* La cinta: el marco es el turno; dentro, una actividad por segmento; la aguja es la hora actual. */
+.cinta {
+    position: relative;
+    height: 1.75rem;
+    margin-top: var(--e4);
+}
+
+.cinta-marco {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    border: 1px solid var(--borde-control);
+    border-radius: 3px;
+    background: var(--neutro-suave);
+}
+
+.cinta-desborde {
+    position: absolute;
+    inset-block: 0;
+    right: 0;
+    border-radius: 0 3px 3px 0;
+    background: repeating-linear-gradient(135deg, var(--marca) 0 2px, var(--marca-suave) 2px 7px);
+}
+
+.cinta-segmento {
+    position: absolute;
+    inset-block: 4px;
+    border-radius: 2px;
+}
+
+.cinta-hecho,
+.cinta-curso {
+    background: var(--acento);
+}
+
+.cinta-pendiente {
+    background: var(--tono);
+    box-shadow: inset 0 0 0 1px var(--acento);
+}
+
+.cinta-urgente {
+    background: var(--error);
+    box-shadow: none;
+}
+
+.cinta-aguja {
+    position: absolute;
+    top: -6px;
+    bottom: -6px;
+    width: 2px;
+    margin-left: -1px;
+    background: var(--texto);
+}
+
+.cinta-aguja::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--texto);
+}
+
+.cinta-escala {
+    position: relative;
+    height: 1.25rem;
+    margin-top: var(--e1);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.cinta-escala > span {
+    position: absolute;
+    top: 0;
+}
+
+.cinta-escala-inicio {
+    left: 0;
+}
+
+.cinta-escala-fin {
+    transform: translateX(-100%);
+}
+
+.cinta-escala-desborde {
+    padding-left: var(--e2);
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.cinta-total {
+    margin-top: var(--e3);
+    color: var(--texto-secundario);
+}
+
+.cinta-total strong {
+    color: var(--texto);
+    font-size: 1.5rem;
+    line-height: 1.2;
+}
+
+.cinta-dia .barra-leyenda {
+    margin-top: var(--e1);
+}
+
+/* El fin del turno: una línea fuerte. Lo que queda debajo, sobre la franja coral del desborde. */
+.lienzo .linea-fin-turno {
+    min-height: 0;
+    padding: var(--e2) 0 var(--e1);
+    border: 0;
+    border-top: 2px solid var(--texto);
+    border-radius: 0;
+    background: none;
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.lienzo .linea-nodo-desborde {
+    background: repeating-linear-gradient(135deg, var(--marca-suave) 0 6px, transparent 6px 12px);
+}
+
+/* Inicio sobre el lienzo: sin tarjeta; la cinta y las acciones bastan. */
+.lienzo .inicio-panel {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
 }

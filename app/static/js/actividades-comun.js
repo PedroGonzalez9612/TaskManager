@@ -7,11 +7,11 @@ const ICONO_ESTADO = {
     COMPLETADA: "check", NO_REALIZADA: "minus", CANCELADA: "minus",
 };
 const ICONO_CATEGORIA = {
-    PRODUCCION: "factory",
-    MANTENIMIENTO: "wrench",
-    CALIDAD: "clipboard-check",
-    LIMPIEZA: "sparkles",
-    LOGISTICA: "truck",
+    OPERACION: "briefcase",
+    ATENCION: "message-circle",
+    ADMINISTRATIVA: "file-text",
+    REVISION: "search",
+    TRASLADO: "truck",
 };
 
 // ---------- Señales: siempre color + ícono + texto (alcance, Sección 6.3, regla 1) ----------

@@ -60,8 +60,10 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   (alcance) y Etapa 2 (base visual: colores, Figtree, sombras, logo del tablero) y Etapa 3 (Hoy del Operario como línea de tiempo, en `operario/hoy.js`, clases `linea-*` y `tarjeta-*`) hechas, pendientes del visto bueno del
   usuario. Etapa 4 (backend) a medias: ver "Próximos pasos" en `docs/avance.md`. Etapas 5 a 7
   pendientes. Ya existen turnos y asistencia (turnos y validación en Usuarios del Administrador) y el
-  calendario rediseñado. Hoy tiene tres estados según la asistencia (`estadoJornada` en `operario/hoy.js`):
-  inicio de la jornada con "Marcar entrada", el día con "Marcar salida" en el encabezado, y el cierre.
+  calendario rediseñado. El Operario llega a Inicio (`operario/inicio.js`): saludo, barras del turno y de la
+  jornada, "Marcar entrada" / "Marcar salida" y el cierre. Hoy (`operario/hoy.js`) es solo el día: sin entrada o
+  después de la salida, en modo de lectura. Lo que comparten (`estadoDeJornada`, `crearRelojDelTurno`,
+  `crearBarraJornada`, `abrirSalida`, avisos del turno) está en `operario/operario-comun.js`.
   Equipo es el tablero del turno (`admin/equipo.js`, cuadrícula propia, clases `tablero-*`), no un
   calendario; Semana del Operario sigue con EventCalendar. Actividades ya no muestra requerimientos:
   filtros y lista agrupada por día. Falta en pantalla: Proyectos, "Reportar actividad", aviso de hora
@@ -131,7 +133,8 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
 - Asistencia: el operario marca entrada/salida; el Administrador valida o corrige.
 - Sin la entrada marcada no se inicia ni se reanuda una actividad. No se marca la salida con una
   actividad en curso: se finaliza o se pausa con motivo "Fin de jornada". El turno no limita la hora
-  de la entrada ni de la salida; hay un aviso informativo 15 minutos antes del inicio y del fin del turno.
+  de la entrada ni de la salida; hay un aviso informativo 15 minutos antes del inicio y del fin del turno, y una
+  alerta de llegada tarde pasados 10 minutos sin entrada (`TOLERANCIA_ENTRADA_MIN` en `programacion_service.py`).
 - Indicadores agregados: sumar tiempos y dividir al final; nunca promediar porcentajes.
 
 ## Decisiones de diseño abiertas (no implementar sin resolverlas con el agente diseno-oo)

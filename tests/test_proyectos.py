@@ -7,7 +7,7 @@ from app.utils.errors import NotFoundError, ValidationError
 pytestmark = pytest.mark.usefixtures("con_entrada_marcada")
 
 DATOS_ACTIVIDAD = {
-    "titulo": "Montar la banda", "ubicacion": "Línea 1", "categoria": "PRODUCCION",
+    "titulo": "Montar la banda", "ubicacion": "Línea 1", "categoria": "OPERACION",
     "tiempo_estimado_min": 60, "fecha_programada": "2026-10-10",
 }
 

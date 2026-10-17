@@ -303,7 +303,7 @@ def test_el_resumen_usa_lo_real_trabajado_y_lo_que_falta(servicios, empresa, cre
     resumen = servicios.programacion.consultar(empresa.ana)["resumen"]
     assert resumen == {
         "trabajado_min": 75, "pendiente_min": 120, "capacidad_min": 420, "disponible_min": 225,
-        "fin_proyectado": a_los(195),
+        "fin_proyectado": a_los(195), "fuera_del_turno_min": 0,
     }
 
 
@@ -501,7 +501,7 @@ def test_la_api_entrega_la_programacion_del_dia(cliente_de, empresa, tres_flexib
     assert respuesta.status_code == 200
     programacion = respuesta.get_json()
     assert set(programacion) == {"fecha", "operario_id", "orden_personalizado", "tramos", "resumen", "actividades",
-                                 "turno", "asistencia", "en_turno"}
+                                 "turno", "asistencia", "en_turno", "retraso_entrada_min", "tolerancia_entrada_min"}
     assert orden_de(programacion) == [alta["id"], media["id"], baja["id"]]
     assert programacion["tramos"][0]["inicio"] == "Sat, 10 Oct 2026 08:00:00 GMT"
     assert programacion["resumen"]["pendiente_min"] == 180

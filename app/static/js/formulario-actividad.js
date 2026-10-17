@@ -370,7 +370,7 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
         proyecto.value = origen.proyecto_id || "";
         tituloActividad.value = origen.titulo || "";
         descripcion.value = origen.descripcion || "";
-        categoria.value = origen.categoria || "PRODUCCION";
+        categoria.value = origen.categoria || "OPERACION";
         prioridad.value = origen.prioridad || "MEDIA";
         ubicacion.value = origen.ubicacion || "";
         fecha.value = origen.fecha_programada || fechaTexto(new Date());
