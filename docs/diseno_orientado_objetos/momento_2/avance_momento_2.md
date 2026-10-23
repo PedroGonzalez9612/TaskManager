@@ -846,9 +846,33 @@ El diseño pasó por tres momentos, y de cada uno hay evidencia en el repositori
 
 | Momento | Qué es | Dónde está |
 |---|---|---|
+| Mockups | Primera propuesta de las pantallas del Operario, en grises y sin datos reales | `docs/diseno_orientado_objetos/momento_2/mockups/` |
 | Bosquejos y maquetas | Composición de cada pantalla antes de programarla | `docs/disenos/` |
 | Exploración con una herramienta de diseño | Propuesta generada en Google Stitch y su revisión crítica | `docs/disenos/stitch_calma_operativa/` |
 | Prototipo funcional | La interfaz real, conectada a la API y a la base | `app/static/` |
+
+**Mockups de la vista del Operario**
+
+Los mockups definen qué va en cada pantalla y en qué orden, antes de decidir colores y tipografía. Por eso están en escala de grises y con datos de ejemplo. Son cuatro pantallas, en el orden en que el Operario las recorre.
+
+<div class="figuras">
+<figure><img class="escritorio-medio" src="mockups/1_inicio_de_sesion.png" alt="Mockup de inicio de sesión"><figcaption>Mockup 1. Bienvenida e inicio de sesión.</figcaption></figure>
+<figure><img class="escritorio-medio" src="mockups/2_pantalla_principal.png" alt="Mockup de la pantalla principal"><figcaption>Mockup 2. Pantalla principal.</figcaption></figure>
+</div>
+
+<div class="figuras">
+<figure><img class="escritorio-medio" src="mockups/3_detalle_de_actividad.png" alt="Mockup del detalle de actividad"><figcaption>Mockup 3. Detalle de actividad.</figcaption></figure>
+<figure><img class="escritorio-medio" src="mockups/4_ejecucion_de_actividad.png" alt="Mockup de la ejecución de actividad"><figcaption>Mockup 4. Ejecución de actividad.</figcaption></figure>
+</div>
+
+**Del mockup a la aplicación**
+
+| Mockup | Qué define | Cómo quedó construido |
+|---|---|---|
+| 1. Inicio de sesión | Marca, usuario y contraseña, un solo botón principal y a quién acudir si se olvida la contraseña | Pantalla de inicio de sesión con correo y contraseña, y la opción "Mostrar contraseña". El Operario no se registra solo: lo crea su Administrador |
+| 2. Pantalla principal | Saludo con el turno, contadores del día, la lista de actividades con prioridad, estado y tiempo estimado, y "Reportar actividad externa" | Se dividió en dos: **Inicio** recibe al Operario con su turno, su jornada y la marca de entrada, y **Hoy** muestra sus actividades en el orden del día, como una línea de tiempo. "Reportar actividad externa" está pendiente |
+| 3. Detalle de actividad | Prioridad, estado, tiempo estimado, categoría, quién la asignó, la descripción y "Iniciar actividad" | Ventana de detalle con los mismos datos, más la información para hacer el trabajo (pasos, herramientas, precauciones, contacto y archivos) y el registro de lo trabajado |
+| 4. Ejecución de actividad | Cronómetro, "Pausar" y "Finalizar", historial de la actividad y observación al finalizar | Ya no es una pantalla aparte: la actividad en curso se ejecuta en su lugar del día, en Hoy. Cada pausa pide un motivo, el historial queda en el detalle y al finalizar se deja una observación, fotos y documentos |
 
 **Maquetas**
 
