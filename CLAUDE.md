@@ -56,7 +56,14 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   fuente monoespaciada). Datos de un renglón con `datos-linea` (separados por espacio, nunca con " · ").
   El panel es para la superficie principal; filtros y listas de apoyo van con `seccion-apoyo`, sin panel.
   Componentes repetidos en `js/componentes.js` (logo, avatar, medidor de límite).
-  ESTADO DEL REDISEÑO "Calma operativa" (plan en `docs/plan_rediseno_calma_operativa.md`): Etapa 1
+  REDISEÑO DEL OPERARIO V3 "Planificador sereno" (plan en `docs/plan_rediseno_operario_v3.md`, diseño en
+  `docs/disenos/operario_v3/`, rama `feature/rediseno-operario-v3`): reemplaza lo visual de "Calma operativa".
+  Inicio responde "¿qué hago ahora?" sin barras; Hoy es una línea de tiempo de solo lectura (filas, sin
+  cronómetro ni botones de ejecución); se ejecuta en el detalle (`<dialog>` a pantalla completa en celular).
+  Principal azul `#2B5B84`, Hanken Grotesk, sin sombra en cada elemento, etiquetas solo para Urgente, Hora
+  fija y Retraso, tiempo en horas y minutos, sin coral (sobrecarga rayada en rojo), información en gris.
+  Etapa 0 y Etapa 1 (alcance) hechas; Etapas 2 a 7 pendientes. Mientras tanto, el código sigue con lo
+  anterior: ESTADO DEL REDISEÑO "Calma operativa" (plan en `docs/plan_rediseno_calma_operativa.md`): Etapa 1
   (alcance) y Etapa 2 (base visual: colores, Figtree, sombras, logo del tablero) y Etapa 3 (Hoy del Operario como línea de tiempo, en `operario/hoy.js`, clases `linea-*` y `tarjeta-*`) hechas, pendientes del visto bueno del
   usuario. Etapa 4 (backend) a medias: ver "Próximos pasos" en `docs/avance.md`. Etapas 5 a 7
   pendientes. Ya existen turnos y asistencia (turnos y validación en Usuarios del Administrador) y el

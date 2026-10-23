@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pausar actividad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}a{color:#2B5B84}a:hover{color:#22496B}</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #5B6270; color: #1B2230; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; justify-content: flex-end; font-variant-numeric: tabular-nums;">
+  <div role="dialog" aria-labelledby="t-pausar" style="background: #FFFFFF; border-radius: 20px 20px 0 0; padding: 12px 20px 22px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #C9CFD8;"></div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 id="t-pausar" style="margin: 0; font-size: 22px; font-weight: 600;">Pausar actividad</h1>
+      <span style="font-size: 15px; color: #566070; line-height: 1.4;">¿Por qué pausas Limpiar la tostadora 2? Queda en el registro.</span>
+    </div>
+    <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column;">
+      <legend style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Motivo de la pausa</legend>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #E1E5EA; font-size: 16px;"><input type="radio" name="motivo" checked style="width: 20px; height: 20px; accent-color: #2B5B84; margin: 0;">Atender otra actividad</label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #E1E5EA; font-size: 16px;"><input type="radio" name="motivo" style="width: 20px; height: 20px; accent-color: #2B5B84; margin: 0;">Reunión o llamada</label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #E1E5EA; font-size: 16px;"><input type="radio" name="motivo" style="width: 20px; height: 20px; accent-color: #2B5B84; margin: 0;">Falta información</label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #E1E5EA; font-size: 16px;"><input type="radio" name="motivo" style="width: 20px; height: 20px; accent-color: #2B5B84; margin: 0;">Descanso</label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #E1E5EA; font-size: 16px;"><input type="radio" name="motivo" style="width: 20px; height: 20px; accent-color: #2B5B84; margin: 0;">Fin de jornada</label>
+      <label style="display: flex; align-items: center; gap: 12px; min-height: 52px; font-size: 16px;"><input type="radio" name="motivo" style="width: 20px; height: 20px; accent-color: #2B5B84; margin: 0;">Otro motivo</label>
+    </fieldset>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <button style="height: 52px; border-radius: 12px; border: 0; background: #2B5B84; color: #FFFFFF; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer;">Pausar actividad</button>
+      <a href="Detalle_en_curso.dc.html" style="height: 48px; border-radius: 12px; border: 1px solid #7F8A99; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; color: #1B2230; text-decoration: none;">Cancelar</a>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

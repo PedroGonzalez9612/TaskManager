@@ -61,7 +61,7 @@ flowchart LR
 
 Una actividad es la unidad de trabajo. Tiene:
 
-- **Código** consecutivo por empresa (por ejemplo, `OT-0042`), título, descripción y ubicación (línea, máquina o área).
+- **Código** consecutivo por empresa (por ejemplo, `ACT-0042`; las creadas antes del 23 de octubre de 2026 conservan el prefijo `OT`), título, descripción y ubicación (oficina, sede, área o máquina).
 - **Categoría:** Operación, Atención, Administrativa, Revisión o Traslado. Sirven para cualquier empresa.
 - **Prioridad:** Baja, Media, Alta o Urgente. Urgente significa que debe interrumpir lo que el operario esté haciendo. El sistema ordena por un peso numérico de la prioridad, nunca comparando textos.
 - **Tiempo estimado:** el de la actividad completa. Si la hacen tres operarios, cada uno la suma completa a su carga; no se divide.
@@ -72,7 +72,7 @@ Una actividad es la unidad de trabajo. Tiene:
 - **Proyecto** (opcional). Si no tiene, es una actividad independiente.
 - **Información de la actividad:** además de la descripción, el Administrador elige qué bloques lleva: pasos (en orden), herramientas y materiales, equipo, precauciones de seguridad, contacto y adjuntos (manuales, planos o fotos de referencia). Herramientas, equipo, precauciones y contacto sugieren lo que la empresa ya escribió antes; lo nuevo queda en la lista para la próxima vez. La información se cambia solo mientras nadie haya iniciado la actividad.
 - **Lista para iniciar:** cuando cada bloque elegido tiene contenido. Si falta alguno, el Administrador ve "Falta información" y el Operario lo ve en el detalle. Es un aviso: no impide iniciar.
-- **Qué ve el Operario:** todo en el detalle de la actividad (también el proyecto al que pertenece). Mientras la tiene en curso, la tarjeta muestra las precauciones en una línea y los pasos plegados, que se abren con un toque.
+- **Qué ve el Operario:** todo en el detalle de la actividad (también el proyecto al que pertenece). El detalle es también donde la ejecuta: mientras la tiene en curso, las precauciones y los pasos quedan debajo del tiempo registrado.
 
 ### Estados de una actividad
 
@@ -211,8 +211,8 @@ Cuando termina la jornada, el sistema revisa lo que quedó abierto. Una jornada 
 - **Jornada vigente:** es la del turno que el operario está trabajando. En un turno de noche (por ejemplo, de 22:00 a 06:00), después de la medianoche sigue siendo la jornada del día en que empezó, hasta el fin del turno. Con ella se decide qué ve en Hoy y si está "En turno".
 - **Asistencia:** el operario marca su **entrada** y su **salida** de cada jornada; la hora la pone el servidor. La salida cierra la asistencia de la jornada vigente (o la de la jornada anterior, en un turno de noche), nunca una más antigua. Si olvidó la salida, eso no le impide marcar la entrada del día siguiente: la asistencia vieja queda "Sin salida" para el Administrador. El Administrador **valida** cada asistencia o la **corrige** con un motivo, y la corrección conserva las marcas originales.
 - **La entrada abre el trabajo y la salida lo cierra:** sin la entrada marcada no se inicia ni se reanuda ninguna actividad. La salida no se marca con una actividad en curso: primero se finaliza o se pausa con el motivo "Fin de jornada" (una de hora fija no se pausa, así que se finaliza). Las pausadas no impiden salir. Después de la salida no se trabaja más en esa jornada; si fue un error, el Administrador corrige la asistencia.
-- **Inicio:** al iniciar sesión, el operario llega a su página de Inicio, nunca directo a sus actividades. Ve la hora con la barra de su turno, la barra de su jornada (lo trabajado, lo que falta y lo libre, o lo que se pasa de su capacidad), cuántas actividades tiene y cuál sigue. Antes de la entrada, su acción es "Marcar entrada" (y pasa a Hoy); durante el día, "Ir a mi día" y, al final, "Marcar salida"; después de la salida, el cierre de la jornada con sus marcas y su tiempo.
-- **Hoy en modo de lectura:** sin la entrada marcada, o después de la salida, el operario puede ver su día completo, pero sin acciones para iniciar o reanudar.
+- **Inicio:** al iniciar sesión, el operario llega a su página de Inicio, nunca directo a sus actividades. Inicio responde "¿qué hago ahora?": el estado de su turno, la actividad en curso (con su tiempo contra lo estimado) o lo que sigue, cuántas actividades tiene y cuánto suman. Antes de la entrada, su acción es "Marcar entrada" (y pasa a Hoy); durante el día, abrir la actividad en curso o la siguiente y, al final, "Marcar salida", que solo está en Inicio; después de la salida, el balance de la jornada con sus marcas y su tiempo. Si hay una actividad Urgente pendiente, Inicio la muestra primero.
+- **Hoy y el detalle:** Hoy muestra el día como una línea de tiempo de solo lectura; cada actividad se abre en su detalle, y ahí se inicia, se pausa, se finaliza o se devuelve. Sin la entrada marcada, o después de la salida, el detalle no ofrece iniciar ni reanudar.
 - **Aviso del turno:** desde 15 minutos antes de la hora de inicio y desde 15 minutos antes de la hora de fin, la pantalla dice cuánto falta. Es informativo: no obliga a marcar a esa hora.
 - **Llegada tarde:** si el turno empezó hace más de 10 minutos (la tolerancia) y el operario no ha marcado la entrada, ve una alerta con cuánto tiempo lleva su turno sin iniciar.
 - **Tiempo fuera del turno:** lo que la programación del día deja después de la hora de fin del turno dice cuántos minutos implica quedarse, actividad por actividad, y el fin del turno suma el total.

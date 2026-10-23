@@ -64,8 +64,9 @@ Límites:
 - El servidor es la autoridad. El JavaScript puede validar formularios para
   ayudar al usuario, pero nunca reemplaza la validación del backend ni
   duplica reglas de negocio (una sola tarea activa, cálculo de carga, etc.).
-- El cronómetro solo muestra el tiempo transcurrido a partir de las horas
-  que entrega el servidor; nunca es la fuente del tiempo registrado.
+- El tiempo de una actividad (en horas y minutos, sin segundos en la
+  pantalla del Operario) se calcula a partir de las horas que entrega el
+  servidor; la interfaz nunca es la fuente del tiempo registrado.
 - Si necesitas un endpoint o un dato que la API no ofrece, no lo inventes ni
   lo simules: repórtalo para que lo implemente el agente backend-flask.
 - No modifiques archivos fuera de app/static/, con una excepción: al
