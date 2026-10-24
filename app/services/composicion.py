@@ -12,7 +12,6 @@ from app.repositories.empresa_repository import EmpresaRepository
 from app.repositories.evidencia_repository import EvidenciaRepository
 from app.repositories.orden_jornada_repository import OrdenJornadaRepository
 from app.repositories.proyecto_repository import ProyectoRepository
-from app.repositories.requerimiento_repository import RequerimientoRepository
 from app.repositories.turno_repository import AsignacionTurnoRepository, TurnoRepository
 from app.repositories.usuario_repository import UsuarioRepository
 from app.services.actividad_service import ActividadService
@@ -64,7 +63,7 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
     )
     carga = CargaService(actividad_repository, asignacion_repository, usuario_repository, cierre_jornada, turnos)
     actividades = ActividadService(
-        actividad_repository, RequerimientoRepository(db), asignacion_repository,
+        actividad_repository, asignacion_repository,
         usuario_repository, ejecucion_repository, empresa_repository, carga,
         proyecto_repository, catalogos, cierre_jornada, evidencias, adjuntos, reloj=reloj,
     )

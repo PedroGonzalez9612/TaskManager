@@ -1,6 +1,6 @@
 // Vista "Actividades" del Administrador: filtros a la izquierda y, a la derecha, las actividades del
 // filtro elegido agrupadas por día (alcance, Sección 6.2). Una actividad es independiente o de un
-// proyecto; ya no hay requerimientos.
+// proyecto.
 
 const ESTADOS_TERMINADOS = new Set(["COMPLETADA", "NO_REALIZADA", "CANCELADA"]);
 const terminada = (actividad) => ESTADOS_TERMINADOS.has(actividad.estado);

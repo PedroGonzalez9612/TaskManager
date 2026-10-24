@@ -1,5 +1,5 @@
 """Pruebas de la aplicación completa, armada con create_app sobre una base en memoria: arranque,
-protección contra CSRF, inicio de sesión, empresas, usuarios, requerimientos y carga laboral."""
+protección contra CSRF, inicio de sesión, empresas, usuarios, actividades y carga laboral."""
 import io
 
 import mongomock
@@ -400,49 +400,18 @@ def test_un_administrador_no_ve_los_usuarios_ni_el_logo_de_otra_empresa(aplicaci
     assert admin.get(f"/empresas/{otra['id']}/logo").status_code == 403
 
 
-# ---------- Requerimientos ----------
+# ---------- Actividades: no se borran ----------
 
-def test_ciclo_de_un_requerimiento(admin):
-    assert admin.post("/requerimientos", {"titulo": " "}).status_code == 400
-    creado = admin.post("/requerimientos", {"titulo": "Mantenimiento de octubre", "descripcion": "Línea 2"})
-    assert creado.status_code == 201
-    requerimiento = creado.get_json()
-    assert requerimiento["actividades"] == 0
-
-    ruta = f"/requerimientos/{requerimiento['id']}"
-    assert admin.get(ruta).get_json()["titulo"] == "Mantenimiento de octubre"
-    assert admin.put(ruta, {"titulo": "Mantenimiento", "descripcion": "", "estado": "EN_PROCESO"}).get_json()["estado"] == "EN_PROCESO"
-    for invalido in ({}, {"titulo": ""}, {"estado": "INVENTADO"}):
-        assert admin.put(ruta, invalido).status_code == 400
-    assert [r["titulo"] for r in admin.get("/requerimientos").get_json()] == ["Mantenimiento"]
-
-
-def test_un_requerimiento_de_otra_empresa_no_existe_para_mi(aplicacion, superadmin, admin):
-    otra = superadmin.post("/empresas", datos_empresa(nombre="Otra", nit="901")).get_json()
-    crear_usuario(superadmin, "Rosa", "ADMINISTRADOR", empresa_id=otra["id"])
-    ajeno = Cliente(aplicacion, "rosa@prueba.co").post("/requerimientos", {"titulo": "Ajeno"}).get_json()
-    assert admin.get(f"/requerimientos/{ajeno['id']}").status_code == 404
-
-
-def test_un_requerimiento_con_actividades_no_se_elimina(admin):
+def test_una_actividad_no_se_borra_por_la_api(admin):
+    """Las actividades no se borran (alcance, Sección 5.1): se cancelan con motivo."""
     carlos = crear_usuario(admin, "Carlos", "OPERARIO").get_json()
-    requerimiento = admin.post("/requerimientos", {"titulo": "General"}).get_json()
     actividad = admin.post("/actividades", {
         "titulo": "Calibrar", "ubicacion": "Línea 1", "categoria": "OPERACION", "tiempo_estimado_min": 60,
-        "fecha_programada": FECHA, "requerimiento_id": requerimiento["id"], "operario_ids": [carlos["id"]],
+        "fecha_programada": FECHA, "operario_ids": [carlos["id"]],
     })
     assert actividad.status_code == 201
-    assert admin.get(f"/requerimientos/{requerimiento['id']}").get_json()["actividades"] == 1
-
-    # Las actividades no se borran (alcance, Sección 5.1): el requerimiento tampoco, mientras las tenga.
-    rechazo = admin.delete(f"/requerimientos/{requerimiento['id']}")
-    assert rechazo.status_code == 400
-    assert "no se borran" in rechazo.get_json()["error"]
+    assert admin.delete(f"/actividades/{actividad.get_json()['id']}").status_code == 405
     assert admin.get(f"/actividades/{actividad.get_json()['id']}").status_code == 200
-    assert admin.delete(f"/actividades/{actividad.get_json()['id']}").status_code == 405    # Ya no existe.
-
-    vacio = admin.post("/requerimientos", {"titulo": "Vacío"}).get_json()
-    assert admin.delete(f"/requerimientos/{vacio['id']}").status_code == 204
 
 
 # ---------- Carga laboral ----------

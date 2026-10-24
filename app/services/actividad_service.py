@@ -19,7 +19,7 @@ INTENTOS_RECALCULAR_ESTADO = 3
 ESTADOS_SIN_OPERARIO = (EstadoActividad.PENDIENTE.value, EstadoActividad.DEVUELTA.value)
 
 # Campos de una actividad que solo se revisan cuando vienen en la petición.
-CAMPOS_OPCIONALES = ("proyecto_id", "requerimiento_id", "hora_programada", "informacion")
+CAMPOS_OPCIONALES = ("proyecto_id", "hora_programada", "informacion")
 
 
 def _texto_obligatorio(valor, campo: str) -> str:
@@ -63,14 +63,13 @@ def _validar_tiempo_estimado(valor) -> int:
 
 
 class ActividadService:
-    def __init__(self, actividad_repository, requerimiento_repository, asignacion_repository,
+    def __init__(self, actividad_repository, asignacion_repository,
                  usuario_repository, ejecucion_repository, empresa_repository, carga_service,
                  proyecto_repository, catalogo_service, cierre_jornada, evidencia_service, adjunto_service,
                  reloj=None):
         # La hora de todo evento la pone el servidor. Las pruebas pasan un reloj que ellas controlan.
         self.reloj = reloj or (lambda: datetime.now(timezone.utc))
         self.actividad_repository = actividad_repository
-        self.requerimiento_repository = requerimiento_repository
         self.asignacion_repository = asignacion_repository
         self.usuario_repository = usuario_repository
         self.ejecucion_repository = ejecucion_repository
@@ -190,7 +189,6 @@ class ActividadService:
 
         docs = self.actividad_repository.buscar(
             solicitante["empresa_id"],
-            requerimiento_id=filtros.get("requerimiento_id"),
             fecha_desde=fecha_desde,
             fecha_hasta=fecha_hasta,
             ids=ids,
@@ -217,16 +215,14 @@ class ActividadService:
 
     def _validar_campos(self, data: dict, empresa_id: str, parcial: bool) -> dict:
         """Valida los campos recibidos. Con parcial=True solo se revisan los que vengan en data.
-        Los opcionales (proyecto, requerimiento y hora) solo se revisan cuando vienen."""
+        Los opcionales (proyecto, hora e información) solo se revisan cuando vienen."""
         validadores = {
             "titulo": lambda valor: _texto_obligatorio(valor, "titulo"),
             "ubicacion": lambda valor: _texto_obligatorio(valor, "ubicacion"),
             "descripcion": lambda valor: (valor or "").strip(),
             "informacion": InformacionActividad.desde_datos,
-            # Una actividad sin proyecto es una actividad independiente. El requerimiento es el dato anterior
-            # a los proyectos: sigue aceptándose, ya no es obligatorio, y se retira con ellos.
+            # Una actividad sin proyecto es una actividad independiente.
             "proyecto_id": lambda valor: self._validar_proyecto(valor, empresa_id),
-            "requerimiento_id": lambda valor: self._validar_requerimiento(valor, empresa_id),
             "categoria": _validar_categoria,
             "prioridad": _validar_prioridad,
             "tiempo_estimado_min": _validar_tiempo_estimado,
@@ -248,14 +244,6 @@ class ActividadService:
         if not proyecto or proyecto.get("empresa_id") != empresa_id:
             raise ValidationError("El proyecto no existe en tu empresa")
         return str(proyecto["_id"])
-
-    def _validar_requerimiento(self, requerimiento_id, empresa_id: str):
-        if not requerimiento_id:
-            return None
-        requerimiento = self.requerimiento_repository.find_by_id(requerimiento_id)
-        if not requerimiento or requerimiento["empresa_id"] != empresa_id:
-            raise NotFoundError("El requerimiento no existe en tu empresa")
-        return str(requerimiento["_id"])
 
     def _validar_operarios(self, operario_ids: list, empresa_id: str) -> list:
         if not isinstance(operario_ids, list):

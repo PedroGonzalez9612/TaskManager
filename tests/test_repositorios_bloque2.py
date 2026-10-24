@@ -110,10 +110,9 @@ def test_buscar_por_proyecto_y_independientes(db):
 
 def test_buscar_conserva_los_filtros_anteriores(db):
     repo = ActividadRepository(db)
-    _actividad(repo, "Con requerimiento", requerimiento_id="R1", proyecto_id="A")
-    _actividad(repo, "Otra", requerimiento_id="R2", proyecto_id="A", estado="COMPLETADA")
+    _actividad(repo, "Por iniciar", proyecto_id="A")
+    _actividad(repo, "Otra", proyecto_id="A", estado="COMPLETADA")
 
-    assert _titulos(repo.buscar(EMPRESA, "R1")) == ["Con requerimiento"]
     assert _titulos(repo.buscar(EMPRESA, proyecto_id="A", estados=["COMPLETADA"])) == ["Otra"]
 
 

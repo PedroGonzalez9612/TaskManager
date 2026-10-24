@@ -17,7 +17,7 @@ def crear_proyecto(servicios, empresa, nombre="Montaje de la línea 3", **campos
 
 
 def crear_en(servicios, empresa, proyecto=None, **campos):
-    """Crea una actividad sin requerimiento: de ese proyecto, o independiente si no se indica."""
+    """Crea una actividad de ese proyecto, o independiente si no se indica."""
     datos = {**DATOS_ACTIVIDAD, **campos}
     if proyecto:
         datos["proyecto_id"] = proyecto["id"]
@@ -93,11 +93,10 @@ def test_rutas_de_proyectos_solo_para_el_administrador(cliente_de, empresa, otra
 
 # ---------- Actividades independientes y de proyecto ----------
 
-def test_una_actividad_sin_proyecto_ni_requerimiento_es_independiente(servicios, empresa):
+def test_una_actividad_sin_proyecto_es_independiente(servicios, empresa):
     independiente = crear_en(servicios, empresa)
 
     assert independiente["proyecto_id"] is None
-    assert independiente["requerimiento_id"] is None
     assert independiente["fecha_original"] == independiente["fecha_programada"] == "2026-10-10"
     assert independiente["reprogramada"] is False
 
@@ -112,16 +111,6 @@ def test_crear_una_actividad_de_proyecto_y_cambiarla_de_proyecto(servicios, empr
     assert editar(actividad["id"], {"proyecto_id": proyecto["id"]}, empresa.admin)["proyecto_id"] == proyecto["id"]
     # Editar otro campo no la saca del proyecto.
     assert editar(actividad["id"], {"titulo": "Otro título"}, empresa.admin)["proyecto_id"] == proyecto["id"]
-
-
-def test_el_requerimiento_sigue_funcionando_y_convive_con_el_proyecto(servicios, empresa, crear_actividad):
-    """La interfaz actual sigue creando actividades con requerimiento_id."""
-    proyecto = crear_proyecto(servicios, empresa)
-    assert crear_actividad([])["requerimiento_id"] == empresa.requerimiento_id
-
-    con_los_dos = crear_actividad([], proyecto_id=proyecto["id"])
-    assert con_los_dos["requerimiento_id"] == empresa.requerimiento_id
-    assert con_los_dos["proyecto_id"] == proyecto["id"]
 
 
 def test_no_se_acepta_el_proyecto_de_otra_empresa(servicios, repos, empresa, otra_empresa):
@@ -145,18 +134,18 @@ def test_listar_las_independientes_y_las_de_un_proyecto(servicios, cliente_de, e
     crear_en(servicios, empresa, proyecto, titulo="Del proyecto")
     crear_en(servicios, empresa, otro, titulo="Del otro proyecto")
     crear_en(servicios, empresa, titulo="Independiente")
-    crear_actividad([], titulo="Con requerimiento")    # Lo que antes era un requerimiento es una independiente.
+    crear_actividad([], titulo="Creada en Actividades")    # Sin proyecto: es independiente.
 
     def titulos(filtros):
         return sorted(a["titulo"] for a in servicios.actividades.listar_actividades(filtros, empresa.admin))
 
     assert titulos({"proyecto_id": proyecto["id"]}) == ["Del proyecto"]
-    assert titulos({"independientes": True}) == ["Con requerimiento", "Independiente"]
+    assert titulos({"independientes": True}) == ["Creada en Actividades", "Independiente"]
     assert len(titulos({})) == 4
 
     admin = cliente_de(empresa.admin)
     assert [a["titulo"] for a in admin.get(f"/actividades?proyecto_id={proyecto['id']}").get_json()] == ["Del proyecto"]
-    assert sorted(a["titulo"] for a in admin.get("/actividades?independientes=1").get_json()) == ["Con requerimiento", "Independiente"]
+    assert sorted(a["titulo"] for a in admin.get("/actividades?independientes=1").get_json()) == ["Creada en Actividades", "Independiente"]
     assert len(admin.get("/actividades").get_json()) == 4
 
 

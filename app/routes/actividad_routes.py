@@ -26,7 +26,6 @@ def create_blueprint(db, reloj=None):
     @requiere_rol(Rol.ADMINISTRADOR, Rol.OPERARIO)
     def listar_actividades():
         filtros = {
-            "requerimiento_id": request.args.get("requerimiento_id"),
             "fecha_desde": request.args.get("fecha_desde"),
             "fecha_hasta": request.args.get("fecha_hasta"),
             "proyecto_id": request.args.get("proyecto_id"),

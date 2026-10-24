@@ -88,7 +88,7 @@ def test_se_guarda_y_se_reconstruye_igual():
 
 
 def test_un_documento_anterior_no_esta_reprogramado():
-    doc = {"_id": "x1", "titulo": "Vieja", "requerimiento_id": "r1", "fecha_programada": "2026-10-01"}
+    doc = {"_id": "x1", "titulo": "Vieja", "fecha_programada": "2026-10-01"}
     presentada = Actividad.from_doc(doc)
     assert presentada["fecha_original"] == "2026-10-01"
     assert presentada["reprogramada"] is False

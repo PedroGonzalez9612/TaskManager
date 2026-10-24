@@ -14,7 +14,7 @@ class Actividad:
     def __init__(self, codigo, titulo, descripcion, empresa_id, categoria, ubicacion,
                  tiempo_estimado_min, fecha_programada, hora_programada=None,
                  prioridad=Prioridad.MEDIA, estado=EstadoActividad.PENDIENTE,
-                 proyecto_id=None, requerimiento_id=None, informacion=None):
+                 proyecto_id=None, informacion=None):
         # Una actividad nueva no tiene id ni historial: eso lo pone desde_documento al leerla.
         self.id = None
         self.codigo = codigo                    # Consecutivo por empresa, por ejemplo "ACT-0042" (las anteriores al 2026-10-23, "OT-").
@@ -23,7 +23,6 @@ class Actividad:
         # Lo que el Administrador deja para hacer el trabajo, por bloques (pasos, herramientas...).
         self.informacion = informacion or InformacionActividad()
         self.proyecto_id = proyecto_id          # None: es una actividad independiente.
-        self.requerimiento_id = requerimiento_id    # Dato anterior a los proyectos; se retira con ellos.
         self.empresa_id = empresa_id
         self.categoria = categoria
         self.ubicacion = ubicacion
@@ -93,7 +92,6 @@ class Actividad:
             "descripcion": self.descripcion,
             "informacion": self.informacion.to_dict(),
             "proyecto_id": self.proyecto_id,
-            "requerimiento_id": self.requerimiento_id,
             "empresa_id": self.empresa_id,
             "categoria": self.categoria.value if isinstance(self.categoria, Categoria) else self.categoria,
             "ubicacion": self.ubicacion,
@@ -115,7 +113,6 @@ class Actividad:
             titulo=doc["titulo"],
             descripcion=doc.get("descripcion", ""),
             proyecto_id=doc.get("proyecto_id"),
-            requerimiento_id=doc.get("requerimiento_id"),
             empresa_id=doc.get("empresa_id"),
             categoria=doc.get("categoria"),
             ubicacion=doc.get("ubicacion", ""),
@@ -146,7 +143,6 @@ class Actividad:
             "descripcion": doc.get("descripcion", ""),
             "informacion": InformacionActividad.desde_documento(doc.get("informacion")).to_dict(),
             "proyecto_id": doc.get("proyecto_id"),
-            "requerimiento_id": doc.get("requerimiento_id"),
             "empresa_id": doc.get("empresa_id"),
             "categoria": doc.get("categoria"),
             "ubicacion": doc.get("ubicacion", ""),

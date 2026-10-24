@@ -31,12 +31,6 @@ class Categoria(str, Enum):
     TRASLADO = "TRASLADO"               # Mover, entregar o despachar.
 
 
-class EstadoRequerimiento(str, Enum):
-    ABIERTO = "ABIERTO"
-    EN_PROCESO = "EN_PROCESO"
-    CERRADO = "CERRADO"
-
-
 class EstadoActividad(str, Enum):
     PENDIENTE = "PENDIENTE"            # Sin operarios asignados.
     ASIGNADA = "ASIGNADA"              # Con operarios; ninguno la tiene en curso ni pausada.

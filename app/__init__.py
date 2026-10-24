@@ -19,7 +19,6 @@ def create_app(config_class=Config):
     from app.routes.auth_routes import create_blueprint as auth_bp
     from app.routes.empresa_routes import create_blueprint as empresa_bp
     from app.routes.usuario_routes import create_blueprint as usuario_bp
-    from app.routes.requerimiento_routes import create_blueprint as requerimiento_bp
     from app.routes.actividad_routes import create_blueprint as actividad_bp
     from app.routes.analisis_routes import create_blueprint as analisis_bp
     from app.routes.proyecto_routes import create_blueprint as proyecto_bp
@@ -31,7 +30,6 @@ def create_app(config_class=Config):
     app.register_blueprint(auth_bp(db))
     app.register_blueprint(empresa_bp(db))
     app.register_blueprint(usuario_bp(db))
-    app.register_blueprint(requerimiento_bp(db))
     app.register_blueprint(actividad_bp(db))
     app.register_blueprint(analisis_bp(db))
     app.register_blueprint(proyecto_bp(db))

@@ -23,10 +23,7 @@ class ActividadRepository(BaseRepository):
             name="empresa_proyecto",
         )
 
-    def find_by_requerimiento(self, requerimiento_id: str):
-        return list(self.collection.find({"requerimiento_id": requerimiento_id}))
-
-    def buscar(self, empresa_id: str, requerimiento_id: str = None, fecha_desde: str = None,
+    def buscar(self, empresa_id: str, fecha_desde: str = None,
                fecha_hasta: str = None, ids: list = None, estados: list = None,
                proyecto_id: str = None, independientes: bool = False):
         """Actividades de una empresa, con filtros opcionales. Las fechas son textos "AAAA-MM-DD"
@@ -41,8 +38,6 @@ class ActividadRepository(BaseRepository):
             # En MongoDB, comparar con None incluye los documentos que no tienen el campo
             # (las actividades anteriores a los proyectos).
             filtro["proyecto_id"] = None
-        if requerimiento_id:
-            filtro["requerimiento_id"] = requerimiento_id
         if fecha_desde or fecha_hasta:
             rango = {}
             if fecha_desde:
@@ -83,22 +78,8 @@ class ActividadRepository(BaseRepository):
         }
         return list(self.collection.find(filtro).sort(ORDEN_POR_FECHA))
 
-    def contar_por_requerimiento(self, empresa_id: str) -> dict:
-        grupos = self.collection.aggregate([
-            {"$match": {"empresa_id": empresa_id}},
-            {"$group": {"_id": "$requerimiento_id", "cantidad": {"$sum": 1}}},
-        ])
-        return {grupo["_id"]: grupo["cantidad"] for grupo in grupos}
-
     def contar_sin_terminar(self, actividad_ids: list) -> int:
         """Cuántas de esas actividades no han llegado a un estado final."""
         oids = [oid for oid in map(self.to_object_id, actividad_ids) if oid]
         finales = [estado.value for estado in EstadoActividad if estado.es_final]
         return self.collection.count_documents({"_id": {"$in": oids}, "estado": {"$nin": finales}}) if oids else 0
-
-    def contar_por_estado(self, requerimiento_id: str = None):
-        match_stage = {"$match": {"requerimiento_id": requerimiento_id}} if requerimiento_id else None
-        pipeline = ([match_stage] if match_stage else []) + [
-            {"$group": {"_id": "$estado", "total": {"$sum": 1}}},
-        ]
-        return list(self.collection.aggregate(pipeline))

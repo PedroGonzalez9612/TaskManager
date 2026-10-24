@@ -16,7 +16,6 @@ from app.repositories.catalogo_repository import CatalogoRepository
 from app.repositories.ejecucion_repository import EjecucionRepository
 from app.repositories.empresa_repository import EmpresaRepository
 from app.repositories.proyecto_repository import ProyectoRepository
-from app.repositories.requerimiento_repository import RequerimientoRepository
 from app.repositories.usuario_repository import UsuarioRepository
 from app.services.composicion import construir_servicios
 
@@ -57,7 +56,6 @@ def repos(db):
         ejecuciones=EjecucionRepository(db),
         empresas=EmpresaRepository(db),
         proyectos=ProyectoRepository(db),
-        requerimientos=RequerimientoRepository(db),
         usuarios=UsuarioRepository(db),
     )
 
@@ -79,12 +77,10 @@ def _crear_usuario(repos, empresa_id, nombre, rol):
 
 @pytest.fixture
 def empresa(repos):
-    """Una empresa con un requerimiento, un administrador (Marta) y dos operarios (Ana y Luis)."""
+    """Una empresa con un administrador (Marta) y dos operarios (Ana y Luis)."""
     empresa_id = repos.empresas.insert({"nombre": "Empresa de prueba", "nit": "900", "consecutivo_actividad": 0})
-    requerimiento_id = repos.requerimientos.insert({"titulo": "General", "empresa_id": empresa_id})
     return SimpleNamespace(
         id=empresa_id,
-        requerimiento_id=requerimiento_id,
         admin=_crear_usuario(repos, empresa_id, "Marta", "ADMINISTRADOR"),
         ana=_crear_usuario(repos, empresa_id, "Ana", "OPERARIO"),
         luis=_crear_usuario(repos, empresa_id, "Luis", "OPERARIO"),
@@ -117,7 +113,6 @@ def crear_actividad(servicios, empresa):
         datos = {
             "titulo": titulo,
             "ubicacion": "Línea 2",
-            "requerimiento_id": empresa.requerimiento_id,
             "categoria": "OPERACION",
             "prioridad": "MEDIA",
             "tiempo_estimado_min": 60,
