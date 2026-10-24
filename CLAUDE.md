@@ -63,8 +63,10 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   cronómetro), sin coral (sobrecarga rayada en rojo), información en gris con su ícono.
   Hechas: Etapas 0 y 1 (alcance), 2 (base visual: tokens de `:root`, logo, prefijo `ACT-`), 3 (Inicio,
   `operario/inicio.js`, clases `inicio-*`) y 4 (Hoy, `operario/hoy.js`, clases `dia-*` y `fila-*`: línea de
-  tiempo de solo lectura; toda fila abre el detalle). Pendientes: 5 (detalle a pantalla completa en celular,
-  donde se ejecuta; hojas inferiores de Pausar, Finalizar y Devolver), 6 (Semana y Resumen) y 7 (validación).
+  tiempo de solo lectura; toda fila abre el detalle) y 5 (detalle del Operario, `abrirDetalleOperario` en
+  `operario/operario-comun.js`, clases `detalle-op-*`: pantalla completa en celular, donde se ejecuta; hojas
+  inferiores de Pausar, Finalizar y Devolver con `abrirHoja`, clases `hoja-*`). El detalle del Administrador
+  sigue siendo `abrirDetalleActividad`. Pendientes: 6 (Semana y Resumen) y 7 (validación).
   El Operario llega a Inicio: estado del turno, la urgente, la actividad en curso o lo que sigue, "Marcar
   entrada" / "Marcar salida" (solo en Inicio) y el balance de la jornada. Lo que comparten las pantallas del
   Operario (`estadoDeJornada`, `avisoDelTurno`, `abrirSalida`, `atenderUrgente`, el detalle) está en

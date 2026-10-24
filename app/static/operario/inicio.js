@@ -38,7 +38,7 @@ function actividadDe(tramo) {
 
 function abrirDetalle(actividad) {
     abrirDetalleOperario(actividad, programacion.actividades, cargar,
-        { soloLectura: estadoDeJornada(programacion) !== "dia" });
+        { soloLectura: estadoDeJornada(programacion) !== "dia", volverA: "Inicio" });
 }
 
 // "Operación, prioridad media. 40 min estimados." Los datos como frase, sin etiquetas (6.2).
@@ -53,10 +53,6 @@ function fraseDeDatos(actividad) {
     return `${categoria}, prioridad ${prioridad}. ${estimado}`;
 }
 
-// "40" si es menos de una hora (se lee "16 min de 40 estimados"); si no, "1 h 30 min".
-function estimadoCorto(minutos) {
-    return minutos < 60 ? String(minutos) : duracionTexto(minutos);
-}
 
 // ---------- El turno, debajo del saludo ----------
 

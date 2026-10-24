@@ -491,8 +491,13 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   marcar entrada y salida, balance de la jornada).
 - **Etapa 4, Hoy:** línea de tiempo de solo lectura con filas; antes del turno, lo pendiente se proyecta
   desde el inicio del turno (regla nueva en el alcance, con pruebas).
-- **Pendiente:** Etapa 5 (detalle donde se ejecuta, con Pausar, Finalizar y Devolver), Etapa 6 (Semana y
-  Resumen) y Etapa 7 (validación y evidencias para el informe).
+- **Etapa 5, detalle de la actividad (2026-10-24):** el Operario tiene su propio detalle, donde ejecuta:
+  en celular ocupa toda la pantalla, con la vuelta arriba y las acciones fijas abajo. Antes de iniciar:
+  datos, "Lista para iniciar", pasos, herramientas, precaución y contacto con "Llamar". En curso:
+  "Registrando tiempo" con barra, el registro (iniciada, pausas con su motivo, reanudada) y la precaución.
+  Pausar, Finalizar (con resumen, observación y archivos) y **Devolver** (ya está en pantalla) se hacen en
+  hojas inferiores; ningún motivo viene marcado de antemano. El detalle del Administrador no cambia.
+- **Pendiente:** Etapa 6 (Semana y Resumen) y Etapa 7 (validación y evidencias para el informe).
 
 ## Depuración del proyecto (2026-10-24) ✅
 
@@ -548,10 +553,9 @@ Resuelta el 2026-10-10: la ejecución pertenece a la asignación (operario + act
 
 En este orden:
 
-1. **Rediseño v3, Etapa 5:** el detalle de la actividad (ya escrito, falta su CSS y probarlo).
-2. **Indicadores de cumplimiento** (criterio 8 del MVP): servicio, ruta y pantalla para el Administrador.
-3. **Aviso de posible ausencia y reasignación por ausencia** (criterio 7).
-4. **Pantalla de Proyectos** (criterio 2) y comparación de lo real con lo estimado en Resumen (criterio 5).
-5. **Rediseño v3, Etapas 6 y 7:** Semana, Resumen, validación y evidencias para el informe de Diseño de Interfaces.
-6. **Integrar las ramas** a `develop` por Pull Request.
-7. Resolver los casos de [casos_por_definir.md](casos_por_definir.md) que el usuario priorice.
+1. **Indicadores de cumplimiento** (criterio 8 del MVP): servicio, ruta y pantalla para el Administrador.
+2. **Aviso de posible ausencia y reasignación por ausencia** (criterio 7).
+3. **Pantalla de Proyectos** (criterio 2) y comparación de lo real con lo estimado en Resumen (criterio 5).
+4. **Rediseño v3, Etapas 6 y 7:** Semana, Resumen, validación y evidencias para el informe de Diseño de Interfaces.
+5. **Integrar las ramas** a `develop` por Pull Request.
+6. Resolver los casos de [casos_por_definir.md](casos_por_definir.md) que el usuario priorice.

@@ -122,11 +122,6 @@ function minutosEnCurso(actividad) {
     return (actividad.ejecucion?.tiempo_real_min || 0) + Math.floor((Date.now() - cargadaEn) / UN_MINUTO);
 }
 
-// "40" si es menos de una hora ("16 min de 40"); si no, "1 h 30 min".
-function estimadoCorto(minutos) {
-    return minutos < 60 ? String(minutos) : duracionTexto(minutos);
-}
-
 function textoRetraso(actividad) {
     const dias = actividad.dias_de_retraso;
     return dias === 1 ? "Retraso: 1 día" : `Retraso: ${dias} días`;

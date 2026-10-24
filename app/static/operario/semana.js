@@ -59,6 +59,6 @@ iniciarPaginaProtegida(["OPERARIO"]).then(async () => {
             rango = info;
             setTimeout(cargar);     // El primer aviso llega antes de que "calendario" quede asignado.
         },
-        eventClick: (info) => abrirDetalleOperario(info.event.extendedProps.actividad, actividades, cargar),
+        eventClick: (info) => abrirDetalleOperario(info.event.extendedProps.actividad, actividades, cargar, { volverA: "Semana" }),
     }));
 });

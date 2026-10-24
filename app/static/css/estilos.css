@@ -3676,3 +3676,446 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
         padding-bottom: calc(3.8rem + var(--e5));
     }
 }
+
+/* ================= Operario: detalle de actividad (alcance, Sección 6.1; diseño 4_ a 7_ de operario_v3) ================= */
+/* Donde se ejecuta. En celular ocupa toda la pantalla: la vuelta arriba, el contenido en medio y las
+   acciones fijas abajo, al alcance del pulgar. En computador es una ventana centrada. */
+
+.dialogo.detalle-op[open] {
+    display: flex;
+    flex-direction: column;
+    width: min(36rem, calc(100vw - 1.8rem));
+    max-height: calc(100vh - 1.8rem);
+    overflow: hidden;
+    background: var(--fondo);
+}
+
+.detalle-op-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+    padding: var(--e2) var(--e4);
+    border-bottom: 1px solid var(--borde);
+    background: var(--fondo);
+}
+
+.detalle-op-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    min-height: var(--alto-control);
+    padding: 0 var(--e2) 0 0;
+    border: 0;
+    background: none;
+    color: var(--texto);
+    font: inherit;
+    font-size: var(--tamano-h3);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.detalle-op-cuerpo {
+    display: grid;
+    gap: var(--e5);
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--e5) var(--e4) var(--e6);
+}
+
+.detalle-op-cuerpo > *,
+.detalle-op-cuerpo p,
+.detalle-op-cuerpo h2,
+.detalle-op-cuerpo h3 {
+    margin: 0;
+}
+
+.detalle-op-estado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e2) var(--e3);
+}
+
+/* El estado como texto con su ícono, sin etiqueta (6.2). */
+.detalle-op-estado-texto {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--texto-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+.detalle-op-estado-texto .icono {
+    width: 1rem;
+    height: 1rem;
+}
+
+.estado-op-en_ejecucion { color: var(--principal); }
+.estado-op-en_ejecucion .icono { stroke-width: 3; }
+.estado-op-pausada { color: var(--advertencia-texto); }
+.estado-op-completada { color: var(--exito-texto); }
+.estado-op-no_realizada { color: var(--error-texto); }
+
+.detalle-op-cuerpo .detalle-op-titulo {
+    margin-top: calc(-1 * var(--e3));
+    font-size: var(--tamano-nombre-detalle);
+    line-height: var(--interlineado-h1);
+}
+
+.detalle-op-subtitulo {
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
+}
+
+/* Los datos en dos columnas, separados del resto por líneas finas. */
+.detalle-op-datos {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr);
+    gap: var(--e2) var(--e4);
+    padding-block: var(--e4);
+    border-block: 1px solid var(--borde);
+}
+
+.detalle-op-datos dt {
+    color: var(--texto-secundario);
+}
+
+.detalle-op-datos dd {
+    margin: 0;
+}
+
+.linea-exito {
+    display: flex;
+    align-items: center;
+    gap: var(--e2);
+    color: var(--exito-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+/* Registrando tiempo: minutos contra lo estimado con su barra (no hay segundos corriendo). */
+.detalle-op-tiempo {
+    display: grid;
+    gap: var(--e3);
+    padding-block: var(--e5);
+    border-block: 1px solid var(--borde);
+}
+
+.detalle-op-registrando {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    color: var(--principal);
+    font-weight: var(--peso-fuerte);
+}
+
+.detalle-op-registrando .icono {
+    width: 0.75rem;
+    height: 0.75rem;
+    fill: currentColor;
+}
+
+.detalle-op-cifra {
+    font-size: var(--tamano-h3);
+}
+
+.detalle-op-cifra strong {
+    font-size: var(--tamano-nombre-detalle);
+    font-weight: var(--peso-fuerte);
+}
+
+/* El registro de ejecución: hora, nodo y lo que pasó, con su riel (como la línea de tiempo). */
+.detalle-op-registro {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.detalle-op-registro li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.5rem 1rem minmax(0, 1fr);
+    align-items: start;
+    column-gap: var(--e3);
+    padding-bottom: var(--e3);
+}
+
+.detalle-op-registro li:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 0.9rem;
+    bottom: -0.2rem;
+    left: calc(3.5rem + var(--e3) + 0.5rem - 1px);
+    width: 2px;
+    background: var(--borde);
+}
+
+.detalle-op-registro .cifra {
+    font-weight: var(--peso-fuerte);
+}
+
+.detalle-op-registro-punto {
+    position: relative;
+    z-index: 1;
+    justify-self: center;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-top: 0.4rem;
+    border-radius: 50%;
+    background: var(--principal);
+}
+
+.registro-pausa .detalle-op-registro-punto {
+    border: 2px solid var(--advertencia-texto);
+    border-radius: 2px;
+    background: var(--fondo);
+}
+
+.registro-pausa strong {
+    color: var(--advertencia-texto);
+}
+
+.registro-fin .detalle-op-registro-punto {
+    background: var(--exito);
+}
+
+.detalle-op-registro-texto {
+    display: grid;
+    gap: var(--e1);
+}
+
+.detalle-op-registro-texto strong {
+    font-weight: var(--peso-normal);
+}
+
+.registro-pausa .detalle-op-registro-texto strong {
+    font-weight: var(--peso-fuerte);
+}
+
+/* La precaución: siempre el mismo componente. Fondo ámbar suave, ícono de advertencia, sin franja. */
+.detalle-op-precaucion {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--e3);
+    padding: var(--e4);
+    border-radius: var(--radio);
+    background: var(--advertencia-suave);
+    color: var(--texto);
+}
+
+.detalle-op-precaucion .icono {
+    color: var(--advertencia-texto);
+}
+
+.detalle-op-precaucion strong {
+    color: var(--advertencia-texto);
+}
+
+.detalle-op-bloque {
+    display: grid;
+    gap: var(--e2);
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+}
+
+.detalle-op-bloque .lista-informacion {
+    margin: 0;
+}
+
+.detalle-op-contactos {
+    display: grid;
+    gap: var(--e3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.detalle-op-contactos li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
+/* Las acciones, fijas abajo. La principal a la derecha; Devolver, terciario, debajo. */
+.detalle-op-acciones {
+    display: grid;
+    gap: var(--e2);
+    padding: var(--e3) var(--e4) calc(var(--e3) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--borde);
+    background: var(--superficie);
+}
+
+.detalle-op-acciones-fila {
+    display: flex;
+    gap: var(--e3);
+}
+
+.detalle-op-acciones-fila > * {
+    flex: 1;
+    min-height: var(--alto-boton-principal);
+    font-size: var(--tamano-h3);
+}
+
+.boton-terciario {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--e2);
+    min-height: var(--alto-control);
+    border: 0;
+    border-radius: var(--radio-control);
+    background: none;
+    color: var(--texto);
+    font: inherit;
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.boton-terciario:hover {
+    text-decoration: underline;
+}
+
+/* ---------- Hojas inferiores: pausar, devolver y finalizar ---------- */
+
+.dialogo.hoja {
+    width: min(30rem, calc(100vw - 1.8rem));
+}
+
+.hoja-formulario {
+    display: grid;
+    gap: var(--e4);
+    padding: var(--e3) var(--e5) var(--e5);
+}
+
+.hoja-formulario > * {
+    margin: 0;
+}
+
+.hoja-formulario h2 {
+    font-size: var(--tamano-h2);
+}
+
+.hoja-asa {
+    justify-self: center;
+    width: 2.5rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: var(--borde);
+}
+
+.hoja-subtitulo {
+    margin-top: calc(-1 * var(--e3));
+}
+
+.hoja-opciones {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+/* Cada motivo es una fila de 52 px, separada por una línea fina. */
+.hoja-opcion {
+    display: flex;
+    align-items: center;
+    gap: var(--e4);
+    min-height: var(--alto-boton-principal);
+    border-bottom: 1px solid var(--borde);
+    cursor: pointer;
+}
+
+.hoja-opcion input {
+    width: 1.375rem;
+    height: 1.375rem;
+    margin: 0;
+    accent-color: var(--principal);
+}
+
+.hoja-otro {
+    width: 100%;
+    margin-top: var(--e3);
+}
+
+.hoja-acciones {
+    display: grid;
+    gap: var(--e3);
+}
+
+/* Lo que se trabajó, en tres cifras con su nombre debajo, entre líneas finas. */
+.hoja-resumen {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--e3);
+    padding-block: var(--e4);
+    border-block: 1px solid var(--borde);
+}
+
+.hoja-resumen div {
+    display: flex;
+    flex-direction: column;
+}
+
+.hoja-resumen dd {
+    margin: 0;
+    font-size: var(--tamano-h2);
+    font-weight: var(--peso-fuerte);
+}
+
+.hoja-resumen dt {
+    color: var(--texto-secundario);
+}
+
+.hoja-etiqueta {
+    margin-bottom: calc(-1 * var(--e2));
+}
+
+.hoja-formulario textarea,
+.hoja-otro {
+    width: 100%;
+    font: inherit;
+}
+
+.hoja-agregar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--e2);
+    min-height: var(--alto-boton-principal);
+    border: 1px dashed var(--borde-control);
+    border-radius: var(--radio-control);
+    background: var(--fondo);
+    font-weight: var(--peso-fuerte);
+    cursor: pointer;
+}
+
+.hoja-agregar:focus-within,
+#finalizar-archivos:focus-visible + .hoja-agregar {
+    outline: 2px solid var(--principal);
+    outline-offset: 2px;
+}
+
+/* En celular: el detalle ocupa toda la pantalla y las hojas suben desde abajo. */
+@media (max-width: 50em) {
+    .dialogo.detalle-op[open] {
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .dialogo.hoja[open] {
+        width: 100vw;
+        max-width: none;
+        max-height: 90dvh;
+        margin: auto 0 0;
+        border-radius: 1.25rem 1.25rem 0 0;
+    }
+
+    .hoja-formulario {
+        padding-bottom: calc(var(--e5) + env(safe-area-inset-bottom));
+    }
+}
