@@ -22,6 +22,7 @@ from app.services.catalogo_service import CatalogoService
 from app.services.cierre_jornada_service import CierreJornadaService
 from app.services.ejecucion_service import EjecucionService
 from app.services.evidencia_service import EvidenciaService
+from app.services.indicador_service import IndicadorService
 from app.services.programacion_service import ProgramacionService
 from app.services.proyecto_service import ProyectoService
 from app.services.turno_service import TurnoService
@@ -29,7 +30,7 @@ from app.services.turno_service import TurnoService
 
 def construir_servicios(db, reloj=None) -> SimpleNamespace:
     """Devuelve los servicios como atributos: actividades, ejecucion, carga, proyectos, catalogos,
-    cierre_jornada, programacion, turnos, asistencia, evidencias y adjuntos.
+    cierre_jornada, programacion, turnos, asistencia, evidencias, adjuntos e indicadores.
     "reloj" es para las pruebas; sin él, cada servicio usa la hora del servidor."""
     actividad_repository = ActividadRepository(db)
     asignacion_repository = AsignacionRepository(db)
@@ -48,8 +49,9 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
     cierre_jornada = CierreJornadaService(
         actividad_repository, asignacion_repository, ejecucion_repository, empresa_repository, turnos, reloj=reloj,
     )
+    asistencia_repository = AsistenciaRepository(db)
     asistencia = AsistenciaService(
-        AsistenciaRepository(db), turnos, usuario_repository, empresa_repository, ejecucion_repository,
+        asistencia_repository, turnos, usuario_repository, empresa_repository, ejecucion_repository,
         reloj=reloj,
     )
     catalogos = CatalogoService(CatalogoRepository(db))
@@ -76,8 +78,13 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
         actividades, OrdenJornadaRepository(db), empresa_repository, usuario_repository, turnos, asistencia,
         reloj=reloj,
     )
+    # Los indicadores de jornada y cumplimiento (alcance, Sección 5.2) leen de todo lo anterior.
+    indicadores = IndicadorService(
+        actividad_repository, asignacion_repository, ejecucion_repository, asistencia_repository,
+        usuario_repository, empresa_repository, proyecto_repository, turnos, cierre_jornada, reloj=reloj,
+    )
     return SimpleNamespace(
         actividades=actividades, ejecucion=ejecucion, carga=carga, proyectos=proyectos, catalogos=catalogos,
         cierre_jornada=cierre_jornada, programacion=programacion, turnos=turnos, asistencia=asistencia,
-        evidencias=evidencias, adjuntos=adjuntos,
+        evidencias=evidencias, adjuntos=adjuntos, indicadores=indicadores,
     )

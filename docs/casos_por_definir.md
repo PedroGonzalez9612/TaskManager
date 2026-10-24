@@ -31,6 +31,12 @@ Fecha de la revisión: 2026-10-10.
 | A3 | Se **edita el estimado o la fecha de una actividad en curso** | Se permite | El estimado sí (cambia el fin proyectado); la fecha no, mientras esté en curso |
 | A4 | Una **reprogramación automática deja una jornada sobrecargada** | Solo se ve en la carga del día | Aviso al Administrador al abrir el tablero (ya está en el alcance; falta construirlo) |
 
+## Turnos
+
+| # | Caso | Qué pasa hoy | Propuesta |
+|---|---|---|---|
+| T1 | El turno **no tiene días de descanso**: aplica todos los días | Los indicadores cuentan una jornada solo si el operario marcó asistencia o tenía actividades (alcance, Sección 5.2) | Darle al turno sus días de la semana (por ejemplo, de lunes a viernes). Así el tiempo programado, la llegada tarde y el aviso de ausencia sabrían qué días se trabaja |
+
 ## Asistencia
 
 | # | Caso | Qué pasa hoy | Propuesta |

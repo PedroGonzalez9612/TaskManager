@@ -51,6 +51,16 @@ class ActividadRepository(BaseRepository):
             filtro["estado"] = {"$in": list(estados)}
         return list(self.collection.find(filtro).sort(ORDEN_POR_FECHA))
 
+    def buscar_por_jornada_original(self, empresa_id: str, desde: str, hasta: str):
+        """Actividades de la empresa programadas originalmente entre esas fechas ("AAAA-MM-DD"),
+        aunque después se hayan reprogramado: con ellas se mide el cumplimiento. Las anteriores a
+        la reprogramación no tienen "fecha_original": para ellas vale la fecha programada."""
+        rango = {"$gte": desde, "$lte": hasta}
+        return list(self.collection.find({"empresa_id": empresa_id, "$or": [
+            {"fecha_original": rango},
+            {"fecha_original": {"$exists": False}, "fecha_programada": rango},
+        ]}))
+
     def find_by_proyectos(self, empresa_id: str, proyecto_ids: list):
         """Las actividades de varios proyectos en una sola consulta, solo con lo que hace falta para
         calcular el avance: "proyecto_id", "estado" y "tiempo_estimado_min" (más "_id"). No sirve

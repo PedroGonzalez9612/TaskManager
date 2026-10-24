@@ -32,6 +32,10 @@ class AsistenciaRepository(BaseRepository):
     def find_de_empresa_en(self, empresa_id: str, jornada: str):
         return list(self.collection.find({"empresa_id": empresa_id, "jornada": jornada}))
 
+    def find_de_empresa_entre(self, empresa_id: str, desde: str, hasta: str):
+        """Las asistencias de la empresa en las jornadas de "desde" a "hasta" ("AAAA-MM-DD"), incluidas."""
+        return list(self.collection.find({"empresa_id": empresa_id, "jornada": {"$gte": desde, "$lte": hasta}}))
+
     # ---------- Escritura ----------
 
     def insertar(self, documento: dict):

@@ -232,7 +232,14 @@ Las horas de un turno que ya tiene operarios no se cambian, porque cambiarían l
 - **Carga:** la suma del tiempo **estimado** de las actividades de un operario en una jornada. Es un dato de planeación. Las canceladas no suman; las no realizadas sí, porque ocuparon su lugar en el día.
 - **Sobrecarga:** cuando la carga supera el 100 % de la capacidad. Se avisa al asignar y en la carga del día; no se impide.
 - **Avance de un proyecto:** horas estimadas de sus actividades finalizadas sobre las horas estimadas de todas (sin las canceladas).
-- **Indicadores** (en construcción): cumplimiento de actividades (finalizada en su jornada), retraso (reprogramadas), incumplimiento (no realizadas), precisión de la estimación (estimado contra real), cumplimiento de jornada (tiempo en actividades sobre tiempo programado) y aprovechamiento (tiempo en actividades sobre tiempo presente).
+- **Indicadores** (se consultan por un rango de jornadas, por operario, proyecto, categoría y empresa):
+  - **Cumplimiento de jornada:** tiempo en actividades sobre tiempo programado (la capacidad del turno).
+  - **Aprovechamiento:** tiempo en actividades sobre tiempo presente. Solo cuenta la asistencia que el Administrador validó o corrigió; las jornadas sin validar se informan aparte.
+  - **Tiempo adicional:** lo trabajado fuera del horario del turno.
+  - **Cumplimiento de actividades:** por cada operario en cada actividad, según su jornada original: cumplida si la finalizó en esa jornada, incumplida si quedó No realizada, con retraso si se reprogramó o se terminó después. Lo de una jornada que no ha terminado todavía no cuenta.
+  - **Precisión de la estimación:** de lo finalizado, el tiempo real como porcentaje del estimado.
+  - **Pendientes:** reprogramadas (con sus días de retraso), no realizadas, canceladas por motivo y devoluciones por motivo.
+  - **Qué jornadas cuentan:** las de los días con asistencia o con actividades, cuando ya terminaron. El turno todavía no tiene días de descanso, así que un domingo sin trabajo no cuenta como tiempo programado.
 - Regla para todos los indicadores agregados: **se suman los tiempos y se divide al final**; nunca se promedian porcentajes.
 
 ---

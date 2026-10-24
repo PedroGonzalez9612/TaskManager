@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from pymongo import ASCENDING
 from pymongo.errors import DuplicateKeyError
 
@@ -56,6 +58,17 @@ class EjecucionRepository(BaseRepository):
     def find_by_actividades(self, actividad_ids: list):
         """Todas las ejecuciones de esas actividades. Puede haber varias por actividad."""
         return list(self.collection.find({"actividad_id": {"$in": actividad_ids}}))
+
+    def find_de_usuarios_entre(self, usuario_ids: list, desde, hasta):
+        """Las ejecuciones de esos operarios que tienen tiempo entre "desde" y "hasta" (momentos en
+        UTC): empezaron antes de "hasta" y terminaron después de "desde", o siguen abiertas.
+        MongoDB guarda las fechas sin zona, en UTC: así se comparan."""
+        desde, hasta = (momento.astimezone(timezone.utc).replace(tzinfo=None) for momento in (desde, hasta))
+        return list(self.collection.find({
+            "usuario_id": {"$in": list(usuario_ids)},
+            "fecha_inicio": {"$lt": hasta},
+            "$or": [{"fecha_fin": None}, {"fecha_fin": {"$gte": desde}}],
+        }))
 
     # ---------- Escritura ----------
 
