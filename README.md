@@ -83,4 +83,4 @@ Todas las rutas (salvo `/auth/login` y `/health`) requieren sesión iniciada.
 | `GET /analisis/carga?desde=&hasta=` | Administrador, Operario | Carga por jornada de cada operario |
 | `GET /health` | Público | Verificación del servidor |
 
-Las bibliotecas de interfaz (EventCalendar, Chart.js y Lucide) y las fuentes están copiadas dentro de `app/static/`, con sus licencias; la aplicación no descarga nada de internet.
+Las bibliotecas de interfaz (Chart.js y Lucide) y las fuentes están copiadas dentro de `app/static/`, con sus licencias; la aplicación no descarga nada de internet.

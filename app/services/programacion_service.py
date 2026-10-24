@@ -6,12 +6,14 @@ programación está en programacion_dia.py (función pura) y el orden sugerido e
 La jornada que se programa es la jornada vigente del operario: con un turno de noche, después de
 la medianoche sigue viendo la jornada del día en que empezó su turno, hasta que el turno termina."""
 from dataclasses import dataclass
+from datetime import date, timedelta
 
 from app.models.enums import EstadoActividad, Prioridad, Rol
 from app.models.orden_jornada import OrdenJornada
 from app.services.programacion_dia import programar_dia
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
-from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc
+from app.utils.fechas import validar_fecha
+from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, momento_local
 
 # Lo que el operario todavía tiene por hacer: es lo único que se puede ordenar.
 ESTADOS_PENDIENTES = (EstadoActividad.ASIGNADA.value, EstadoActividad.PAUSADA.value)
@@ -19,6 +21,10 @@ ESTADOS_PENDIENTES = (EstadoActividad.ASIGNADA.value, EstadoActividad.PAUSADA.va
 # Minutos después del inicio del turno a partir de los cuales una entrada sin marcar es una llegada
 # tarde (alcance, Sección 5.1). Es la misma para todas las empresas mientras no se defina por empresa.
 TOLERANCIA_ENTRADA_MIN = 10
+# Días como máximo de una consulta de varios días (Semana pide siete).
+DIAS_MAXIMOS_SEMANA = 14
+# Un día futuro sin turno se proyecta desde esta hora: no hay inicio de turno del que partir.
+HORA_SIN_TURNO = "08:00"
 # Lo que todavía ocupa tiempo del operario: lo que está en curso y lo pendiente.
 TRAMOS_CON_TIEMPO_POR_DELANTE = ("EN_CURSO", "PENDIENTE")
 
@@ -107,6 +113,66 @@ class ProgramacionService:
         Administrador, la del operario de su empresa que indique."""
         operario = self._operario_consultado(solicitante, operario_id)
         return self._programacion(operario, self.reloj())
+
+    def semana(self, solicitante: dict, desde, hasta, operario_id=None) -> dict:
+        """La programación de varios días (vista Semana; observaciones 8 y 11 del usuario). Cada día
+        con las mismas reglas de Hoy: lo pasado, con lo finalizado en sus horas reales; la jornada
+        vigente, con su programación dinámica; lo futuro, proyectado desde el inicio de su turno, en
+        el orden que el operario haya elegido. La hora fija nunca se mueve."""
+        desde = validar_fecha(desde, "La fecha inicial")
+        hasta = validar_fecha(hasta, "La fecha final")
+        if hasta < desde:
+            raise ValidationError("La fecha final no puede ser anterior a la inicial")
+        dias = (date.fromisoformat(hasta) - date.fromisoformat(desde)).days + 1
+        if dias > DIAS_MAXIMOS_SEMANA:
+            raise ValidationError(f"Consulta como máximo {DIAS_MAXIMOS_SEMANA} días")
+
+        operario = self._operario_consultado(solicitante, operario_id)
+        ahora = self.reloj()
+        empresa = self.empresa_repository.find_by_id(operario["empresa_id"]) or {}
+        zona = empresa.get("zona_horaria") or ZONA_POR_DEFECTO
+        turnos = self.turno_service.turnos_de_operarios([operario["id"]])
+        vigente = turnos.jornada_vigente(operario["id"], ahora, zona)
+        actividades = self.actividad_service.listar_actividades({"fecha_desde": desde, "fecha_hasta": hasta}, operario)
+        por_fecha = {}
+        for actividad in actividades:
+            por_fecha.setdefault(actividad["fecha_programada"], []).append(actividad)
+
+        resultado = []
+        for indice in range(dias):
+            fecha = (date.fromisoformat(desde) + timedelta(days=indice)).isoformat()
+            del_dia = por_fecha.get(fecha, [])
+            if fecha == vigente:
+                dia = self._armar(operario, _Jornada(fecha, zona, del_dia, turnos), ahora)
+            else:
+                dia = self._otro_dia(operario, fecha, zona, del_dia, turnos, ahora, pasado=fecha < vigente)
+            resultado.append({
+                "fecha": fecha, "es_vigente": fecha == vigente, "turno": dia["turno"],
+                "tramos": dia["tramos"], "resumen": dia["resumen"],
+                "actividad_ids": [actividad["id"] for actividad in del_dia],
+                # Solo la jornada vigente tiene asistencia: sin la entrada, el detalle no ofrece iniciar.
+                "asistencia": dia.get("asistencia"),
+            })
+        return {"desde": desde, "hasta": hasta, "jornada_vigente": vigente, "dias": resultado,
+                "actividades": actividades}
+
+    def _otro_dia(self, operario: dict, fecha: str, zona: str, actividades: list, turnos, ahora, pasado: bool) -> dict:
+        """La programación de un día que no es la jornada vigente. En uno pasado solo queda lo
+        finalizado, en sus horas reales (lo que no se hizo ya pasó a otra jornada o quedó No
+        realizado). En uno futuro, lo pendiente se proyecta desde el inicio de su turno."""
+        turno = _turno_de_hoy(turnos.turno_de(operario["id"], fecha), fecha, zona)
+        inicio = turno["inicio"] if turno else momento_local(fecha, HORA_SIN_TURNO, zona)
+        programacion = programar_dia(actividades, self._orden_de(operario["id"], fecha), ahora, fecha, zona,
+                                     turnos.capacidad_de(operario["id"], fecha),
+                                     turnos.cierre_de([operario["id"]], fecha, zona), inicio_turno=inicio)
+        tramos = programacion["tramos"]
+        if pasado:
+            tramos = [tramo for tramo in tramos if tramo["tipo"] == "FINALIZADA"]
+        fin_turno = turno["fin"] if turno else None
+        for tramo in tramos:
+            tramo["fuera_del_turno_min"] = _minutos_fuera_del_turno(tramo, fin_turno)
+        programacion["resumen"]["fuera_del_turno_min"] = sum(tramo["fuera_del_turno_min"] for tramo in tramos)
+        return {"turno": turno, "tramos": tramos, "resumen": programacion["resumen"]}
 
     # ---------- Orden del día (Operario) ----------
 

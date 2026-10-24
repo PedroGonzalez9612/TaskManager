@@ -5,38 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <title>Semana — GestLab</title>
-    <link rel="stylesheet" href="/static/vendor/event-calendar/event-calendar.min.css">
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
 <body class="cargando">
-    <main class="principal">
-        <div class="encabezado-pagina">
+    <!-- Semana del Operario (alcance, Secciones 6.1 y 6.2; observaciones 8, 11 y 12 del usuario): cada
+         día con su programación, como en Hoy. Lo de horario flexible va en su hora estimada ("~").
+         En computador, los siete días en columnas; en celular, un día a la vez. -->
+    <main class="principal semana">
+        <header class="semana-encabezado">
             <div>
-                <h1>Mi semana</h1>
-                <p>Tus actividades en el horario. Selecciona un bloque para ver el detalle.</p>
+                <h1>Tu semana</h1>
+                <p id="rango-semana" class="texto-secundario"></p>
             </div>
-        </div>
+            <fieldset class="grupo-botones">
+                <legend class="solo-lectores">Cambiar de semana</legend>
+                <button type="button" id="semana-anterior" class="boton-secundario boton-pequeno" aria-label="Semana anterior"></button>
+                <button type="button" id="semana-actual" class="boton-secundario boton-pequeno">Volver a hoy</button>
+                <button type="button" id="semana-siguiente" class="boton-secundario boton-pequeno" aria-label="Semana siguiente"></button>
+            </fieldset>
+        </header>
 
-        <section class="panel panel-horario" aria-label="Horario de tus actividades">
-            <!-- Proximidad: el significado de los colores y el control que los cambia van juntos, con el horario. -->
-            <details id="opciones-horario" class="opciones-horario">
-                <summary>Colores y leyenda</summary>
-                <div class="barra-horario">
-                    <div id="leyenda" class="leyenda" aria-label="Significado de los colores"></div>
-                    <div id="controles"></div>
-                </div>
-            </details>
-            <div class="panel-calendario">
-                <div id="calendario"></div>
-            </div>
-        </section>
+        <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando tu semana…</p>
+        <!-- Celular: los días como pestañas, con su carga; debajo, el día elegido. -->
+        <div id="semana-dias" class="semana-dias" role="tablist" aria-label="Días de la semana" hidden></div>
+        <ol id="semana-dia" class="dia-linea semana-dia" aria-live="polite" hidden></ol>
+        <!-- Computador: la cuadrícula de la semana. -->
+        <div id="semana-cuadricula" class="semana-cuadricula" hidden></div>
     </main>
 
     <script src="/static/js/api.js"></script>
     <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
     <script src="/static/js/actividades-comun.js"></script>
-    <script src="/static/vendor/event-calendar/event-calendar.min.js"></script>
     <script src="/static/operario/operario-comun.js"></script>
     <script src="/static/operario/semana.js"></script>
 </body>

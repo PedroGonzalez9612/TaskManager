@@ -173,6 +173,8 @@ El sistema calcula, para cada operario, la **programación del día**: la secuen
 
 Consecuencia: **si algo termina antes, lo siguiente se adelanta; si se demora, se corre.**
 
+**Otros días (vista Semana):** cada día se calcula con las mismas reglas. Un día pasado muestra lo finalizado en sus horas reales (lo que no se hizo ya pasó a otra jornada o quedó No realizado). Un día futuro proyecta lo pendiente desde el inicio de su turno (desde las 08:00 si ese día no tiene turno), en el orden que el operario haya elegido para ese día; la hora fija no se mueve.
+
 ### El orden del día
 
 - El sistema sugiere un orden: primero la mayor prioridad, después la hora, y entre iguales la que lleva más días de retraso.

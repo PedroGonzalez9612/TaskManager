@@ -71,7 +71,8 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   entrada" / "Marcar salida" (solo en Inicio) y el balance de la jornada. Lo que comparten las pantallas del
   Operario (`estadoDeJornada`, `avisoDelTurno`, `abrirSalida`, `atenderUrgente`, el detalle) está en
   `operario/operario-comun.js`. Equipo es el tablero del turno (`admin/equipo.js`, clases `tablero-*`); Semana
-  del Operario usa EventCalendar; Actividades del Administrador tiene filtros y lista agrupada por día.
+  del Operario (`operario/semana.js`, clases `semana-*`) es un calendario propio que pide
+  `GET /programacion-de-la-semana`; Resumen (`operario/resumen.js`) usa `GET /analisis/indicadores`; Actividades del Administrador tiene filtros y lista agrupada por día.
   Qué falta del MVP y del producto: ver "Estado de los criterios del MVP" en `docs/avance.md`.
   Se avanza etapa por etapa, con la aprobación del usuario.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
@@ -84,10 +85,11 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   `app/utils/seguridad.py`). Cualquier llamada nueva a la API debe pasar por `pedirApi`.
 - Errores de negocio: lanzar subclases de `ErrorApi` (`app/utils/errors.py`); un solo manejador las
   convierte en JSON con su código HTTP.
-- Bibliotecas de interfaz copiadas en `app/static/vendor/` (sin CDN ni compilación): EventCalendar
-  (horarios), Chart.js (gráficas) y Lucide (íconos, solo los usados, en `vendor/lucide/iconos.js`).
+- Bibliotecas de interfaz copiadas en `app/static/vendor/` (sin CDN ni compilación): Chart.js (gráficas;
+  hoy sin uso en las pantallas) y Lucide (íconos, solo los usados, en `vendor/lucide/iconos.js`). Los
+  horarios son propios (Semana y el tablero de Equipo).
 - Piezas compartidas de la interfaz: `js/actividades-comun.js` (señales de prioridad y estado, detalle
-  de actividad, opciones del calendario, modo de color) y `js/formulario-actividad.js` (crear y editar).
+  de actividad del Administrador, registro de ejecución, información por bloques) y `js/formulario-actividad.js` (crear y editar).
 
 ## Reglas de dominio clave (detalle completo en el alcance)
 

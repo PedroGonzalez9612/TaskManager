@@ -111,10 +111,6 @@
     --velo: rgb(27 34 48 / 0.5);    /* Lo que queda detrás de un diálogo (figura y fondo) */
     --alto-control: 2.75rem;        /* Al menos 44 px: fácil de tocar en celular (Ley de Fitts) */
     --alto-boton-principal: 3.25rem; /* 52 px: el botón principal en celular */
-
-    /* ---- Horario (EventCalendar) ---- */
-    --alto-franja-horario: 2rem;    /* Alto de 30 min: cabe el título de un bloque corto. Lo lee actividades-comun.js */
-    --alto-fila-flexible: 7.5rem;   /* Alto máximo de la fila "Flexible": unas tres tarjetas; las demás se desplazan */
 }
 
 /* El tamaño que el usuario tenga en su navegador (16 px si no lo ha cambiado). */
@@ -820,36 +816,6 @@ body.ancho-angosto {
 }
 
 /* Control de dos opciones (por ejemplo, el color de los bloques del horario). */
-.conmutador {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-}
-
-.conmutador-titulo {
-    margin-right: 0.3rem;
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.conmutador button {
-    min-height: 2.4rem;
-    padding: 0 0.8rem;
-    border: 1px solid var(--borde-control);
-    border-radius: 0.5rem;
-    background: var(--superficie);
-    color: var(--texto);
-    font-family: inherit;
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-fuerte);
-    cursor: pointer;
-}
-
-.conmutador button[aria-pressed="true"] {
-    border-color: var(--principal);
-    background: var(--principal-suave);
-    color: var(--principal-hover);
-}
 
 fieldset.grupo-botones {
     min-width: 0;
@@ -863,54 +829,6 @@ fieldset.grupo-botones {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.6rem;
-}
-
-/* La leyenda y el selector de colores se pliegan en celular, para que el horario quede a la vista. */
-.opciones-horario > summary {
-    display: flex;
-    align-items: center;
-    min-height: var(--alto-control);
-    padding: var(--e2) var(--e5);
-    color: var(--principal);
-    font-weight: var(--peso-fuerte);
-    cursor: pointer;
-}
-
-.opciones-horario[open] > summary {
-    border-bottom: 1px solid var(--borde);
-}
-
-@media (max-width: 50em) {
-    .opciones-horario > summary {
-        padding-inline: var(--e4);
-    }
-}
-
-/* Barra del horario: la leyenda de colores y el control que los cambia van juntos, arriba del horario,
-   dentro de su mismo panel (proximidad). */
-.barra-horario {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e3) var(--e4);
-    padding: var(--e3) var(--e5);
-    border-bottom: 1px solid var(--borde);
-}
-
-.leyenda {
-    margin: 0;
-}
-
-.leyenda-grupo {
-    display: none;
-    flex-wrap: wrap;
-    gap: var(--e2);
-}
-
-html[data-color-bloques="prioridad"] .leyenda-prioridad,
-html[data-color-bloques="categoria"] .leyenda-categoria {
-    display: flex;
 }
 
 /* ================= Formularios y diálogos ================= */
@@ -1394,392 +1312,6 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 .orden-acciones .boton,
 .orden-acciones .boton-secundario {
     min-height: 3rem;
-}
-
-/* ================= Horario (EventCalendar) ================= */
-
-/* El horario va en un panel: arriba la barra con la leyenda y el control de color; debajo, el calendario. */
-.panel-calendario {
-    padding: var(--e4) var(--e5) var(--e5);
-}
-
-/* El calendario toma los colores y las fuentes del sistema. Las variables --ec-color-* de la biblioteca
-   (bordes de sus ventanas emergentes y barras de desplazamiento) también salen de la paleta. */
-.ec {
-    --ec-color-400: var(--borde-control);
-    --ec-color-300: var(--borde);
-    --ec-color-200: var(--neutro-suave);
-    --ec-color-100: var(--fondo);
-    --ec-color-50: var(--fondo);
-    --ec-bg-color: var(--superficie);
-    --ec-text-color: var(--texto);
-    --ec-border-color: var(--borde);
-    --ec-today-bg-color: var(--superficie);     /* Sin tinte: la línea "Ahora" marca el momento. */
-    --ec-highlight-color: var(--fondo);
-    --ec-now-indicator-color: var(--principal);
-    --ec-button-bg-color: var(--superficie);
-    --ec-button-border-color: var(--borde-control);
-    --ec-button-text-color: var(--texto);
-    --ec-button-active-bg-color: var(--principal-suave);
-    --ec-button-active-border-color: var(--principal);
-    --ec-button-active-text-color: var(--principal-hover);
-    --ec-event-bg-color: var(--neutro-suave);
-    --ec-event-text-color: var(--texto);
-    --ec-event-col-gap: var(--e1);              /* Aire a la derecha de cada bloque */
-    --ec-popup-bg-color: var(--superficie);
-    /* Radio del bloque. El hueco entre bloques es un borde transparente (abajo y a la izquierda); el
-       radio exterior de esas esquinas suma ese borde, para que el color visible quede igual de redondo. */
-    --radio-bloque: var(--radio-control);
-    --radio-bloque-con-borde: calc(var(--radio-control) + var(--e1));
-    font-family: var(--fuente-texto);
-    font-size: var(--tamano-secundario);
-}
-
-.ec .ec-main {
-    border-radius: var(--radio-control);
-}
-
-/* ---------- Barra de herramientas: título a la izquierda; Hoy, anterior y siguiente, y las vistas a la
-   derecha. Las secciones de la biblioteca (inicio, centro, fin) se "abren" para ordenar sus piezas. ---------- */
-
-.ec .ec-toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e2);
-    margin-block-end: var(--e4);
-}
-
-.ec .ec-toolbar > * {
-    display: contents;
-}
-
-.ec .ec-title {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin: 0 var(--e4) 0 0;
-    font-size: var(--tamano-h2);
-    line-height: var(--interlineado-h2);
-    font-weight: var(--peso-fuerte);
-}
-
-.ec .ec-toolbar .ec-button.ec-today {
-    order: 1;
-}
-
-.ec .ec-toolbar .ec-button-group:has(.ec-prev) {
-    order: 2;
-}
-
-.ec .ec-toolbar .ec-button-group:not(:has(.ec-prev)) {
-    order: 3;
-    margin-inline-start: var(--e4);
-}
-
-/* Botones con el alto y la forma de los botones secundarios del resto de pantallas. */
-.ec .ec-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: var(--alto-control);
-    min-inline-size: var(--alto-control);
-    padding: 0 var(--e4);
-    border-radius: var(--radio-control);
-    font-family: inherit;
-    font-size: var(--tamano-texto);
-    font-weight: var(--peso-fuerte);
-    line-height: var(--interlineado-etiqueta);
-}
-
-.ec .ec-button:not(:disabled, .ec-active):hover {
-    border-color: var(--borde-control);
-    background-color: var(--fondo);
-    color: var(--texto);
-}
-
-/* "Hoy" se desactiva cuando ya se está en hoy: se ve apagado por su texto gris, no por transparencia. */
-.ec .ec-button:disabled {
-    color: var(--texto-secundario);
-    cursor: not-allowed;
-}
-
-/* En celular, dos renglones: el título con "Hoy"; debajo, anterior y siguiente a la izquierda y las
-   vistas a la derecha. */
-@media (max-width: 50em) {
-    .panel-calendario,
-    .barra-horario {
-        padding: var(--e3);
-    }
-
-    .ec .ec-toolbar {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas:
-            "titulo hoy"
-            "navegar vistas";
-        gap: var(--e3) var(--e2);
-    }
-
-    .ec .ec-title {
-        grid-area: titulo;
-        margin: 0;
-    }
-
-    .ec .ec-toolbar .ec-button.ec-today {
-        grid-area: hoy;
-    }
-
-    .ec .ec-toolbar .ec-button-group:has(.ec-prev) {
-        grid-area: navegar;
-        justify-self: start;
-    }
-
-    .ec .ec-toolbar .ec-button-group:not(:has(.ec-prev)) {
-        grid-area: vistas;
-        justify-self: end;
-        margin: 0;
-    }
-
-    .ec .ec-button {
-        padding: 0 var(--e3);
-    }
-}
-
-/* ---------- Rejilla: horas, encabezados de columna y fila "Flexible" ---------- */
-
-.ec .ec-sidebar {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-    line-height: var(--interlineado-etiqueta);
-    font-variant-numeric: tabular-nums;
-}
-
-.ec .ec-col-head {
-    padding: var(--e2) var(--e1);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-normal);
-    line-height: var(--interlineado-secundario);
-}
-
-/* Hoy se reconoce por su encabezado en texto principal y semibold; la columna no lleva tinte. */
-.ec .ec-col-head.ec-today {
-    color: var(--texto);
-    font-weight: var(--peso-fuerte);
-}
-
-/* La fila de las actividades de horario flexible no crece sin control: pasado su alto, se desplaza. */
-.ec .ec-all-day {
-    max-block-size: var(--alto-fila-flexible);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-}
-
-/* Vista de lista: encabezado de cada día. La clase de la vista va en el mismo elemento que .ec. */
-.ec.ec-list .ec-day-head {
-    padding: var(--e2) var(--e4);
-    color: var(--texto);
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-fuerte);
-}
-
-/* La biblioteca pone una marca de color a la izquierda en la lista: va contra la regla de 6.2. */
-.ec .ec-event-tag {
-    display: none;
-}
-
-/* ---------- Encabezado de la columna de un operario (Equipo): nombre, carga y horas ---------- */
-
-/* ---------- Bloque de actividad ---------- */
-
-/* Fondo suave y texto oscuro, sin barra lateral de color (6.3). El hueco que lo separa del bloque de
-   abajo y de la línea de la columna es un borde transparente: el alto que pone la biblioteca no cambia. */
-.ec .bloque {
-    padding: var(--e1) var(--e2);
-    border: var(--e1) solid transparent;
-    border-block-start-width: 0;
-    border-inline-end-width: 0;
-    border-radius: var(--radio-bloque-con-borde) var(--radio-bloque) var(--radio-bloque) var(--radio-bloque-con-borde)
-        / var(--radio-bloque) var(--radio-bloque) var(--radio-bloque-con-borde) var(--radio-bloque-con-borde);
-    background-clip: padding-box;
-    box-shadow: none;
-    overflow: hidden;
-    font-size: var(--tamano-etiqueta);
-    line-height: var(--interlineado-etiqueta);
-    cursor: pointer;
-}
-
-/* En la fila "Flexible" la biblioteca ya separa las tarjetas por abajo: solo queda el hueco izquierdo. */
-.ec .ec-all-day .bloque {
-    border-block-end-width: 0;
-    border-radius: var(--radio-bloque-con-borde) var(--radio-bloque) var(--radio-bloque) var(--radio-bloque-con-borde)
-        / var(--radio-bloque);
-}
-
-/* Título arriba y estado, código y lugar debajo; lo que no quepa se recorta con puntos suspensivos. */
-.ec .bloque .ec-event-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    min-width: 0;
-    overflow: hidden;
-}
-
-.bloque-titulo {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--e1);
-    min-width: 0;
-    font-weight: var(--peso-fuerte);
-}
-
-/* Título: dos renglones como máximo. */
-.bloque-titulo > span {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    min-width: 0;
-    overflow: hidden;
-    overflow-wrap: anywhere;
-}
-
-/* Estado, código y lugar: una sola línea. */
-.bloque-detalle {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: var(--peso-normal);
-}
-
-/* En un bloque del horario los datos van en un solo renglón, cortado con "…" si no caben. */
-.bloque-detalle > * + * {
-    margin-inline-start: var(--e2);
-}
-
-.bloque-estado {
-    font-weight: var(--peso-fuerte);
-}
-
-/* Bloque de menos de 45 min y tarjeta de la fila "Flexible": solo el título, en una línea. */
-.ec .bloque-corto {
-    padding-block: 0;
-}
-
-.ec .bloque-corto .ec-event-body {
-    justify-content: center;
-}
-
-.bloque-corto .bloque-titulo > span,
-.bloque-medio .bloque-titulo > span,
-.bloque-flexible .bloque-titulo > span {
-    -webkit-line-clamp: 1;
-    line-clamp: 1;
-}
-
-.bloque-corto .bloque-detalle,
-.bloque-flexible .bloque-detalle {
-    display: none;
-}
-
-/* Modo "prioridad": los colores de estado del sistema (6.3). */
-html[data-color-bloques="prioridad"] .ec .bloque-prioridad-urgente {
-    background-color: var(--error); color: var(--texto-sobre-color);
-}
-html[data-color-bloques="prioridad"] .ec .bloque-prioridad-alta {
-    background-color: var(--alta-suave); color: var(--alta-texto);
-}
-html[data-color-bloques="prioridad"] .ec .bloque-prioridad-media {
-    background-color: var(--advertencia-suave); color: var(--advertencia-texto);
-}
-html[data-color-bloques="prioridad"] .ec .bloque-prioridad-baja {
-    background-color: var(--neutro-suave); color: var(--neutro-texto);
-}
-
-/* Modo "categoría": paleta propia de categorías, solo para los bloques del horario. */
-html[data-color-bloques="categoria"] .ec .bloque-categoria-operacion {
-    background-color: var(--cat-operacion-suave); color: var(--texto);
-}
-html[data-color-bloques="categoria"] .ec .bloque-categoria-administrativa {
-    background-color: var(--cat-administrativa-suave); color: var(--texto);
-}
-html[data-color-bloques="categoria"] .ec .bloque-categoria-revision {
-    background-color: var(--cat-revision-suave); color: var(--texto);
-}
-html[data-color-bloques="categoria"] .ec .bloque-categoria-atencion {
-    background-color: var(--cat-atencion-suave); color: var(--texto);
-}
-html[data-color-bloques="categoria"] .ec .bloque-categoria-traslado {
-    background-color: var(--cat-traslado-suave); color: var(--texto);
-}
-
-/* En modo categoría lo urgente sigue destacando: borde rojo completo además de su ícono. Es una sombra
-   interior, para que siga la forma redondeada del color visible. */
-html[data-color-bloques="categoria"] .ec .bloque-prioridad-urgente {
-    box-shadow: inset 0 0 0 2px var(--error);
-}
-
-/* En curso: anillo en el color principal, además del texto "En curso" dentro del bloque. */
-html[data-color-bloques] .ec .bloque.bloque-estado-en_ejecucion {
-    box-shadow: inset 0 0 0 2px var(--principal);
-}
-
-html[data-color-bloques="categoria"] .ec .bloque.bloque-prioridad-urgente.bloque-estado-en_ejecucion {
-    box-shadow: inset 0 0 0 2px var(--error), inset 0 0 0 4px var(--principal);
-}
-
-/* Finalizada: verde suave con su texto oscuro, como manda la Sección 6.3 (estado Finalizada).
-   No realizada: blanco con borde gris y texto gris. Ninguna usa transparencia. */
-html[data-color-bloques] .ec .bloque.bloque-estado-completada {
-    background-color: var(--exito-suave);
-    color: var(--exito-texto);
-}
-
-html[data-color-bloques] .ec .bloque.bloque-estado-no_realizada {
-    background-color: var(--superficie);
-    color: var(--texto-secundario);
-    box-shadow: inset 0 0 0 1px var(--borde-control);
-}
-
-.ec .bloque-estado-completada .bloque-titulo,
-.ec .bloque-estado-no_realizada .bloque-titulo {
-    font-weight: var(--peso-normal);
-}
-
-.ec .bloque-estado-completada .bloque-titulo .icono {
-    color: var(--exito-texto);
-}
-
-/* Vista de lista: filas blancas, sin el color de los bloques; la prioridad la dice su ícono. Aquí no
-   falta espacio: se ven el título completo (hasta dos renglones) y el detalle de todos los bloques. */
-html[data-color-bloques] .ec.ec-list .ec-event.bloque {
-    padding: var(--e3) var(--e4);
-    border: 0;
-    border-radius: 0;
-    background-color: var(--ec-day-bg-color);
-    color: var(--texto);
-    box-shadow: none;
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
-}
-
-.ec.ec-list .bloque .ec-event-body {
-    gap: var(--e1);
-}
-
-.ec.ec-list .bloque-titulo > span {
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-}
-
-.ec.ec-list .bloque-detalle {
-    display: block;
-    color: var(--texto-secundario);
-}
-
-.bloque-hora {
-    color: var(--texto-secundario);
 }
 
 /* ================= Administrador: filtros y actividades ================= */
@@ -4160,6 +3692,291 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 
 @media (max-width: 50em) {
     .resumen {
+        padding-bottom: calc(3.8rem + var(--e5));
+    }
+}
+
+/* ================= Operario: Semana (alcance, Secciones 6.1 y 6.2; observaciones 8, 11 y 12) ================= */
+/* Calendario propio. En computador, siete columnas con las horas de arriba abajo, como el tablero del
+   turno pero en vertical; en celular, un día a la vez, con la línea de tiempo de Hoy. */
+
+.semana {
+    display: grid;
+    gap: var(--e5);
+}
+
+.semana > * {
+    margin: 0;
+}
+
+.semana-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--e4);
+    padding-bottom: var(--e5);
+    border-bottom: 1px solid var(--borde);
+}
+
+.semana-encabezado h1,
+.semana-encabezado p {
+    margin: 0;
+}
+
+.semana-carga-exceso {
+    color: var(--error-texto);
+}
+
+/* ---------- Computador: la cuadrícula ---------- */
+
+.semana-cuadricula {
+    display: grid;
+    grid-template-columns: 3.5rem repeat(7, minmax(0, 1fr));
+    border: 1px solid var(--borde);
+    border-radius: var(--radio);
+    background: var(--superficie);
+    overflow: hidden;
+}
+
+.semana-esquina {
+    display: block;
+    height: 4rem;
+    border-bottom: 1px solid var(--borde);
+}
+
+.semana-regla {
+    position: relative;
+}
+
+.semana-regla span {
+    position: absolute;
+    right: var(--e2);
+    transform: translateY(-50%);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.semana-regla span:first-child {
+    transform: none;
+}
+
+.semana-columna {
+    min-width: 0;
+    border-left: 1px solid var(--borde);
+}
+
+.semana-cabeza {
+    display: grid;
+    align-content: center;
+    gap: var(--e1);
+    height: 4rem;
+    padding: 0 var(--e2);
+    border-bottom: 1px solid var(--borde);
+}
+
+.semana-cabeza strong::first-letter {
+    text-transform: uppercase;
+}
+
+.semana-hoy .semana-cabeza strong {
+    color: var(--principal);
+}
+
+.semana-carga {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.semana-carga .icono {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* Una línea fina por hora: el alto de la hora lo pone semana.js en --alto-hora. */
+.semana-cuerpo {
+    position: relative;
+    background: repeating-linear-gradient(var(--superficie) 0 calc(var(--alto-hora) - 1px), var(--borde) calc(var(--alto-hora) - 1px) var(--alto-hora));
+}
+
+.semana-hoy .semana-cuerpo {
+    background-color: var(--fondo);
+}
+
+/* Lo que no es turno se raya en gris; lo que pasa de su fin, en rojo (sobrecarga), como en el tablero. */
+.semana-fuera-turno,
+.semana-sobrecarga {
+    position: absolute;
+    inset-inline: 0;
+}
+
+.semana-fuera-turno {
+    background: repeating-linear-gradient(135deg, var(--neutro-suave) 0 var(--e1), transparent var(--e1) var(--e3));
+}
+
+.semana-sobrecarga {
+    background: repeating-linear-gradient(135deg, var(--sobrecarga) 0 var(--e1), transparent var(--e1) var(--e3));
+}
+
+/* Cada actividad, en su hora. Hecha: tenue con visto. Hora fija: sólida con candado. Horario
+   flexible: borde punteado y "~". En curso: fondo azul suave. Urgente: borde rojo completo. */
+.semana-bloque {
+    position: absolute;
+    inset-inline: 3px;
+    z-index: 1;
+    display: grid;
+    align-content: start;
+    gap: 1px;
+    overflow: hidden;
+    padding: 3px var(--e2);
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+    font-size: var(--tamano-etiqueta);
+    line-height: 1.25;
+    text-align: left;
+    cursor: pointer;
+}
+
+.semana-bloque:hover {
+    border-color: var(--principal);
+}
+
+.semana-bloque-hora {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--texto-secundario);
+}
+
+.semana-bloque-hora .icono {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.semana-bloque-nombre {
+    display: -webkit-box;
+    overflow: hidden;
+    font-weight: var(--peso-fuerte);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.semana-flexible {
+    border-style: dashed;
+}
+
+.semana-fija {
+    border-width: 2px;
+}
+
+.semana-hecha {
+    border-color: var(--borde);
+    background: var(--fondo);
+    color: var(--texto-secundario);
+}
+
+.semana-hecha .semana-bloque-hora {
+    color: var(--exito-texto);
+}
+
+.semana-en-curso {
+    border-color: var(--principal);
+    background: var(--principal-suave);
+}
+
+.semana-urgente {
+    border: 2px solid var(--error);
+}
+
+.semana-ahora {
+    position: absolute;
+    inset-inline: 0;
+    z-index: 2;
+    height: 2px;
+    background: var(--principal);
+}
+
+.semana-ahora::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--principal);
+}
+
+/* ---------- Celular: los días como pestañas y el día elegido ---------- */
+
+.semana-dias {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--e1);
+}
+
+.semana-pestana {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    min-height: var(--alto-boton-principal);
+    padding: var(--e1) 0;
+    border: 1px solid transparent;
+    border-radius: var(--radio-control);
+    background: none;
+    color: var(--texto);
+    font: inherit;
+    font-size: var(--tamano-etiqueta);
+    cursor: pointer;
+}
+
+.semana-pestana strong::first-letter {
+    text-transform: uppercase;
+}
+
+.semana-pestana span {
+    color: var(--texto-secundario);
+}
+
+.semana-pestana-hoy strong {
+    color: var(--principal);
+}
+
+.semana-pestana[aria-selected="true"] {
+    border-color: var(--principal);
+    background: var(--principal-suave);
+}
+
+.semana-dia-titulo {
+    display: grid;
+    gap: var(--e1);
+    padding-bottom: var(--e3);
+    list-style: none;
+}
+
+.semana-dia-titulo h2 {
+    margin: 0;
+    font-size: var(--tamano-h2);
+}
+
+.semana-dia-titulo h2::first-letter {
+    text-transform: uppercase;
+}
+
+.semana-dia-titulo p,
+.semana-vacio {
+    margin: 0;
+    list-style: none;
+}
+
+@media (max-width: 50em) {
+    .semana {
         padding-bottom: calc(3.8rem + var(--e5));
     }
 }

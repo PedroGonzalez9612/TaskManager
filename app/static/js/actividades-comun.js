@@ -1,5 +1,6 @@
 // Piezas compartidas para mostrar actividades: señales de prioridad y estado, el diálogo de detalle
-// y la configuración del calendario. Las usan las vistas del Operario y del Administrador.
+// del Administrador, el registro de ejecución y la información por bloques. Las usan las vistas del
+// Operario y del Administrador.
 
 const ICONO_PRIORIDAD = { URGENTE: "triangle-alert", ALTA: "chevron-up", MEDIA: "circle-alert", BAJA: "minus" };
 const ICONO_ESTADO = {
@@ -52,77 +53,12 @@ function textoProgramada(actividad) {
     return actividad.hora_programada ? `${fecha}, ${actividad.hora_programada}` : `${fecha}, horario flexible`;
 }
 
-// ---------- Color de los bloques del calendario: por prioridad o por categoría ----------
-
-const CLAVE_MODO_COLOR = "gestlab-color-bloques";
-
-function modoColor() {
-    return localStorage.getItem(CLAVE_MODO_COLOR) === "categoria" ? "categoria" : "prioridad";
-}
-
-function aplicarModoColor() {
-    document.documentElement.dataset.colorBloques = modoColor();
-}
-
-// Control de dos opciones para elegir cómo se colorean los bloques. Recuerda la elección en el navegador.
-function crearConmutadorColor() {
-    const grupo = crearElemento("div", "conmutador");
-    grupo.setAttribute("role", "group");
-    grupo.setAttribute("aria-label", "Color de los bloques");
-    grupo.append(crearElemento("span", "conmutador-titulo", "Color por"));
-
-    for (const [modo, texto] of [["prioridad", "Prioridad"], ["categoria", "Categoría"]]) {
-        const boton = crearElemento("button", "", texto);
-        boton.type = "button";
-        boton.setAttribute("aria-pressed", String(modoColor() === modo));
-        boton.addEventListener("click", () => {
-            localStorage.setItem(CLAVE_MODO_COLOR, modo);
-            aplicarModoColor();
-            for (const otro of grupo.querySelectorAll("button")) {
-                otro.setAttribute("aria-pressed", String(otro === boton));
-            }
-        });
-        grupo.append(boton);
-    }
-    return grupo;
-}
-
-// Leyendas de los dos modos de color. El CSS muestra solo la del modo activo.
-function crearLeyendas() {
-    const prioridades = crearElemento("div", "leyenda-grupo leyenda-prioridad");
-    prioridades.append(...Object.keys(PESO_PRIORIDAD).map(crearSenalPrioridad));
-    const categorias = crearElemento("div", "leyenda-grupo leyenda-categoria");
-    categorias.append(...Object.keys(NOMBRE_CATEGORIA).map(crearEtiquetaCategoria));
-    return [prioridades, categorias];
-}
-
-// ---------- Calendario (EventCalendar) ----------
-
-// Un bloque nunca se dibuja más bajo que esto, aunque la ejecución real haya durado menos: por debajo
-// no cabe ni una línea de texto ni se puede tocar. Solo cambia el dibujo; el tiempo registrado no.
-const DURACION_MINIMA_BLOQUE_MIN = 20;
-
-// Estados que se escriben dentro del bloque. Por iniciar y Sin asignar son lo normal y no llevan texto.
-const ESTADOS_CON_TEXTO = new Set(["EN_EJECUCION", "PAUSADA", "DEVUELTA", "COMPLETADA", "NO_REALIZADA"]);
-
-// Lo que ya terminó cambia el ícono de prioridad por el de su estado: la prioridad ya no importa.
-const ICONO_ESTADO_FINAL = { COMPLETADA: "check", NO_REALIZADA: "minus" };
+// ---------- Horario: lo que comparte el tablero de Equipo ----------
 
 // Las canceladas no se dibujan en el horario: ya no son trabajo de nadie ni suman a la carga.
 // Siguen en la vista Actividades del Administrador, con su motivo.
 function actividadesDelHorario(actividades) {
     return actividades.filter((actividad) => actividad.estado !== "CANCELADA");
-}
-
-// Clase según el alto del bloque, para mostrar solo lo que cabe sin cortar renglones a la mitad:
-// corto (menos de 45 min), solo el título en una línea; medio (menos de 1 h), título y código en
-// una línea cada uno; largo, título en dos líneas y código. Los cortes salen del alto de la franja
-// (--alto-franja-horario, 2rem por cada 30 min) y del tamaño de letra de los bloques (13 px).
-function claseDeAlto(minutos) {
-    if (minutos < 45) {
-        return "bloque-corto";
-    }
-    return minutos < 60 ? "bloque-medio" : "bloque-largo";
 }
 
 // Los ratos que de verdad trabajó: del inicio al fin (o a ahora), sin las pausas.
@@ -145,136 +81,8 @@ function segmentosTrabajados(ejecucion) {
     return segmentos;
 }
 
-function crearEvento(actividad, estado, id, inicio, fin) {
-    const todoElDia = !inicio;
-    const desde = inicio || fechaDesdeTexto(actividad.fecha_programada);
-    const hasta = todoElDia ? desde : new Date(Math.max(fin.getTime(), desde.getTime() + DURACION_MINIMA_BLOQUE_MIN * 60000));
-    return {
-        id,
-        start: desde,
-        end: hasta,
-        allDay: todoElDia,
-        title: actividad.titulo,
-        classNames: [
-            "bloque",
-            todoElDia ? "bloque-flexible" : claseDeAlto((hasta - desde) / 60000),
-            `bloque-prioridad-${actividad.prioridad.toLowerCase()}`,
-            `bloque-categoria-${String(actividad.categoria).toLowerCase()}`,
-            `bloque-estado-${estado.toLowerCase()}`,
-        ],
-        extendedProps: { actividad, estado },
-    };
-}
+// ---------- Detalle de la actividad (Administrador; el del Operario está en operario-comun.js) ----------
 
-// Los eventos del calendario de una actividad del Operario. Lo trabajado ocupa sus horas reales y sin
-// las pausas, así que una actividad que se pausó se ve en varios bloques, cada uno en su día. Lo que
-// le falta va en su hora fija o, si es de horario flexible, en la fila "Flexible" de su día.
-function actividadAEventos(actividad) {
-    const ejecucion = actividad.ejecucion;
-    const eventos = [];
-    const segmentos = ejecucion?.fecha_inicio ? segmentosTrabajados(ejecucion) : [];
-    segmentos.forEach(([inicio, fin], indice) => {
-        const ultimo = indice === segmentos.length - 1;
-        const enCurso = ultimo && ejecucion.estado === "EN_PROGRESO";
-        // Lo que está en curso se dibuja hasta su fin proyectado: ahora más lo que le falta.
-        const faltaMs = Math.max(0, actividad.tiempo_estimado_min - ejecucion.tiempo_real_min) * 60000;
-        const hasta = enCurso ? new Date(Date.now() + faltaMs) : fin;
-        let estado = "PAUSADA";
-        if (ejecucion.estado === "FINALIZADA") {
-            estado = "COMPLETADA";
-        } else if (enCurso) {
-            estado = "EN_EJECUCION";
-        }
-        eventos.push(crearEvento(actividad, estado, `${actividad.id}-${indice}`, inicio, hasta));
-    });
-
-    const terminada = ["COMPLETADA", "NO_REALIZADA"].includes(actividad.estado) || ejecucion?.estado === "FINALIZADA";
-    const enCurso = ejecucion?.estado === "EN_PROGRESO";
-    if (!terminada && !enCurso) {
-        const falta = Math.max(0, actividad.tiempo_estimado_min - (ejecucion?.tiempo_real_min || 0)) * 60000;
-        if (actividad.hora_programada && !ejecucion) {
-            const inicio = fechaDesdeTexto(actividad.fecha_programada, actividad.hora_programada);
-            eventos.push(crearEvento(actividad, actividad.estado, `${actividad.id}-pendiente`, inicio, new Date(inicio.getTime() + falta)));
-        } else {
-            eventos.push(crearEvento(actividad, actividad.estado, `${actividad.id}-pendiente`, null, null));
-        }
-    } else if (actividad.estado === "NO_REALIZADA" && !segmentos.length) {
-        const inicio = actividad.hora_programada ? fechaDesdeTexto(actividad.fecha_programada, actividad.hora_programada) : null;
-        eventos.push(crearEvento(actividad, actividad.estado, `${actividad.id}-pendiente`, inicio,
-            inicio ? new Date(inicio.getTime() + actividad.tiempo_estimado_min * 60000) : null));
-    }
-    return eventos;
-}
-
-// Contenido de cada bloque: ícono y título; debajo, el estado (si no es el normal), el código y el lugar.
-// En la vista de lista va además la hora, porque el contenido propio reemplaza el de la biblioteca.
-// Se arma con nodos (no con HTML de texto).
-function contenidoBloque(info) {
-    const { actividad, estado } = info.event.extendedProps;
-    const textoEstado = ESTADOS_CON_TEXTO.has(estado) ? NOMBRE_ESTADO[estado] : "";
-
-    const titulo = crearConIcono(
-        "strong", "bloque-titulo", ICONO_ESTADO_FINAL[estado] || ICONO_PRIORIDAD[actividad.prioridad], actividad.titulo,
-    );
-    // En un bloque corto solo se ve el título: el resto queda en la descripción emergente.
-    titulo.title = [textoEstado, actividad.titulo, actividad.codigo, actividad.ubicacion].filter(Boolean).join(", ");
-
-    const detalle = crearElemento("span", "bloque-detalle datos-linea");
-    if (textoEstado) {
-        detalle.append(crearElemento("span", "bloque-estado", textoEstado));
-    }
-    detalle.append(crearElemento("span", "codigo", actividad.codigo), crearElemento("span", "", actividad.ubicacion));
-
-    const nodos = [titulo, detalle];
-    if (info.view?.type.startsWith("list")) {
-        nodos.unshift(crearElemento("span", "bloque-hora cifra", info.event.allDay ? "Flexible" : info.timeText));
-    }
-    return { domNodes: nodos };
-}
-
-// Alto de una franja de 30 minutos, en píxeles, a partir de la variable en rem de estilos.css. Así el
-// horario crece con el tamaño de letra que el usuario tenga en su navegador.
-function altoFranjaPx() {
-    const estilos = getComputedStyle(document.documentElement);
-    const rem = Number.parseFloat(estilos.getPropertyValue("--alto-franja-horario")) || 2;
-    return Math.round(rem * Number.parseFloat(estilos.fontSize));
-}
-
-// Opciones comunes a todos los calendarios de la aplicación. Sin alto fijo: el horario crece con su
-// contenido y se recorre con el desplazamiento de la página, sin una barra interna.
-function opcionesCalendario(extra) {
-    return {
-        locale: "es-CO",
-        firstDay: 1,
-        nowIndicator: true,
-        slotMinTime: "06:00",
-        slotMaxTime: "20:00",
-        flexibleSlotTimeLimits: true,       // Si una actividad cae fuera de 06:00-20:00, el rango se amplía.
-        slotDuration: "00:30",
-        slotHeight: altoFranjaPx(),
-        allDayContent: "Flexible",
-        // Horas en formato de 24 horas, como se escriben en los turnos de planta.
-        slotLabelFormat: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
-        eventTimeFormat: { hour: "2-digit", minute: "2-digit", hourCycle: "h23" },
-        eventContent: contenidoBloque,
-        buttonText: {
-            today: "Hoy",
-            timeGridDay: "Día",
-            timeGridWeek: "Semana",
-            listWeek: "Lista",
-            resourceTimeGridDay: "Día",
-            resourceTimeGridWeek: "Semana",
-        },
-        noEventsContent: "No hay actividades programadas en estas fechas.",
-        ...extra,
-    };
-}
-
-// ---------- Diálogo de detalle de una actividad ----------
-
-// Abre el detalle. "acciones" es una lista de { texto, clase, alHacer, desactivada }; alHacer puede ser
-// asíncrona y, si falla, su mensaje se muestra dentro del diálogo. "aviso" es un texto de advertencia.
-// "extra" son elementos que cada rol agrega al detalle (por ejemplo, el registro del Operario).
 function abrirDetalleActividad(actividad, { acciones = [], aviso = "", extra = [] } = {}) {
     const dialogo = crearElemento("dialog", "dialogo dialogo-detalle");
 
@@ -568,5 +376,3 @@ function crearRegistrosDelEquipo(actividad) {
     return ejecuciones.flatMap((ejecucion) =>
         crearRegistroEjecucion(ejecucion, `Registro de ${ejecucion.operario_nombre}`, "Observación"));
 }
-
-aplicarModoColor();

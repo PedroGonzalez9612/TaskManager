@@ -49,7 +49,7 @@
             "rol": "operario",
             "nombre": "semana",
             "ruta": "/static/operario/semana.html",
-            "esperar": ".ec-toolbar"
+            "esperar": "#semana-cuadricula:not([hidden]), #semana-dia:not([hidden])"
         },
         {
             "rol": "operario",

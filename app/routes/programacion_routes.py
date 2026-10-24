@@ -17,6 +17,13 @@ def create_blueprint(db, reloj=None):
         """El Operario ve la suya; el Administrador indica el operario con ?operario_id=..."""
         return jsonify(service.consultar(usuario_actual(), request.args.get("operario_id"))), 200
 
+    @bp.get("/programacion-de-la-semana")
+    @requiere_rol(Rol.ADMINISTRADOR, Rol.OPERARIO)
+    def consultar_semana():
+        """La programación de varios días (?desde=AAAA-MM-DD&hasta=AAAA-MM-DD, máximo 14)."""
+        return jsonify(service.semana(usuario_actual(), request.args.get("desde"), request.args.get("hasta"),
+                                      request.args.get("operario_id"))), 200
+
     @bp.put("/orden-del-dia")
     @requiere_rol(Rol.OPERARIO)
     def guardar_orden():

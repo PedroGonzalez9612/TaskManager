@@ -504,8 +504,14 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   viene (lo que pasó a otra jornada y la carga de la semana siguiente). Sin rankings ni categorías. Sale de
   `GET /analisis/indicadores`, que ahora trae además el detalle de cada operario. Chart.js ya no lo usa
   ninguna pantalla.
-- **Pendiente:** Etapa 6, Semana (observaciones 8, 11 y 12), y Etapa 7 (validación y evidencias para el
-  informe). Después: Mi perfil (observación 10) y la barra superior (13).
+- **Etapa 6, Semana (2026-10-24, observaciones 8, 11 y 12):** calendario propio. En computador, siete
+  columnas con las horas de arriba abajo, la carga de cada día frente a su capacidad, lo fuera del turno
+  rayado en gris, la sobrecarga en rojo y la línea "Ahora"; los bloques que se cruzan van lado a lado. En
+  celular, los días como pestañas y el día elegido como la línea de tiempo de Hoy. Lo de horario flexible
+  va en su hora estimada ("~"). El servidor calcula cada día con `GET /programacion-de-la-semana` (6 pruebas).
+  El detalle solo ofrece acciones en la jornada vigente con la entrada marcada. Sale EventCalendar.
+- **Pendiente:** Mi perfil (observación 10), la barra superior (13) y la Etapa 7 (validación y evidencias
+  para el informe).
 
 ## Depuración del proyecto (2026-10-24) ✅
 
