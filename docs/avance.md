@@ -497,7 +497,15 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   "Registrando tiempo" con barra, el registro (iniciada, pausas con su motivo, reanudada) y la precaución.
   Pausar, Finalizar (con resumen, observación y archivos) y **Devolver** (ya está en pantalla) se hacen en
   hojas inferiores; ningún motivo viene marcado de antemano. El detalle del Administrador no cambia.
-- **Pendiente:** Etapa 6 (Semana y Resumen) y Etapa 7 (validación y evidencias para el informe).
+- **Etapa 6, Resumen (2026-10-24, observación 9 del usuario):** "Tu semana" escrita como frases con los
+  indicadores propios (tiempo programado en actividades, actividades a tiempo, lo real frente a lo estimado,
+  tiempo fuera del turno, aprovechamiento y jornadas por validar), su asistencia día por día, lo real frente a
+  lo estimado de cada actividad finalizada (en ámbar si se pasó más del 10 %), sus pausas por motivo y lo que
+  viene (lo que pasó a otra jornada y la carga de la semana siguiente). Sin rankings ni categorías. Sale de
+  `GET /analisis/indicadores`, que ahora trae además el detalle de cada operario. Chart.js ya no lo usa
+  ninguna pantalla.
+- **Pendiente:** Etapa 6, Semana (observaciones 8, 11 y 12), y Etapa 7 (validación y evidencias para el
+  informe). Después: Mi perfil (observación 10) y la barra superior (13).
 
 ## Depuración del proyecto (2026-10-24) ✅
 

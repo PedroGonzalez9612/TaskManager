@@ -55,7 +55,7 @@
             "rol": "operario",
             "nombre": "resumen",
             "ruta": "/static/operario/resumen.html",
-            "esperar": "#indicadores .indicador"
+            "esperar": "#resumen-frases:not([hidden])"
         }
     ]
 }

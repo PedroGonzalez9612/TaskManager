@@ -7,12 +7,14 @@
     <title>Resumen — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
-<body class="cargando">
-    <main class="principal">
-        <div class="encabezado-pagina">
+<body class="cargando ancho-angosto">
+    <!-- Resumen del Operario (alcance, Secciones 5.2 y 6.1): cómo le fue en la semana, escrito como
+         frases y sin rankings. Los datos salen de GET /analisis/indicadores, que solo le da los suyos. -->
+    <main class="principal resumen">
+        <header class="resumen-encabezado">
             <div>
-                <h1>Resumen de la semana</h1>
-                <p id="rango-semana"></p>
+                <h1>Tu semana</h1>
+                <p id="rango-semana" class="texto-secundario"></p>
             </div>
             <fieldset class="grupo-botones">
                 <legend class="solo-lectores">Cambiar de semana</legend>
@@ -20,46 +22,19 @@
                 <button type="button" id="semana-actual" class="boton-secundario boton-pequeno">Esta semana</button>
                 <button type="button" id="semana-siguiente" class="boton-secundario boton-pequeno" aria-label="Semana siguiente"></button>
             </fieldset>
-        </div>
+        </header>
 
-        <section id="indicadores" class="indicadores" aria-live="polite"></section>
-
-        <section class="panel">
-            <div class="panel-encabezado">
-                <h2>Tiempo programado por día</h2>
-            </div>
-            <div class="panel-cuerpo">
-                <p class="solo-lectores">Gráfica de las horas programadas por día de la semana. Los mismos datos están en la tabla que sigue.</p>
-                <div class="grafica" aria-hidden="true"><canvas id="grafica-carga"></canvas></div>
-                <details class="tabla-datos">
-                    <summary>Ver los datos en tabla</summary>
-                    <div class="contenedor-tabla">
-                        <table id="tabla-carga" class="tabla">
-                            <thead><tr><th>Día</th><th>Programado</th><th>Carga de la jornada</th></tr></thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-                </details>
-            </div>
-        </section>
-
-        <div class="dos-columnas">
-            <section class="panel">
-                <div class="panel-encabezado"><h2>Por estado</h2></div>
-                <ul id="por-estado" class="lista-conteos"></ul>
-            </section>
-            <section class="panel">
-                <div class="panel-encabezado"><h2>Por categoría</h2></div>
-                <ul id="por-categoria" class="lista-conteos"></ul>
-            </section>
-        </div>
+        <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando tu semana…</p>
+        <section id="resumen-frases" class="resumen-frases" aria-label="Cómo te fue" aria-live="polite" hidden></section>
+        <section id="resumen-asistencia" class="resumen-seccion" aria-labelledby="titulo-asistencia" hidden></section>
+        <section id="resumen-tiempos" class="resumen-seccion" aria-labelledby="titulo-tiempos" hidden></section>
+        <section id="resumen-pausas" class="resumen-seccion" aria-labelledby="titulo-pausas" hidden></section>
+        <section id="resumen-viene" class="resumen-seccion" aria-labelledby="titulo-viene" hidden></section>
     </main>
 
     <script src="/static/js/api.js"></script>
     <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
-    <script src="/static/js/actividades-comun.js"></script>
-    <script src="/static/vendor/chartjs/chart.umd.min.js"></script>
     <script src="/static/operario/resumen.js"></script>
 </body>
 </html>

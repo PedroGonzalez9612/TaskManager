@@ -189,3 +189,22 @@ def test_la_ruta_de_indicadores(cliente_de, empresa):
     respuesta = cliente_de(empresa.admin).get(f"/analisis/indicadores?desde={HOY}&hasta={HOY}")
     assert respuesta.status_code == 200
     assert "empresa" in respuesta.get_json()
+
+
+def test_el_detalle_del_operario_para_su_resumen(servicios, empresa, crear_actividad, reloj):
+    turno(servicios, empresa, empresa.ana, "02:00", "10:00")
+    servicios.asistencia.marcar_entrada(empresa.ana)
+    actividad = crear_actividad([empresa.ana])
+    servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+    reloj.avanzar(20)
+    servicios.ejecucion.pausar(actividad["id"], empresa.ana, "Descanso")
+    reloj.avanzar(10)
+    servicios.ejecucion.reanudar(actividad["id"], empresa.ana)
+    reloj.avanzar(30)
+    servicios.ejecucion.finalizar(actividad["id"], empresa.ana)
+
+    detalle = de(servicios.indicadores.consultar(HOY, HOY, empresa.ana), empresa.ana)["detalle"]
+    assert [a["estado"] for a in detalle["asistencias"]] == ["REGISTRADA"]
+    assert [(f["titulo"], f["real_min"], f["estimado_min"]) for f in detalle["finalizadas"]] == [
+        ("Calibrar la selladora", 50, 60)]
+    assert detalle["pausas_por_motivo"] == [{"motivo": "Descanso", "cantidad": 1, "minutos": 10}]

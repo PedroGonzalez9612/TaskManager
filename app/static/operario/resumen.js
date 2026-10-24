@@ -1,172 +1,196 @@
-// Vista "Resumen" del Operario: cuánto trabajo tiene programado en la semana y cómo se reparte.
-
-const NOMBRES_DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+// Vista "Resumen" del Operario (alcance, Secciones 5.2 y 6.1): cómo le fue en la semana. Los
+// indicadores van como frases, sin una tarjeta por número y sin rankings (6.2). Debajo, su asistencia
+// día por día, lo real frente a lo estimado de cada actividad finalizada, sus pausas por motivo y lo
+// que viene. Los datos son de GET /analisis/indicadores, que a un Operario solo le da los suyos.
 
 let lunes = inicioDeSemana(new Date());
-let grafica = null;
+// Pasarse del estimado hasta un 10 % es normal: solo se marca en ámbar lo que se pasa más.
+const MARGEN_ESTIMADO = 0.1;
 
-// Los colores y las fuentes salen de las variables de estilos.css: un solo lugar para cambiarlos.
-function variableCss(nombre) {
-    return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
+// ---------- Utilidades ----------
+
+function hora(momento) {
+    const fecha = new Date(momento);
+    return `${String(fecha.getHours()).padStart(2, "0")}:${String(fecha.getMinutes()).padStart(2, "0")}`;
 }
 
-// ---------- Indicadores ----------
-
-function crearIndicador(titulo, valor, detalle) {
-    const indicador = crearElemento("div", "indicador");
-    indicador.append(
-        crearElemento("p", "indicador-titulo", titulo),
-        crearElemento("p", "indicador-valor cifra", valor),
-        crearElemento("p", "indicador-detalle", detalle),
-    );
-    return indicador;
+// "lunes 19"
+function diaCorto(textoFecha) {
+    const fecha = fechaDesdeTexto(textoFecha);
+    return `${fecha.toLocaleDateString("es-CO", { weekday: "long" })} ${fecha.getDate()}`;
 }
 
-function pintarIndicadores(actividades, dias, capacidad) {
-    const finalizadas = actividades.filter((a) => a.estado === "COMPLETADA").length;
-    const totalMinutos = dias.reduce((suma, dia) => suma + dia.minutos, 0);
-    const masCargado = dias.reduce((mayor, dia) => (dia.minutos > mayor.minutos ? dia : mayor), dias[0]);
-
-    document.getElementById("indicadores").replaceChildren(
-        crearIndicador("Actividades", String(actividades.length),
-            actividades.length ? `${finalizadas} finalizadas` : "Nada programado"),
-        crearIndicador("Tiempo programado", duracionTexto(totalMinutos),
-            `Jornada de ${duracionTexto(capacidad)}`),
-        crearIndicador("Día de mayor carga",
-            masCargado.minutos ? `${Math.round(masCargado.minutos * 100 / capacidad)} %` : "—",
-            masCargado.minutos ? masCargado.nombreLargo : "Sin actividades"),
-    );
+// Una frase con partes resaltadas: lo que va entre corchetes se escribe en semibold.
+function frase(...partes) {
+    const parrafo = crearElemento("p");
+    for (const parte of partes) {
+        parrafo.append(Array.isArray(parte) ? crearElemento("strong", "cifra", parte[0]) : parte);
+    }
+    return parrafo;
 }
 
-// ---------- Gráfica de carga por día ----------
+function seccion(id, titulo, ...contenido) {
+    const elemento = document.getElementById(id);
+    const encabezado = crearElemento("h2", "", titulo);
+    encabezado.id = `titulo-${id.replace("resumen-", "")}`;
+    elemento.replaceChildren(encabezado, ...contenido);
+    elemento.hidden = false;
+}
 
-// Dibuja la línea de capacidad de la jornada sobre las barras, con su rótulo.
-const lineaCapacidad = {
-    id: "lineaCapacidad",
-    afterDatasetsDraw(chart, _args, opciones) {
-        const y = chart.scales.y.getPixelForValue(opciones.horas);
-        const { left, right } = chart.chartArea;
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.strokeStyle = opciones.color;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([6, 4]);
-        ctx.beginPath();
-        ctx.moveTo(left, y);
-        ctx.lineTo(right, y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = opciones.color;
-        ctx.font = `${Chart.defaults.font.weight || 400} ${Chart.defaults.font.size}px ${Chart.defaults.font.family}`;
-        ctx.textAlign = "right";
-        ctx.textBaseline = "bottom";
-        ctx.fillText(opciones.texto, right, y - 4);
-        ctx.restore();
-    },
+function actividadesTexto(cantidad) {
+    return cantidad === 1 ? "1 actividad" : `${cantidad} actividades`;
+}
+
+// ---------- Cómo te fue: frases (alcance, Sección 6.2) ----------
+
+function pintarFrases(yo) {
+    const { jornada, actividades } = yo;
+    const evaluadas = actividades.cumplidas + actividades.incumplidas + actividades.con_retraso;
+    const frases = [];
+
+    if (jornada.jornadas) {
+        frases.push(frase("Pasaste el ", [`${jornada.cumplimiento_jornada} %`], " de tu tiempo programado en actividades: ",
+            [duracionTexto(jornada.actividades_min)], ` de ${duracionTexto(jornada.programado_min)}.`));
+    } else {
+        frases.push(frase("Todavía no hay jornadas terminadas en esta semana."));
+    }
+    if (evaluadas) {
+        const partes = ["Finalizaste a tiempo ", [`${actividades.cumplidas} de ${evaluadas}`], " actividades"];
+        if (actividades.con_retraso) {
+            partes.push(`; ${actividadesTexto(actividades.con_retraso)} se ${actividades.con_retraso === 1 ? "pasó" : "pasaron"} de su día`);
+        }
+        if (actividades.incumplidas) {
+            partes.push(`; ${actividades.incumplidas === 1 ? "1 no se hizo" : `${actividades.incumplidas} no se hicieron`}`);
+        }
+        frases.push(frase(...partes, "."));
+    }
+    if (actividades.pendientes) {
+        frases.push(frase("Tienes ", [actividadesTexto(actividades.pendientes)], " por hacer en jornadas que no han terminado."));
+    }
+    if (actividades.estimado_min) {
+        frases.push(frase("Lo real fue el ", [`${actividades.real_sobre_estimado} %`], " de lo estimado."));
+    }
+    if (jornada.adicional_min) {
+        frases.push(frase("Trabajaste ", [duracionTexto(jornada.adicional_min)], " fuera de tu turno."));
+    }
+    if (jornada.aprovechamiento !== null) {
+        frases.push(frase("Aprovechaste el ", [`${jornada.aprovechamiento} %`], " del tiempo que estuviste presente."));
+    }
+    if (jornada.jornadas_sin_validar) {
+        const cuantas = jornada.jornadas_sin_validar === 1 ? "1 jornada espera" : `${jornada.jornadas_sin_validar} jornadas esperan`;
+        frases.push(crearConIcono("p", "linea-info", "info", `${cuantas} la validación de tu Administrador.`));
+    }
+    const contenedor = document.getElementById("resumen-frases");
+    contenedor.replaceChildren(...frases);
+    contenedor.hidden = false;
+}
+
+// ---------- Tu asistencia ----------
+
+const ESTADO_ASISTENCIA = {
+    VALIDADA: ["check", "estado-op-completada", "Validada"],
+    CORREGIDA: ["pencil", "estado-op-completada", "Corregida"],
+    REGISTRADA: ["circle", "texto-secundario", "Por validar"],
 };
 
-function pintarGrafica(dias, capacidad) {
-    const horasCapacidad = capacidad / 60;
-    const sobrecargado = (dia) => dia.minutos > capacidad;
-
-    Chart.defaults.font.family = variableCss("--fuente-texto");
-    Chart.defaults.font.size = 15;
-    Chart.defaults.color = variableCss("--texto-secundario");
-
-    grafica?.destroy();
-    grafica = new Chart(document.getElementById("grafica-carga"), {
-        type: "bar",
-        data: {
-            labels: dias.map((dia) => dia.nombre),
-            datasets: [{
-                label: "Tiempo programado",
-                data: dias.map((dia) => dia.minutos / 60),
-                // Una sola serie, un solo color. El rojo se reserva para los días que superan la jornada.
-                backgroundColor: dias.map((dia) => variableCss(sobrecargado(dia) ? "--error" : "--principal")),
-                borderRadius: 4,
-                maxBarThickness: 44,
-            }],
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                lineaCapacidad: {
-                    horas: horasCapacidad,
-                    color: variableCss("--texto-secundario"),
-                    texto: `Jornada: ${duracionTexto(capacidad)}`,
-                },
-                tooltip: {
-                    callbacks: {
-                        title: (items) => dias[items[0].dataIndex].nombreLargo,
-                        label: (item) => {
-                            const dia = dias[item.dataIndex];
-                            const porcentaje = Math.round(dia.minutos * 100 / capacidad);
-                            return `${duracionTexto(dia.minutos)}, ${porcentaje} % de la jornada`
-                                + (sobrecargado(dia) ? " (sobrecarga)" : "");
-                        },
-                    },
-                },
-            },
-            scales: {
-                x: { grid: { display: false } },
-                y: {
-                    beginAtZero: true,
-                    suggestedMax: horasCapacidad * 1.15,
-                    ticks: { callback: (valor) => `${valor} h` },
-                    grid: { color: variableCss("--borde") },
-                    border: { display: false },
-                },
-            },
-        },
-        plugins: [lineaCapacidad],
-    });
-
-    // La misma información en una tabla, para quien no pueda leer la gráfica.
-    document.querySelector("#tabla-carga tbody").replaceChildren(...dias.map((dia) => {
-        const fila = crearElemento("tr");
-        const porcentaje = Math.round(dia.minutos * 100 / capacidad);
-        const carga = crearElemento("td", "cifra", `${porcentaje} %`);
-        if (sobrecargado(dia)) {
-            carga.replaceChildren(crearConIcono("span", "carga carga-sobrecarga", "triangle-alert", `${porcentaje} %, sobrecarga`));
-        }
+function pintarAsistencia(asistencias) {
+    if (!asistencias.length) {
+        seccion("resumen-asistencia", "Tu asistencia", crearElemento("p", "texto-secundario", "No marcaste asistencia esta semana."));
+        return;
+    }
+    const lista = crearElemento("ul", "resumen-filas");
+    for (const asistencia of asistencias) {
+        const [icono_, clase, texto] = ESTADO_ASISTENCIA[asistencia.estado] || ESTADO_ASISTENCIA.REGISTRADA;
+        const fila = crearElemento("li");
         fila.append(
-            crearElemento("td", "", dia.nombreLargo),
-            crearElemento("td", "cifra", dia.minutos ? duracionTexto(dia.minutos) : "—"),
-            carga,
+            crearElemento("span", "resumen-dia", diaCorto(asistencia.jornada)),
+            crearElemento("span", "cifra", asistencia.salida
+                ? `${hora(asistencia.entrada)} a ${hora(asistencia.salida)}` : `${hora(asistencia.entrada)}, sin salida`),
+            crearConIcono("span", `resumen-estado ${clase}`, icono_, texto),
         );
-        return fila;
-    }));
+        lista.append(fila);
+    }
+    seccion("resumen-asistencia", "Tu asistencia", lista);
 }
 
-// ---------- Conteos por estado y por categoría ----------
+// ---------- Lo real frente a lo estimado ----------
 
-function pintarConteos(actividades) {
-    const contar = (campo) => actividades.reduce((conteo, actividad) => {
-        const clave = actividad[campo];
-        conteo[clave] = conteo[clave] || { cantidad: 0, minutos: 0 };
-        conteo[clave].cantidad += 1;
-        conteo[clave].minutos += actividad.tiempo_estimado_min || 0;
-        return conteo;
-    }, {});
-
-    const pintar = (idLista, conteo, crearEtiqueta, vacio) => {
-        const filas = Object.entries(conteo).map(([clave, datos]) => {
-            const fila = crearElemento("li");
-            fila.append(
-                crearEtiqueta(clave),
-                crearElemento("span", "conteo-detalle cifra",
-                    `${datos.cantidad === 1 ? "1 actividad" : `${datos.cantidad} actividades`}, ${duracionTexto(datos.minutos)}`),
-            );
-            return fila;
-        });
-        document.getElementById(idLista).replaceChildren(
-            ...(filas.length ? filas : [crearElemento("li", "texto-suave", vacio)]),
+function pintarTiempos(finalizadas) {
+    if (!finalizadas.length) {
+        seccion("resumen-tiempos", "Lo real frente a lo estimado",
+            crearElemento("p", "texto-secundario", "Todavía no finalizas actividades de esta semana."));
+        return;
+    }
+    const lista = crearElemento("ul", "resumen-tiempos-lista");
+    for (const actividad of finalizadas) {
+        const diferencia = actividad.real_min - actividad.estimado_min;
+        const fila = crearElemento("li");
+        const textos = crearElemento("div", "resumen-tiempo-textos");
+        let detalle = "justo lo estimado";
+        if (diferencia > 0) {
+            detalle = `${duracionTexto(diferencia)} más`;
+        } else if (diferencia < 0) {
+            detalle = `${duracionTexto(-diferencia)} menos`;
+        }
+        textos.append(
+            crearElemento("strong", "", actividad.titulo),
+            crearElemento("span", "texto-secundario cifra",
+                `Tomó ${duracionTexto(actividad.real_min)} de ${duracionTexto(actividad.estimado_min)}, ${detalle}`),
         );
-    };
+        // La barra compara con lo estimado: llena es lo estimado; si se pasa, la marca pasa del borde.
+        const barra = crearElemento("div", "barra-avance");
+        barra.setAttribute("aria-hidden", "true");
+        const relleno = crearElemento("span", "barra-avance-relleno");
+        relleno.style.width = `${Math.min(100, (actividad.real_min * 100) / Math.max(1, actividad.estimado_min))}%`;
+        barra.append(relleno);
+        if (diferencia > actividad.estimado_min * MARGEN_ESTIMADO) {
+            barra.classList.add("barra-avance-excedida");
+        }
+        fila.append(textos, barra);
+        lista.append(fila);
+    }
+    seccion("resumen-tiempos", "Lo real frente a lo estimado", lista);
+}
 
-    pintar("por-estado", contar("estado"), crearEtiquetaEstado, "Sin actividades esta semana.");
-    pintar("por-categoria", contar("categoria"), crearEtiquetaCategoria, "Sin actividades esta semana.");
+// ---------- Tus pausas ----------
+
+function pintarPausas(pausas) {
+    if (!pausas.length) {
+        seccion("resumen-pausas", "Tus pausas", crearElemento("p", "texto-secundario", "No hiciste pausas esta semana."));
+        return;
+    }
+    const lista = crearElemento("ul", "resumen-filas");
+    for (const pausa of pausas) {
+        const fila = crearElemento("li");
+        fila.append(
+            crearElemento("span", "", pausa.motivo),
+            crearElemento("span", "cifra texto-secundario",
+                `${pausa.cantidad === 1 ? "1 vez" : `${pausa.cantidad} veces`}, ${duracionTexto(pausa.minutos)}`),
+        );
+        lista.append(fila);
+    }
+    seccion("resumen-pausas", "Tus pausas", lista);
+}
+
+// ---------- Lo que viene ----------
+
+function pintarLoQueViene(yo, siguiente) {
+    const frases = [];
+    const { reprogramadas, dias_de_retraso_maximo: dias } = yo.pendientes;
+    if (reprogramadas) {
+        frases.push(frase([actividadesTexto(reprogramadas)], ` ${reprogramadas === 1 ? "pasó" : "pasaron"} a otra jornada`,
+            dias ? `, con hasta ${dias === 1 ? "1 día" : `${dias} días`} de retraso.` : "."));
+    }
+    if (siguiente !== null) {
+        frases.push(siguiente
+            ? frase("La semana siguiente tienes ", [duracionTexto(siguiente)], " de trabajo programado.")
+            : frase("La semana siguiente todavía no tienes trabajo programado."));
+    }
+    if (frases.length) {
+        seccion("resumen-viene", "Lo que viene", ...frases);
+    } else {
+        document.getElementById("resumen-viene").hidden = true;
+    }
 }
 
 // ---------- Carga de datos ----------
@@ -178,28 +202,32 @@ async function cargar() {
     const formato = { day: "numeric", month: "long" };
     document.getElementById("rango-semana").textContent =
         `Del ${lunes.toLocaleDateString("es-CO", formato)} al ${domingo.toLocaleDateString("es-CO", formato)}`;
+    const mensaje = document.getElementById("mensaje");
 
+    // La carga de la semana siguiente solo se pregunta cuando se mira la semana en curso.
+    const esEstaSemana = desde === fechaTexto(inicioDeSemana(new Date()));
+    const lunesSiguiente = sumarDias(lunes, 7);
     try {
-        const [actividades, carga] = await Promise.all([
-            pedirApi(`/actividades?fecha_desde=${desde}&fecha_hasta=${hasta}`),
-            pedirApi(`/analisis/carga?desde=${desde}&hasta=${hasta}`),
+        const [indicadores, carga] = await Promise.all([
+            pedirApi(`/analisis/indicadores?desde=${desde}&hasta=${hasta}`),
+            esEstaSemana
+                ? pedirApi(`/analisis/carga?desde=${fechaTexto(lunesSiguiente)}&hasta=${fechaTexto(sumarDias(lunesSiguiente, 6))}`)
+                : Promise.resolve(null),
         ]);
-        // El servidor ya sumó los minutos de cada jornada; aquí solo se acomodan en los 7 días.
-        const jornadas = Object.fromEntries((carga.operarios[0]?.jornadas || []).map((j) => [j.fecha, j.minutos]));
-        const dias = NOMBRES_DIAS.map((nombre, indice) => {
-            const fecha = sumarDias(lunes, indice);
-            const nombreLargo = fechaLarga(fecha);
-            return {
-                nombre,
-                nombreLargo: nombreLargo.charAt(0).toUpperCase() + nombreLargo.slice(1),
-                minutos: jornadas[fechaTexto(fecha)] || 0,
-            };
-        });
-        pintarIndicadores(actividades, dias, carga.capacidad_min);
-        pintarGrafica(dias, carga.capacidad_min);
-        pintarConteos(actividades);
+        const yo = indicadores.operarios[0];
+        const siguiente = carga
+            ? (carga.operarios[0]?.jornadas || []).reduce((suma, jornada) => suma + jornada.minutos, 0)
+            : null;
+        mensaje.hidden = true;
+        pintarFrases(yo);
+        pintarAsistencia(yo.detalle.asistencias);
+        pintarTiempos(yo.detalle.finalizadas);
+        pintarPausas(yo.detalle.pausas_por_motivo);
+        pintarLoQueViene(yo, siguiente);
     } catch (error) {
-        mostrarAviso(`No se pudo cargar el resumen: ${error.message}`, "advertencia");
+        mensaje.hidden = false;
+        mensaje.textContent = `No pudimos cargar tu semana: ${error.message}`;
+        mensaje.classList.add("mensaje-error");
     }
 }
 
@@ -208,7 +236,7 @@ function moverSemana(semanas) {
     cargar();
 }
 
-iniciarPaginaProtegida(["OPERARIO"]).then(async () => {
+iniciarPaginaProtegida(["OPERARIO"]).then(() => {
     const anterior = document.getElementById("semana-anterior");
     const siguiente = document.getElementById("semana-siguiente");
     anterior.insertAdjacentHTML("afterbegin", icono("chevron-left"));
@@ -216,8 +244,5 @@ iniciarPaginaProtegida(["OPERARIO"]).then(async () => {
     anterior.addEventListener("click", () => moverSemana(-1));
     siguiente.addEventListener("click", () => moverSemana(1));
     document.getElementById("semana-actual").addEventListener("click", () => moverSemana(0));
-
-    // La gráfica mide el texto al dibujarse: se espera a que las fuentes estén cargadas.
-    await document.fonts.ready;
     cargar();
 });

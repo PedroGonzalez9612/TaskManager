@@ -219,7 +219,18 @@ class IndicadorService:
                         if a["usuario_id"] in ids]
         ejecucion_de = {e.get("asignacion_id"): e for e in self.ejecucion_repository.find_by_actividades(list(actividades))}
 
-        jornada = self._jornadas(ids, desde, hasta, turnos, zona, asignaciones, actividades, ahora, empresa_id)
+        asistencias = {(a["usuario_id"], a["jornada"]): a
+                       for a in self.asistencia_repository.find_de_empresa_entre(empresa_id, desde, hasta)}
+        inicio_rango = momento_local(desde, "00:00", zona)
+        fin_rango = turnos.cierre_de(ids, hasta, zona) if ids else momento_local(hasta, "23:59", zona)
+        ejecuciones = defaultdict(list)
+        for ejecucion in self.ejecucion_repository.find_de_usuarios_entre(ids, inicio_rango, fin_rango):
+            ejecuciones[ejecucion["usuario_id"]].append(ejecucion)
+
+        jornada = self._jornadas(ids, desde, hasta, turnos, zona, asignaciones, actividades, ahora,
+                                 asistencias, ejecuciones)
+        detalle = self._detalle(ids, asignaciones, actividades, ejecucion_de, asistencias, ejecuciones,
+                                (inicio_rango, fin_rango), ahora)
         actividades_por = self._actividades(asignaciones, actividades, ejecucion_de, turnos, zona, ahora)
         pendientes = self._pendientes(asignaciones, actividades)
 
@@ -240,7 +251,8 @@ class IndicadorService:
                 {"id": usuario_id, "nombre": nombres[usuario_id],
                  "jornada": jornada[usuario_id].presentar(),
                  "actividades": actividades_por["operario"][usuario_id].presentar(),
-                 "pendientes": pendientes["operario"][usuario_id].presentar()}
+                 "pendientes": pendientes["operario"][usuario_id].presentar(),
+                 "detalle": detalle[usuario_id]}
                 for usuario_id in ids
             ],
             "categorias": [
@@ -255,22 +267,15 @@ class IndicadorService:
 
     # ---------- Jornadas: tiempos de cada operario ----------
 
-    def _jornadas(self, ids, desde, hasta, turnos, zona, asignaciones, actividades, ahora, empresa_id) -> dict:
+    @staticmethod
+    def _jornadas(ids, desde, hasta, turnos, zona, asignaciones, actividades, ahora, asistencias, ejecuciones) -> dict:
         hoy = fecha_local(ahora, zona)
-        asistencias = {(a["usuario_id"], a["jornada"]): a
-                       for a in self.asistencia_repository.find_de_empresa_entre(empresa_id, desde, hasta)}
         # Días en que cada operario tenía actividades: también son jornadas aunque no haya marcado.
         con_actividades = defaultdict(set)
         for asignacion in asignaciones:
             actividad = actividades[asignacion["actividad_id"]]
             if actividad.get("estado") != EstadoActividad.CANCELADA.value:
                 con_actividades[asignacion["usuario_id"]].add(actividad.get("fecha_original") or actividad["fecha_programada"])
-
-        inicio_rango = momento_local(desde, "00:00", zona)
-        fin_rango = turnos.cierre_de(ids, hasta, zona) if ids else momento_local(hasta, "23:59", zona)
-        ejecuciones = defaultdict(list)
-        for ejecucion in self.ejecucion_repository.find_de_usuarios_entre(ids, inicio_rango, fin_rango):
-            ejecuciones[ejecucion["usuario_id"]].append(ejecucion)
 
         resultado = {}
         for usuario_id in ids:
@@ -288,6 +293,46 @@ class IndicadorService:
                                                asistencia, ejecuciones[usuario_id], ahora))
             resultado[usuario_id] = total
         return resultado
+
+    # ---------- Detalle de cada operario: lo que ve en su Resumen ----------
+
+    @staticmethod
+    def _detalle(ids, asignaciones, actividades, ejecucion_de, asistencias, ejecuciones, rango, ahora) -> dict:
+        """Por operario: su asistencia día por día, cada actividad finalizada con lo real frente a lo
+        estimado, y sus pausas agrupadas por motivo (las que empezaron dentro del rango)."""
+        detalle = {usuario_id: {"asistencias": [], "finalizadas": [], "pausas_por_motivo": []} for usuario_id in ids}
+        for (usuario_id, _), asistencia in sorted(asistencias.items(), key=lambda par: par[0][1]):
+            if usuario_id in detalle:
+                detalle[usuario_id]["asistencias"].append({
+                    "jornada": asistencia["jornada"], "entrada": asistencia.get("entrada"),
+                    "salida": asistencia.get("salida"), "estado": asistencia.get("estado")})
+        for asignacion in asignaciones:
+            ejecucion = ejecucion_de.get(str(asignacion["_id"]))
+            if not ejecucion or ejecucion.get("estado") != EstadoEjecucion.FINALIZADA.value:
+                continue
+            actividad = actividades[asignacion["actividad_id"]]
+            detalle[asignacion["usuario_id"]]["finalizadas"].append({
+                "actividad_id": asignacion["actividad_id"], "titulo": actividad.get("titulo"),
+                "codigo": actividad.get("codigo"), "estimado_min": actividad.get("tiempo_estimado_min") or 0,
+                "real_min": minutos_trabajados_en(ejecucion["fecha_inicio"], ejecucion["fecha_fin"], _pausas(ejecucion),
+                                                  en_utc(ejecucion["fecha_inicio"]), en_utc(ejecucion["fecha_fin"])),
+                "fecha_fin": ejecucion["fecha_fin"]})
+        for usuario_id in ids:
+            detalle[usuario_id]["finalizadas"].sort(key=lambda f: en_utc(f["fecha_fin"]))
+            conteo, minutos = Counter(), Counter()
+            for ejecucion in ejecuciones[usuario_id]:
+                fin_ejecucion = ejecucion.get("fecha_fin") or ahora    # Una pausa abierta dura hasta ahora.
+                for pausa in ejecucion.get("pausas") or []:
+                    if not rango[0] <= en_utc(pausa["inicio"]) < rango[1]:
+                        continue
+                    motivo = pausa.get("motivo") or "Sin motivo"
+                    conteo[motivo] += 1
+                    minutos[motivo] += round((en_utc(pausa.get("fin") or fin_ejecucion)
+                                              - en_utc(pausa["inicio"])).total_seconds() / 60)
+            detalle[usuario_id]["pausas_por_motivo"] = [
+                {"motivo": motivo, "cantidad": cantidad, "minutos": minutos[motivo]}
+                for motivo, cantidad in conteo.most_common()]
+        return detalle
 
     # ---------- Actividades: cumplimiento por operario, categoría y proyecto ----------
 

@@ -1782,94 +1782,6 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     color: var(--texto-secundario);
 }
 
-/* ================= Resumen: indicadores y gráfica ================= */
-
-/* Los indicadores van juntos en una sola franja, no en una tarjeta por número (6.2). */
-.indicadores {
-    display: grid;
-    margin-bottom: var(--e5);
-    background: var(--superficie);
-    border: 1px solid var(--borde);
-    border-radius: var(--radio);
-}
-
-.indicador {
-    padding: var(--e4) var(--e5);
-}
-
-.indicador + .indicador {
-    border-top: 1px solid var(--borde);
-}
-
-@media (min-width: 50.01em) {
-    .indicadores {
-        grid-auto-flow: column;
-        grid-auto-columns: 1fr;
-    }
-
-    .indicador + .indicador {
-        border-top: none;
-        border-left: 1px solid var(--borde);
-    }
-}
-
-.indicador p {
-    margin: 0;
-}
-
-.indicador-titulo,
-.indicador-detalle {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.indicador-valor {
-    font-size: var(--tamano-cifra-grande);
-    font-weight: var(--peso-fuerte);
-    line-height: 1.3;
-}
-
-.grafica {
-    position: relative;
-    height: 18rem;
-}
-
-.tabla-datos {
-    margin-top: 0.8rem;
-}
-
-.tabla-datos summary {
-    color: var(--principal);
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-fuerte);
-    cursor: pointer;
-}
-
-.dos-columnas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 0 1.3rem;
-}
-
-.lista-conteos {
-    list-style: none;
-    margin: 0;
-    padding: 0.3rem 1.1rem;
-}
-
-.lista-conteos li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    padding: 0.55rem 0;
-    border-bottom: 1px solid var(--borde);
-}
-
-.lista-conteos li:last-child {
-    border-bottom: none;
-}
-
 /* ================= Administrador: filtros y actividades ================= */
 
 .maestro-detalle {
@@ -4117,5 +4029,137 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 
     .hoja-formulario {
         padding-bottom: calc(var(--e5) + env(safe-area-inset-bottom));
+    }
+}
+
+/* ================= Operario: Resumen (alcance, Secciones 5.2 y 6.1) ================= */
+/* Cómo le fue en la semana, escrito como frases (sin una tarjeta por número). Las partes se separan
+   con espacio y líneas finas. */
+
+.resumen {
+    display: grid;
+    gap: var(--e5);
+}
+
+.resumen > * {
+    margin: 0;
+}
+
+.resumen-encabezado {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--e4);
+    padding-bottom: var(--e5);
+    border-bottom: 1px solid var(--borde);
+}
+
+.resumen-encabezado h1,
+.resumen-encabezado p {
+    margin: 0;
+}
+
+.resumen-frases {
+    display: grid;
+    gap: var(--e3);
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-texto);
+}
+
+.resumen-frases p {
+    margin: 0;
+}
+
+.resumen-frases strong {
+    font-weight: var(--peso-fuerte);
+}
+
+.resumen-frases .linea-info {
+    font-size: var(--tamano-texto);
+}
+
+.resumen-seccion {
+    display: grid;
+    gap: var(--e3);
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+}
+
+.resumen-seccion h2 {
+    margin: 0;
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
+}
+
+.resumen-seccion p {
+    margin: 0;
+}
+
+/* Una fila por dato: día, horas y estado; o motivo y cuánto. */
+.resumen-filas {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.resumen-filas li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e1) var(--e4);
+    min-height: var(--alto-control);
+    padding-block: var(--e2);
+    border-bottom: 1px solid var(--borde);
+}
+
+.resumen-dia {
+    min-width: 7rem;
+}
+
+.resumen-dia::first-letter {
+    text-transform: uppercase;
+}
+
+.resumen-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    font-weight: var(--peso-fuerte);
+}
+
+.resumen-estado .icono {
+    width: 1rem;
+    height: 1rem;
+}
+
+.resumen-tiempos-lista {
+    display: grid;
+    gap: var(--e4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.resumen-tiempos-lista li {
+    display: grid;
+    gap: var(--e2);
+}
+
+.resumen-tiempo-textos {
+    display: grid;
+    gap: var(--e1);
+}
+
+/* Lo que se pasó del estimado: la barra va llena y en el ámbar de advertencia, con su texto al lado. */
+.barra-avance-excedida .barra-avance-relleno {
+    background: var(--advertencia);
+}
+
+@media (max-width: 50em) {
+    .resumen {
+        padding-bottom: calc(3.8rem + var(--e5));
     }
 }
