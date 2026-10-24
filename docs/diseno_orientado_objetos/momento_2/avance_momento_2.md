@@ -894,7 +894,7 @@ Los mockups definen qué va en cada pantalla y en qué orden, antes de decidir c
 **Del bosquejo al prototipo funcional**
 
 <div class="figuras">
-<figure><img class="escritorio-medio" src="../../disenos/4_operario_fila_del_tablero.png" alt="Maqueta de la pantalla Hoy"><figcaption>Figura 1. Maqueta de la pantalla Hoy del Operario.</figcaption></figure>
+<figure><img class="escritorio-medio" src="../../historial/disenos_calma_operativa/4_operario_fila_del_tablero.png" alt="Maqueta de la pantalla Hoy"><figcaption>Figura 1. Maqueta de la pantalla Hoy del Operario.</figcaption></figure>
 <figure><img class="movil" src="../../diseno_interfaces/momento_2/capturas/operario_hoy_completo_movil.png" alt="Pantalla Hoy construida"><figcaption>Figura 2. La misma pantalla, ya construida y con datos reales.</figcaption></figure>
 </div>
 

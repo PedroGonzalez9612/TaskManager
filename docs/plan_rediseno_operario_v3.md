@@ -2,7 +2,7 @@
 
 - **Fecha:** 23 de octubre de 2026
 - **Materia:** Diseño de Interfaces (Fase 2: usabilidad, Gestalt, color y metáforas). La Etapa 4 puede tocar `programacion_dia.py`, que también interesa a DOO.
-- **Reemplaza:** las partes visuales del plan "Calma operativa" (`docs/plan_rediseno_calma_operativa.md`) que choquen con este. Las reglas de negocio de ese plan (hora fija, orden del día, reprogramación, devolver, proyectos) se mantienen.
+- **Reemplaza:** las partes visuales del plan "Calma operativa" (`docs/historial/plan_rediseno_calma_operativa.md`) que choquen con este. Las reglas de negocio de ese plan (hora fija, orden del día, reprogramación, devolver, proyectos) se mantienen.
 - **Referencias de diseño:**
   - `docs/disenos/operario_v3/`: el diseño final. PNG de cada pantalla y su fuente `.dc.html` (se abre en el navegador como referencia de medidas y colores).
   - `docs/disenos/stitch_v2/`: lo que generó Google Stitch y que se tomó como dirección. Es la evidencia del proceso para el informe.

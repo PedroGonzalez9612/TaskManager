@@ -6,16 +6,18 @@ Leyenda: ✅ terminado · 🟡 parcial · ⬜ pendiente
 
 ## Estado de los criterios del MVP (Sección 8 del alcance)
 
-| # | Criterio | Estado | Observaciones |
+Revisado contra el código el 2026-10-24.
+
+| # | Criterio | Estado | Qué falta |
 |---|---|---|---|
-| 1 | Empresa y usuarios (tres roles, cada uno con su interfaz) | ✅ | Además: límites de usuarios por empresa y marca blanca |
-| 2 | Actividades y proyectos | 🟡 | La API ya permite actividades independientes y proyectos con su avance en horas. Las pantallas del Administrador todavía crean las actividades dentro de requerimientos (Etapa 6 del rediseño) |
-| 3 | Asignación y prioridad | ✅ | Uno o varios operarios, cuatro prioridades, tiempo estimado, fecha y hora programada, con alerta de sobrecarga |
-| 4 | Ejecución (iniciar, pausar, reanudar, finalizar) | ✅ | Las cuatro acciones en pantalla, por operario: pausa con motivo, "Pausar y atender" para la urgente y evidencia al finalizar (observación, fotos y adjuntos). El Administrador ve el registro de cada operario en el detalle de la actividad |
-| 5 | Registro de tiempo | 🟡 | El servidor registra inicio, pausas y fin de cada operario y calcula el tiempo real sin pausas. Falta mostrarlo en pantalla y compararlo con el estimado |
-| 6 | Análisis de carga laboral | 🟡 | Carga por jornada de cada operario y alerta al superar el 100 %. La capacidad es provisional (7 h) hasta que existan los turnos |
-| 7 | Turnos y asistencia | 🟡 | El Administrador crea turnos, los asigna y valida o corrige la asistencia (pantalla Usuarios); el Operario marca entrada y salida en Hoy, que ahora abre con el inicio de la jornada y cierra con su resumen; la capacidad sale del turno. Falta el aviso de posible ausencia por tolerancia y la reasignación por ausencia |
-| 8 | Indicadores de cumplimiento | ⬜ | |
+| 1 | Empresa y usuarios (tres roles, cada uno con su interfaz) | ✅ | — Además: límites de usuarios por empresa, marca blanca, desactivar y reactivar |
+| 2 | Actividades y proyectos | 🟡 | La API de proyectos y el selector de proyecto al crear una actividad ya existen. Falta la **pantalla de Proyectos** (lista y detalle con su avance en horas) |
+| 3 | Asignación y prioridad | ✅ | — Uno o varios operarios, cuatro prioridades, estimado, fecha y hora fija, alerta de sobrecarga |
+| 4 | Ejecución (iniciar, pausar, reanudar, finalizar) | ✅ | — Por operario, con motivo de pausa, "Pausar y atender" y evidencia. El detalle del rediseño v3 (Etapa 5) está en curso |
+| 5 | Registro de tiempo | 🟡 | El servidor registra cada acción y calcula el tiempo real; Inicio, Hoy y el detalle muestran el tiempo contra lo estimado. Falta la **comparación de lo real con lo estimado** en Resumen y en los indicadores |
+| 6 | Análisis de carga laboral | ✅ | — Carga por jornada con la capacidad del turno, alerta al superar el 100 % y tablero del turno en Equipo |
+| 7 | Turnos y asistencia | 🟡 | Turnos, asignación, marcas de entrada y salida, validación y corrección, alerta de llegada tarde al Operario. Falta el **aviso de posible ausencia al Administrador** y la **reasignación por ausencia** |
+| 8 | Indicadores de cumplimiento | ⬜ | **Todo:** cumplimiento de jornada, aprovechamiento, tiempo adicional y cumplimiento de actividades, por operario y por empresa (servicio, ruta y pantalla) |
 
 ## Etapa 1 — Inicio de sesión, empresas y usuarios (2026-09-26) ✅
 
@@ -169,7 +171,7 @@ Verificación de las pantallas del Superadmin: la marca y el título comparten e
 
 ## Rediseño "Calma operativa" (en curso, 2026-10-10) 🟡
 
-Plan: [plan_rediseno_calma_operativa.md](plan_rediseno_calma_operativa.md). Cambia la identidad visual, organiza la interfaz sobre la metáfora de la planilla del turno y agrega reglas nuevas de actividades (proyectos, hora fija, orden del día, pendientes, cancelación y devolución). Mientras no se apliquen las etapas 2 a 7, el código sigue con el diseño anterior.
+Plan: [historial/plan_rediseno_calma_operativa.md](historial/plan_rediseno_calma_operativa.md). Cambia la identidad visual, organiza la interfaz sobre la metáfora de la planilla del turno y agrega reglas nuevas de actividades (proyectos, hora fija, orden del día, pendientes, cancelación y devolución). Mientras no se apliquen las etapas 2 a 7, el código sigue con el diseño anterior.
 
 | Etapa | Estado |
 |---|---|
@@ -382,7 +384,7 @@ Las reglas que faltaban quedaron en el alcance (Secciones 6.2 y 6.5): ancho de l
 
 Pendiente de la auditoría: el aviso de llegada tarde (necesita la tolerancia por empresa, que el alcance pide pero no define) y arrastrar una tarjeta del tablero a otra persona.
 
-## Exploración de identidad visual del Operario (2026-10-16), sin cerrar
+## Exploración de identidad visual del Operario (2026-10-16), cerrada: la reemplazó el rediseño v3
 
 Estado en el que queda, para retomarlo (el usuario seguirá el diseño en otra herramienta):
 
@@ -476,22 +478,51 @@ como hecha por IA. Las reglas nuevas quedaron en las Secciones 6.2 y 6.4 del alc
 Datos de prueba: Sofía, Mariana y Julián tienen actividades para hoy y no han marcado la entrada, para
 probar el día completo del Operario.
 
-## Estado del repositorio (2026-10-12)
+## Rediseño del Operario v3, "Planificador sereno" (2026-10-23, en curso) 🟡
 
-- `main` tiene todo el rediseño "Calma operativa" hecho hasta el 10 de octubre (Pull Request #8).
-- El trabajo del 12 de octubre está en la rama `feature/correcciones-usabilidad-2026-10-12`, pendiente de su Pull Request a `main`.
-- `develop` está atrasada respecto a `main` y debe sincronizarse (Pull Request `main` → `develop`).
-- Entornos de Docker: `docker compose up --build` levanta una base vacía (solo el Superadmin del `.env`); los datos de prueba están en el entorno `gestlab-prueba` (`docker compose -p gestlab-prueba up --build -d`).
+Plan: [plan_rediseno_operario_v3.md](plan_rediseno_operario_v3.md). Diseño: [disenos/operario_v3/](disenos/operario_v3/).
+Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guardado en [historial/](historial/)).
+
+- **Etapa 1, alcance:** Secciones 5.1, 6.1 a 6.5 y 14 con el sistema nuevo y las decisiones del usuario;
+  revisadas por el agente `profesor-interfaces`.
+- **Etapa 2, base visual:** azul `#2B5B84`, Hanken Grotesk, sin sombra en las superficies, sin coral (la
+  sobrecarga se raya en rojo), información en gris, logo nuevo y código `ACT-` para las actividades nuevas.
+- **Etapa 3, Inicio:** responde "¿qué hago ahora?" (turno, urgente, actividad en curso o lo que sigue,
+  marcar entrada y salida, balance de la jornada).
+- **Etapa 4, Hoy:** línea de tiempo de solo lectura con filas; antes del turno, lo pendiente se proyecta
+  desde el inicio del turno (regla nueva en el alcance, con pruebas).
+- **Pendiente:** Etapa 5 (detalle donde se ejecuta, con Pausar, Finalizar y Devolver), Etapa 6 (Semana y
+  Resumen) y Etapa 7 (validación y evidencias para el informe).
+
+## Depuración del proyecto (2026-10-24) ✅
+
+- **Requerimientos retirados del código:** modelo, repositorio, servicio, rutas `/requerimientos`, enum y el
+  campo `requerimiento_id` de la actividad. Los documentos guardados conservan el campo, que ya nadie lee.
+- **Código sin uso:** tres funciones de JS, una consulta de repositorio y 22 reglas de CSS del Administrador
+  y del Superadmin.
+- **Documentos:** el plan y los diseños de "Calma operativa" pasan a [historial/](historial/) como evidencia
+  de la evolución del diseño.
+- **Pruebas:** 529, todas pasan.
+- **Se conservan:** las migraciones de una sola vez (`herramientas/migrar_etapa4.py` y `migrar_categorias.py`),
+  por si otra base de datos las necesita, y los dos documentos de Diseño de Interfaces del Momento 2.
+- **Para el Momento 3 de DOO:** el documento del Momento 2 todavía describe la colección `requerimientos` y
+  "trece repositorios"; el código ahora tiene doce.
+
+## Estado del repositorio (2026-10-24)
+
+- El trabajo vigente está en la rama `feature/rediseno-operario-v3` (sale de `feature/avance-doo-momento-2-2026-10-17`).
+- `develop` solo tiene el proyecto base y está muy atrasada: hay que integrar las ramas por Pull Request.
+- Entornos de Docker: `docker compose up --build` levanta una base vacía (solo el Superadmin del `.env`); los
+  datos de prueba están en el entorno `gestlab-prueba` (`docker compose -p gestlab-prueba up --build -d`).
 
 ## Decisiones abiertas
 
 - ¿El login debe mostrar la marca de cada empresa? Requeriría una dirección por empresa (por ejemplo `/metalicas`). Por ahora el login muestra GestLab.
-- Validar los colores provisionales de los estados nuevos (Actividad reprogramada, Devuelta, No realizada y Cancelada) con las pantallas construidas.
 - Si el Administrador le cambia la fecha a una actividad que nunca se reprogramó automáticamente, ¿cambia su fecha original? Hoy no cambia.
 - Al cambiar la zona horaria de una empresa cambia de inmediato qué día es "hoy" para ella. ¿Debe quedar registro del cambio?
 - Tiempo trabajado "hoy" de una actividad que se empezó ayer: hoy se suma todo su tiempo real, también el de ayer. ¿Debe contarse solo lo trabajado en la jornada?
 - Una actividad pausada que se trabajó hoy solo muestra en la línea de tiempo lo que le falta, no el rato ya trabajado.
-- Si lo que está en curso se proyecta más allá del inicio de una de hora fija, las dos tarjetas se cruzan en la línea de tiempo sin un aviso de choque.
+- Si lo que está en curso se proyecta más allá del inicio de una de hora fija, las dos filas se cruzan en la línea de tiempo sin un aviso de choque.
 - Casos de lógica por definir (hora fija antes de su hora, iniciar sin entrada, salida con algo en curso, horas fijas que se cruzan, registrar la asistencia de un operario sin marca, entre otros): ver [casos_por_definir.md](casos_por_definir.md).
 - Aviso al Administrador cuando una reprogramación automática deja una jornada por encima del 100 % (lo pide el alcance; hoy solo se ve en la carga del día).
 - ¿El tiempo de un operario retirado de una actividad suma al tiempo real de esa actividad? Hoy queda guardado pero no se suma; se recomienda sumarlo al construir los indicadores.
@@ -500,28 +531,27 @@ Resuelta el 2026-10-10: la ejecución pertenece a la asignación (operario + act
 
 ## Pendientes técnicos conocidos
 
-- Mientras las pantallas del Administrador usen requerimientos, una actividad puede tener requerimiento y proyecto a la vez; se retira con la pantalla nueva (Etapa 6). El borrado de actividades ya no existe.
 - Un usuario desactivado que ya tenía la sesión abierta la conserva hasta que salga; la regla se aplica al iniciar sesión.
-- Las actividades canceladas aparecen en la lista del Administrador con la etiqueta "Cancelada" (filtro "Terminadas"), pero su motivo solo se consulta por la API: el detalle todavía no lo muestra.
-- El Superadmin no tiene usuario de prueba en la base de demostración, así que desactivar y reactivar una empresa desde su pantalla solo está probado con las pruebas automáticas.
+- El motivo de una actividad cancelada solo se consulta por la API: el detalle todavía no lo muestra.
+- El Superadmin no tiene usuario de prueba (`CAPTURAS_SUPERADMIN_*` en el `.env`): sus pantallas no entran en las capturas.
 - Si un operario inicia una actividad en el mismo instante en que el Administrador la cancela, puede quedar una ejecución en curso sobre una actividad cancelada. El cierre de jornada debe limpiarlo.
-- En la pantalla Hoy falta el aviso de hora fija 10 minutos antes y devolver una actividad (Etapa 5).
-- El formulario de empresa del Superadmin todavía no tiene el campo de zona horaria; por ahora solo se cambia por la API.
-- El botón de la actividad urgente lleva a un "Iniciar" desactivado cuando hay otra en curso; se resuelve con "Pausar y atender" (Etapa 5).
+- El aviso 10 minutos antes de una actividad de hora fija no está construido.
+- "Reportar actividad" (alcance, Sección 6.1) no tiene API ni pantalla.
+- El formulario de empresa del Superadmin no tiene el campo de zona horaria; solo se cambia por la API.
 - Espacios escritos a mano en reglas compartidas de `estilos.css` (`.aviso`, `.etiqueta`, `.boton`, navegación), fuera de la escala `--e1` a `--e7`.
-- El correo de los usuarios y el NIT de las empresas no tienen índice único: la regla solo la comprueba el servicio, y dos peticiones simultáneas podrían duplicarlos. Las demás reglas de unicidad sí tienen su índice.
-- Las pantallas Semana y Resumen del Operario dejan intentar iniciar una actividad sin haber marcado la entrada; el servidor lo rechaza con el mensaje "Marca tu entrada para empezar", pero el botón no se desactiva antes.
-- `herramientas/capturas.py` toma las páginas largas con la barra superior en medio de la imagen; para los documentos se usó una pantalla tan alta como el contenido.
-- En una base con datos anteriores a la Etapa 4 hay que ejecutar una vez `python herramientas/migrar_etapa4.py --aplicar`.
+- El correo de los usuarios y el NIT de las empresas no tienen índice único: dos peticiones simultáneas podrían duplicarlos.
+- Semana deja intentar iniciar una actividad sin haber marcado la entrada; el servidor lo rechaza, pero el detalle no lo avisa antes.
+- `herramientas/capturas.py` toma las páginas largas con la barra superior en medio de la imagen.
+- En una base con datos anteriores a la Etapa 4 hay que ejecutar una vez `python herramientas/migrar_etapa4.py --aplicar`, y en una con las categorías anteriores, `python herramientas/migrar_categorias.py --aplicar`.
 
 ## Próximos pasos
 
-En este orden (plan completo en [plan_rediseno_calma_operativa.md](plan_rediseno_calma_operativa.md)):
+En este orden:
 
-1. **Terminar la Etapa 4 (backend):**
-   - bloques de información de la actividad (pasos, herramientas y materiales, equipo, adjuntos, contacto) y "Lista para iniciar";
-   - indicadores de pendientes (reprogramadas, no realizadas, canceladas y devoluciones por motivo).
-2. **Etapa 5 — Operario:** aviso 10 minutos antes de una actividad de hora fija y devolver una actividad. Ya están: pausar con motivo, "Pausar y atender", reanudar, ordenar el día, el inicio y cierre de la jornada, y la evidencia al finalizar.
-3. **Etapa 6 — Administrador:** tablero del turno y pantalla de proyectos; retirar los requerimientos y el borrado de actividades.
-4. **Etapa 7 — Validación y evidencias:** auditoría de todas las pantallas y capturas para el documento de la Fase 2 de Diseño de Interfaces (usabilidad, Gestalt, color y metáforas).
-5. **Turnos y asistencia** (criterio 7 del MVP): aviso de posible ausencia y reasignación por ausencia. **Indicadores de cumplimiento** (criterio 8).
+1. **Rediseño v3, Etapa 5:** el detalle de la actividad (ya escrito, falta su CSS y probarlo).
+2. **Indicadores de cumplimiento** (criterio 8 del MVP): servicio, ruta y pantalla para el Administrador.
+3. **Aviso de posible ausencia y reasignación por ausencia** (criterio 7).
+4. **Pantalla de Proyectos** (criterio 2) y comparación de lo real con lo estimado en Resumen (criterio 5).
+5. **Rediseño v3, Etapas 6 y 7:** Semana, Resumen, validación y evidencias para el informe de Diseño de Interfaces.
+6. **Integrar las ramas** a `develop` por Pull Request.
+7. Resolver los casos de [casos_por_definir.md](casos_por_definir.md) que el usuario priorice.

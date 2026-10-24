@@ -57,26 +57,20 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   El panel es para la superficie principal; filtros y listas de apoyo van con `seccion-apoyo`, sin panel.
   Componentes repetidos en `js/componentes.js` (logo, avatar, medidor de límite).
   REDISEÑO DEL OPERARIO V3 "Planificador sereno" (plan en `docs/plan_rediseno_operario_v3.md`, diseño en
-  `docs/disenos/operario_v3/`, rama `feature/rediseno-operario-v3`): reemplaza lo visual de "Calma operativa".
-  Inicio responde "¿qué hago ahora?" sin barras; Hoy es una línea de tiempo de solo lectura (filas, sin
-  cronómetro ni botones de ejecución); se ejecuta en el detalle (`<dialog>` a pantalla completa en celular).
-  Principal azul `#2B5B84`, Hanken Grotesk, sin sombra en cada elemento, etiquetas solo para Urgente, Hora
-  fija y Retraso, tiempo en horas y minutos, sin coral (sobrecarga rayada en rojo), información en gris.
-  Etapas 0, 1 (alcance), 2 (base visual: tokens de `:root`, Hanken Grotesk, logo, prefijo `ACT-`) y 3 (Inicio:
-  `operario/inicio.js`, clases `inicio-*`, `barra-avance`, `linea-advertencia`/`linea-info`) y 4 (Hoy: `operario/hoy.js`,
-  clases `dia-*` y `fila-*`; antes del turno lo pendiente se proyecta desde el inicio del turno) hechas; Etapas 5 a 7
-  pendientes. El detalle, Semana y Resumen todavía tienen la composición anterior: ESTADO DEL REDISEÑO "Calma operativa" (plan en `docs/plan_rediseno_calma_operativa.md`): Etapa 1
-  (alcance) y Etapa 2 (base visual: colores, Figtree, sombras, logo del tablero) y Etapa 3 (Hoy del Operario como línea de tiempo, en `operario/hoy.js`, clases `linea-*` y `tarjeta-*`) hechas, pendientes del visto bueno del
-  usuario. Etapa 4 (backend) a medias: ver "Próximos pasos" en `docs/avance.md`. Etapas 5 a 7
-  pendientes. Ya existen turnos y asistencia (turnos y validación en Usuarios del Administrador) y el
-  calendario rediseñado. El Operario llega a Inicio (`operario/inicio.js`): saludo, estado del turno, la urgente,
-  la actividad en curso o lo que sigue, "Marcar entrada" / "Marcar salida" y el balance de la jornada. Hoy (`operario/hoy.js`) es la línea de tiempo de solo lectura:
-  toda fila abre el detalle, donde se ejecuta (también "Pausar y atender" la urgente). Lo que comparten
-  (`estadoDeJornada`, `avisoDelTurno`, `abrirSalida`, `atenderUrgente`) está en `operario/operario-comun.js`.
-  Equipo es el tablero del turno (`admin/equipo.js`, cuadrícula propia, clases `tablero-*`), no un
-  calendario; Semana del Operario sigue con EventCalendar. Actividades ya no muestra requerimientos:
-  filtros y lista agrupada por día. Falta en pantalla: Proyectos, "Reportar actividad", aviso de hora
-  fija y devolver (la API ya tiene proyectos y devolver).
+  `docs/disenos/operario_v3/`, rama `feature/rediseno-operario-v3`). Lo anterior ("Calma operativa") está en
+  `docs/historial/` solo como evidencia. Reglas visuales: principal azul `#2B5B84`, Hanken Grotesk, sin sombra
+  en cada elemento, etiquetas solo para Urgente, Hora fija y Retraso, tiempo en horas y minutos (sin
+  cronómetro), sin coral (sobrecarga rayada en rojo), información en gris con su ícono.
+  Hechas: Etapas 0 y 1 (alcance), 2 (base visual: tokens de `:root`, logo, prefijo `ACT-`), 3 (Inicio,
+  `operario/inicio.js`, clases `inicio-*`) y 4 (Hoy, `operario/hoy.js`, clases `dia-*` y `fila-*`: línea de
+  tiempo de solo lectura; toda fila abre el detalle). Pendientes: 5 (detalle a pantalla completa en celular,
+  donde se ejecuta; hojas inferiores de Pausar, Finalizar y Devolver), 6 (Semana y Resumen) y 7 (validación).
+  El Operario llega a Inicio: estado del turno, la urgente, la actividad en curso o lo que sigue, "Marcar
+  entrada" / "Marcar salida" (solo en Inicio) y el balance de la jornada. Lo que comparten las pantallas del
+  Operario (`estadoDeJornada`, `avisoDelTurno`, `abrirSalida`, `atenderUrgente`, el detalle) está en
+  `operario/operario-comun.js`. Equipo es el tablero del turno (`admin/equipo.js`, clases `tablero-*`); Semana
+  del Operario usa EventCalendar; Actividades del Administrador tiene filtros y lista agrupada por día.
+  Qué falta del MVP y del producto: ver "Estado de los criterios del MVP" en `docs/avance.md`.
   Se avanza etapa por etapa, con la aprobación del usuario.
 - La interfaz es un cliente en el navegador: páginas HTML estáticas que consumen la API con `fetch`.
   Flask las sirve desde el mismo origen. NO se usan plantillas Jinja para generar pantallas.

@@ -412,7 +412,7 @@ Una metáfora de interfaz representa objetos, acciones o conceptos conocidos del
 - La línea "Ahora", en el color principal, marca la hora actual. En el Operario, lo recorrido es una línea sólida y lo que viene, punteada.
 - Lo que pasa de la hora de fin del turno se raya, como sobrecarga.
 
-Reemplaza la metáfora del tanque de carga, que se probó en una propuesta intermedia (`docs/disenos/stitch_calma_operativa/`). El tanque decía cuánto trabajo había, pero no cuándo; la planilla responde las dos preguntas.
+Reemplaza la metáfora del tanque de carga, que se probó en una propuesta intermedia (`docs/historial/stitch_calma_operativa/`). El tanque decía cuánto trabajo había, pero no cuándo; la planilla responde las dos preguntas.
 
 **Metáforas de apoyo:**
 

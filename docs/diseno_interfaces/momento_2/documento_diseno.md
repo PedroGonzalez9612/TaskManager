@@ -59,7 +59,7 @@ El diseño pasó por cuatro momentos. Cada cambio respondió a un problema concr
 <div class="figuras">
 <figure><img class="movil" src="capturas/evolucion_1_primera_version_movil.png" alt="Primera versión"><figcaption>Figura 1. Primera versión: lista y menú desplegable.</figcaption></figure>
 <figure><img class="movil recorte" src="capturas/evolucion_2_aqua_de_trabajo_movil.png" alt="Identidad visual"><figcaption>Figura 2. Identidad visual: bloques apilados.</figcaption></figure>
-<figure><img class="movil" src="../../disenos/stitch_calma_operativa/02_operario_hoy_normal.png" alt="Propuesta de Stitch"><figcaption>Figura 3. Exploración con Stitch: el tanque de carga.</figcaption></figure>
+<figure><img class="movil" src="../../historial/stitch_calma_operativa/02_operario_hoy_normal.png" alt="Propuesta de Stitch"><figcaption>Figura 3. Exploración con Stitch: el tanque de carga.</figcaption></figure>
 <figure><img class="movil" src="capturas/operario_hoy_movil.png" alt="Diseño actual"><figcaption>Figura 4. Diseño actual: el día como línea de tiempo.</figcaption></figure>
 </div>
 
@@ -72,7 +72,7 @@ El diseño pasó por cuatro momentos. Cada cambio respondió a un problema concr
 
 Antes de programar cada pantalla se dibujó su composición. La figura 5 es la maqueta de la pantalla Hoy.
 
-<figure><img class="escritorio" src="../../disenos/4_operario_fila_del_tablero.png" alt="Maqueta de la pantalla Hoy"><figcaption>Figura 5. Maqueta de composición de la pantalla Hoy del Operario.</figcaption></figure>
+<figure><img class="escritorio" src="../../historial/disenos_calma_operativa/4_operario_fila_del_tablero.png" alt="Maqueta de la pantalla Hoy"><figcaption>Figura 5. Maqueta de composición de la pantalla Hoy del Operario.</figcaption></figure>
 
 ## 4. Aplicación de principios de usabilidad
 
