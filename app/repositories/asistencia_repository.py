@@ -1,4 +1,4 @@
-from pymongo import ASCENDING, DESCENDING
+from pymongo import ASCENDING
 from pymongo.errors import DuplicateKeyError
 
 from app.repositories.base_repository import BaseRepository
@@ -28,11 +28,6 @@ class AsistenciaRepository(BaseRepository):
 
     def find_de_usuario_en(self, usuario_id: str, jornada: str):
         return self.collection.find_one({"usuario_id": usuario_id, "jornada": jornada})
-
-    def find_abierta_de_usuario(self, usuario_id: str):
-        """La asistencia del operario con entrada y sin salida (la más reciente si hubiera varias)."""
-        cursor = self.collection.find({"usuario_id": usuario_id, **ABIERTA}).sort("jornada", DESCENDING)
-        return next(iter(cursor.limit(1)), None)
 
     def find_de_empresa_en(self, empresa_id: str, jornada: str):
         return list(self.collection.find({"empresa_id": empresa_id, "jornada": jornada}))

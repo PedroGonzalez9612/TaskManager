@@ -183,7 +183,6 @@ def test_el_turno_no_limita_la_entrada(servicios, asistencia, empresa, tarde):
 
 def test_dos_entradas_simultaneas_dejan_una_sola(asistencia, asistencias, empresa, monkeypatch):
     # Las dos peticiones pasan la comprobación del servicio antes de que alguna inserte.
-    monkeypatch.setattr(asistencias.__class__, "find_abierta_de_usuario", lambda self, usuario_id: None)
     monkeypatch.setattr(asistencias.__class__, "find_de_usuario_en", lambda self, usuario_id, jornada: None)
     asistencia.marcar_entrada(empresa.ana)
     with pytest.raises(ValidationError, match="Ya marcaste la entrada"):

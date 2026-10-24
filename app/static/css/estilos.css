@@ -537,25 +537,6 @@ body.ancho-angosto {
     padding: var(--e5);
 }
 
-.datos-empresa {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-    gap: 0.9rem;
-    margin: 0;
-}
-
-.datos-empresa dt {
-    font-size: var(--tamano-etiqueta);
-    font-weight: var(--peso-fuerte);
-    line-height: var(--interlineado-etiqueta);
-    color: var(--texto-secundario);
-}
-
-.datos-empresa dd {
-    margin: 0.15rem 0 0;
-    overflow-wrap: anywhere;
-}
-
 /* Las tablas anchas se desplazan dentro de su contenedor, nunca toda la página. */
 .contenedor-tabla {
     overflow-x: auto;
@@ -592,15 +573,6 @@ body.ancho-angosto {
     background: var(--fondo);
 }
 
-.tabla .enlace-fila {
-    font-weight: var(--peso-fuerte);
-    text-decoration: none;
-}
-
-.tabla .enlace-fila:hover {
-    text-decoration: underline;
-}
-
 .texto-suave {
     color: var(--texto-secundario);
 }
@@ -624,36 +596,6 @@ body.ancho-angosto {
 
 .mensaje-error {
     color: var(--error-texto);
-}
-
-.celda-empresa {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.logo-miniatura {
-    width: 2rem;
-    height: 2rem;
-    object-fit: contain;
-    border: 1px solid var(--borde);
-    border-radius: 0.35rem;
-    background: var(--superficie);
-}
-
-.titulo-con-logo {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-}
-
-.logo-encabezado {
-    width: 3.2rem;
-    height: 3.2rem;
-    object-fit: contain;
-    border: 1px solid var(--borde);
-    border-radius: var(--radio);
-    background: var(--superficie);
 }
 
 .limites {
@@ -800,10 +742,6 @@ body.ancho-angosto {
 }
 
 /* Información que no pide una acción inmediata: texto secundario con su ícono, sin color propio (6.3). */
-.aviso-info {
-    background: none;
-    color: var(--texto-secundario);
-}
 
 .aviso-bloque {
     margin: 0 0 1rem;
@@ -920,7 +858,6 @@ fieldset.grupo-botones {
     border: none;
 }
 
-.grupo-controles,
 .grupo-botones {
     display: flex;
     flex-wrap: wrap;
@@ -1289,27 +1226,6 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     flex: 1;
 }
 
-.boton-peligro {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--alto-control);
-    margin-right: auto;
-    padding: 0 1rem;
-    border: 1px solid var(--error);
-    border-radius: 0.5rem;
-    background: var(--superficie);
-    color: var(--error-texto);
-    font-family: inherit;
-    font-size: var(--tamano-texto);
-    font-weight: var(--peso-fuerte);
-    cursor: pointer;
-}
-
-.boton-peligro:hover {
-    background: var(--error-suave);
-}
-
 .dialogo-ancho {
     width: min(40rem, calc(100vw - 1.8rem));
 }
@@ -1647,7 +1563,7 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 }
 
 /* Hoy se reconoce por su encabezado en texto principal y semibold; la columna no lleva tinte. */
-.ec .ec-col-head.ec-today:not(:has(.columna-operario)) {
+.ec .ec-col-head.ec-today {
     color: var(--texto);
     font-weight: var(--peso-fuerte);
 }
@@ -1673,50 +1589,6 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 }
 
 /* ---------- Encabezado de la columna de un operario (Equipo): nombre, carga y horas ---------- */
-
-.ec .ec-col-head:has(.columna-operario) {
-    padding: 0;
-    text-align: left;
-}
-
-.columna-operario {
-    display: flex;
-    flex-direction: column;
-    gap: var(--e2);
-    min-width: 0;
-    padding: var(--e3);
-    text-align: left;
-}
-
-.columna-nombre {
-    overflow: hidden;
-    color: var(--texto);
-    font-size: var(--tamano-texto);
-    font-weight: var(--peso-fuerte);
-    line-height: var(--interlineado-h3);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.columna-horas {
-    display: flex;
-    align-items: center;
-    gap: var(--e1);
-    min-width: 0;
-    margin: 0;
-    overflow: hidden;
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-    font-weight: var(--peso-normal);
-    line-height: var(--interlineado-etiqueta);
-    white-space: nowrap;
-}
-
-/* Sobrecarga: ícono y texto en el ámbar oscuro de advertencia, como el aviso del panel. */
-.columna-sobrecarga {
-    color: var(--advertencia-texto);
-    font-weight: var(--peso-fuerte);
-}
 
 /* ---------- Bloque de actividad ---------- */
 
@@ -2084,17 +1956,9 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     font-weight: var(--peso-fuerte);
 }
 
-.tabla-clicable tbody tr {
-    cursor: pointer;
-}
-
 /* Códigos, fechas y tiempos no se parten en dos renglones. */
 .tabla td.cifra {
     white-space: nowrap;
-}
-
-.tabla .celda-principal {
-    min-width: 14rem;
 }
 
 .panel-encabezado p {
@@ -2498,13 +2362,6 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 
 .datos-ficha dd:last-child {
     margin-bottom: 0;
-}
-
-.seccion-formulario {
-    margin: var(--e5) 0 0;
-    padding-top: var(--e5);
-    border-top: 1px solid var(--borde);
-    font-size: var(--tamano-texto);
 }
 
 @media (max-width: 50em) {

@@ -47,13 +47,6 @@ function ordenarActividades(actividades) {
         || b.peso_prioridad - a.peso_prioridad);
 }
 
-// Tiempo transcurrido desde una fecha, como "01:07:42" (para el cronómetro).
-function tiempoTranscurrido(desde) {
-    const segundos = Math.max(0, Math.floor((Date.now() - new Date(desde).getTime()) / 1000));
-    const partes = [Math.floor(segundos / 3600), Math.floor((segundos % 3600) / 60), segundos % 60];
-    return partes.map((parte) => String(parte).padStart(2, "0")).join(":");
-}
-
 function textoProgramada(actividad) {
     const fecha = fechaLarga(fechaDesdeTexto(actividad.fecha_programada));
     return actividad.hora_programada ? `${fecha}, ${actividad.hora_programada}` : `${fecha}, horario flexible`;

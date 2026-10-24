@@ -100,11 +100,6 @@ function urlLogo(empresaId) {
     return `/empresas/${encodeURIComponent(empresaId)}/logo?v=${Date.now()}`;
 }
 
-// Texto del tipo "3 de 10" para los límites de usuarios. Sin límite definido: "3 (sin límite)".
-function textoLimite(actuales, limite) {
-    return limite == null ? `${actuales} (sin límite)` : `${actuales} de ${limite}`;
-}
-
 function limiteAlcanzado(empresa, rol) {
     const campo = rol === "ADMINISTRADOR" ? "limite_administradores" : "limite_operarios";
     const limite = empresa[campo];
@@ -196,11 +191,4 @@ function duracionTexto(minutos) {
 // "miércoles 7 de octubre"
 function fechaLarga(fecha) {
     return fecha.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
-}
-
-// "mié 7 oct"
-function fechaCorta(fecha) {
-    const dia = fecha.toLocaleDateString("es-CO", { weekday: "short" }).replace(".", "");
-    const mes = fecha.toLocaleDateString("es-CO", { month: "short" }).replace(".", "");
-    return `${dia} ${fecha.getDate()} ${mes}`;
 }
