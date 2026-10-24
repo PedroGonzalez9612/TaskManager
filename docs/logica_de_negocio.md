@@ -167,6 +167,7 @@ El sistema calcula, para cada operario, la **programación del día**: la secuen
 1. **Lo terminado** ocupa el tiempo que realmente tomó. Una actividad estimada en 2 horas que se hizo en 45 minutos ocupa 45 minutos.
 2. **Lo que está en curso** va desde su inicio real hasta un **fin proyectado**: ahora más lo que le falta del estimado. Si ya se pasó del estimado, su fin proyectado es ahora.
 3. **Las urgentes** van primero, desde ahora. Lo que estaba en curso se retoma después (salvo que sea de hora fija).
+   Si el turno todavía no empieza y no hay nada en curso, "ahora" es el inicio del turno: nada se proyecta antes de él.
 4. **Las de hora fija** van en su hora y no se mueven.
 5. **Las de horario flexible** llenan el tiempo que queda, en el **orden del día** del operario. Una flexible entra antes de una fija solo si alcanza a terminar.
 

@@ -48,7 +48,7 @@ function crearConIcono(etiqueta, clase, nombreIcono, texto) {
     return elemento;
 }
 
-// Logo de GestLab: el tablero del turno (tres barras y la marca coral de "Ahora").
+// Logo de GestLab: el tablero del turno (tres barras en gris y la línea "Ahora" en el color principal).
 // El dibujo vive en un solo archivo, favicon.svg; aquí y en el login solo se muestra.
 function crearLogoGestLab() {
     const logo = crearElemento("img", "marca-icono");

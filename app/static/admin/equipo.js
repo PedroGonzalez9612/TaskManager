@@ -214,7 +214,7 @@ function crearTarjetaTablero(bloque, rango) {
     return tarjeta;
 }
 
-// Lo que no es turno se raya en gris; lo programado después del fin del turno, en coral (sobrecarga).
+// Lo que no es turno se raya en gris; lo programado después del fin del turno, en rojo (sobrecarga).
 function crearZonas(operario, bloques, rango) {
     const zonas = [];
     const turno = turnoEnMinutos(operario.turno);

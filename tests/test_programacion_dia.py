@@ -293,3 +293,31 @@ def test_acepta_las_fechas_sin_zona_que_devuelve_mongo():
     en_curso = actividad("a", "EN_EJECUCION", estimado=90, inicio="09:30", real=30)
     en_curso["ejecucion"]["fecha_inicio"] = en_curso["ejecucion"]["fecha_inicio"].replace(tzinfo=None)
     assert tramos(programar([en_curso])) == {"a": ("09:30", "11:00")}
+
+
+# ---------- Antes del turno: la línea de tiempo es cronológica (rediseño v3, Etapa 4) ----------
+
+def programar_con_turno(actividades, inicio_turno):
+    return programar_dia(actividades, OrdenJornada("carlos", FECHA), AHORA, FECHA, ZONA, CAPACIDAD,
+                         inicio_turno=hora(inicio_turno))
+
+
+def test_si_el_turno_no_ha_empezado_lo_flexible_arranca_en_el_inicio_del_turno():
+    # Son las 10:00 y el turno empieza a las 12:00: nada se proyecta antes del turno.
+    resultado = programar_con_turno([actividad("a", estimado=60), actividad("b", estimado=30)], "12:00")
+    assert tramos(resultado) == {"a": ("12:00", "13:00"), "b": ("13:00", "13:30")}
+
+
+def test_la_urgente_tambien_espera_el_inicio_del_turno():
+    resultado = programar_con_turno([actividad("u", prioridad="URGENTE", estimado=30)], "12:00")
+    assert tramos(resultado) == {"u": ("12:00", "12:30")}
+
+
+def test_antes_del_turno_lo_flexible_rodea_la_fija_desde_el_inicio_del_turno():
+    resultado = programar_con_turno([actividad("f", fija="12:30", estimado=30), actividad("a", estimado=60)], "12:00")
+    assert tramos(resultado) == {"f": ("12:30", "13:00"), "a": ("13:00", "14:00")}
+
+
+def test_con_el_turno_ya_empezado_lo_pendiente_arranca_ahora():
+    resultado = programar_con_turno([actividad("a", estimado=60)], "08:00")
+    assert tramos(resultado) == {"a": ("10:00", "11:00")}

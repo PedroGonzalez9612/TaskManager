@@ -183,12 +183,12 @@ function inicioDeSemana(fecha) {
     return lunes;
 }
 
-// 95 -> "1 h 35 min"; 60 -> "1 h"; 45 -> "45 min".
+// 95 -> "1 h 35 min"; 65 -> "1 h 05 min"; 60 -> "1 h"; 45 -> "45 min" (alcance, Sección 6.4).
 function duracionTexto(minutos) {
     const horas = Math.floor(minutos / 60);
     const resto = Math.round(minutos % 60);
     if (horas && resto) {
-        return `${horas} h ${resto} min`;
+        return `${horas} h ${String(resto).padStart(2, "0")} min`;
     }
     return horas ? `${horas} h` : `${resto} min`;
 }

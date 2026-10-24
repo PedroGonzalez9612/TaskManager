@@ -7,18 +7,19 @@
     <title>Inicio — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
-<body class="cargando ancho-angosto lienzo">
-    <!-- Inicio: lo primero que ve el Operario después de iniciar sesión (alcance, Sección 6.1). Lo
-         recibe, le muestra su turno y su jornada, y le deja marcar la entrada y la salida. -->
-    <main class="principal">
+<body class="cargando ancho-angosto">
+    <!-- Inicio: lo primero que ve el Operario después de iniciar sesión (alcance, Sección 6.1).
+         Responde "¿qué hago ahora?": su turno, la actividad en curso o lo que sigue, y una sola
+         acción principal. Las barras del turno y de la jornada están en Hoy. -->
+    <main class="principal inicio">
         <header class="inicio-encabezado">
-            <p id="fecha-inicio" class="turno-fecha"></p>
+            <p id="fecha-inicio" class="inicio-fecha cifra"></p>
             <h1 id="saludo">Hola</h1>
+            <div id="inicio-turno" class="inicio-turno" aria-live="polite"></div>
         </header>
-        <output id="aviso-turno" class="aviso aviso-info" hidden></output>
         <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando tu jornada…</p>
-        <section id="inicio-panel" class="panel inicio-panel" aria-labelledby="saludo" hidden></section>
-        <section id="inicio-salida" class="fin-del-dia" aria-label="Terminar la jornada" hidden></section>
+        <section id="inicio-ahora" class="inicio-ahora" hidden></section>
+        <div id="inicio-acciones" class="inicio-acciones" hidden></div>
     </main>
 
     <script src="/static/js/api.js"></script>

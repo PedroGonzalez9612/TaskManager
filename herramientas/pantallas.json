@@ -38,7 +38,7 @@
             "rol": "operario",
             "nombre": "inicio",
             "ruta": "/static/operario/inicio.html",
-            "esperar": "#inicio-panel:not([hidden])"
+            "esperar": "#inicio-ahora:not([hidden])"
         },
         {
             "rol": "operario",
