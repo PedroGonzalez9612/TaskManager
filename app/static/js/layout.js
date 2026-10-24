@@ -97,8 +97,18 @@ function construirNavegacion(usuario) {
     return navegacion;
 }
 
+const RUTA_PERFIL = "/static/perfil.html";
+
 function construirBloqueUsuario(usuario) {
     const bloque = crearElemento("div", "usuario");
+    // El avatar, el nombre y el rol llevan a Mi perfil (alcance, Sección 6.2: marco común).
+    const perfil = crearElemento("a", "usuario-perfil");
+    perfil.href = RUTA_PERFIL;
+    perfil.title = "Mi perfil";
+    perfil.setAttribute("aria-label", `Mi perfil, ${usuario.nombre}`);
+    if (window.location.pathname === RUTA_PERFIL) {
+        perfil.setAttribute("aria-current", "page");
+    }
 
     // Avatar con la inicial: junto con el logo, es donde aparece el color de marca.
     const avatar = crearElemento("span", "avatar", usuario.nombre.charAt(0).toUpperCase());
@@ -121,7 +131,8 @@ function construirBloqueUsuario(usuario) {
         window.location.href = RUTA_LOGIN;
     });
 
-    bloque.append(avatar, textos, salir);
+    perfil.append(avatar, textos);
+    bloque.append(perfil, salir);
     return bloque;
 }
 

@@ -28,6 +28,7 @@ def guardar_sesion(usuario: dict) -> None:
     session["usuario"] = {
         "id": usuario["id"],
         "nombre": usuario["nombre"],
+        "correo": usuario.get("correo"),       # Para Mi perfil.
         "rol": usuario["rol"],
         "empresa_id": usuario["empresa_id"],
     }

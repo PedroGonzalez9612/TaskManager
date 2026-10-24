@@ -56,6 +56,12 @@
             "nombre": "resumen",
             "ruta": "/static/operario/resumen.html",
             "esperar": "#resumen-frases:not([hidden])"
+        },
+        {
+            "rol": "operario",
+            "nombre": "perfil",
+            "ruta": "/static/perfil.html",
+            "esperar": "#perfil-datos dt"
         }
     ]
 }

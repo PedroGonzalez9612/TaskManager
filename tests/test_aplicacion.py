@@ -450,3 +450,21 @@ def test_turno_y_asistencia_de_extremo_a_extremo(aplicacion, admin):
     assert operario.post("/asistencia/entrada").status_code == 201
     assert operario.get("/asistencia/hoy").get_json()["estado"] == "REGISTRADA"
     assert [f["operario"] for f in admin.get("/asistencias").get_json()] == ["Carlos"]
+
+
+# ---------- Mi perfil: cambiar la contraseña ----------
+
+def test_cambiar_la_contrasena_pide_la_actual_y_una_nueva_valida(aplicacion, admin):
+    ruta = "/auth/contrasena"
+    assert admin.put(ruta, {"actual": "Equivocada1", "nueva": "Nueva12345"}).status_code == 400
+    assert admin.put(ruta, {"actual": CLAVE, "nueva": "corta"}).status_code == 400
+    assert admin.put(ruta, {"actual": CLAVE, "nueva": CLAVE}).status_code == 400
+
+    assert admin.put(ruta, {"actual": CLAVE, "nueva": "Nueva12345"}).status_code == 204
+    # Con la anterior ya no entra; con la nueva, sí.
+    assert Cliente(aplicacion).post("/auth/login", {"correo": "ana@prueba.co", "contraseña": CLAVE}).status_code == 401
+    assert Cliente(aplicacion).post("/auth/login", {"correo": "ana@prueba.co", "contraseña": "Nueva12345"}).status_code == 200
+
+
+def test_sin_sesion_no_se_cambia_la_contrasena(aplicacion):
+    assert Cliente(aplicacion).put("/auth/contrasena", {"actual": CLAVE, "nueva": "Nueva12345"}).status_code == 401

@@ -3980,3 +3980,60 @@ fieldset.grupo-botones {
         padding-bottom: calc(3.8rem + var(--e5));
     }
 }
+
+/* ================= Mi perfil (alcance, Sección 5.1), para los tres roles ================= */
+
+/* El avatar, el nombre y el rol de la barra superior llevan a Mi perfil. */
+.usuario-perfil {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: var(--alto-control);
+    padding: 0 var(--e2);
+    border-radius: var(--radio-control);
+    color: inherit;
+    text-decoration: none;
+}
+
+.usuario-perfil:hover,
+.usuario-perfil[aria-current="page"] {
+    background: var(--principal-suave);
+}
+
+.perfil {
+    display: grid;
+    gap: var(--e5);
+}
+
+.perfil > *,
+.perfil h1,
+.perfil h2,
+.perfil p {
+    margin: 0;
+}
+
+.perfil-encabezado {
+    padding-bottom: var(--e5);
+    border-bottom: 1px solid var(--borde);
+}
+
+.perfil-seccion {
+    display: grid;
+    gap: var(--e3);
+}
+
+.perfil-seccion + .perfil-seccion {
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+}
+
+.perfil-seccion h2 {
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
+}
+
+@media (max-width: 50em) {
+    .perfil {
+        padding-bottom: calc(3.8rem + var(--e5));
+    }
+}

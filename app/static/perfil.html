@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <title>Mi perfil — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando ancho-angosto">
+    <!-- Mi perfil (alcance, Sección 5.1): la misma página para los tres roles. Se entra tocando el
+         avatar de la barra superior. -->
+    <main class="principal perfil">
+        <header class="perfil-encabezado">
+            <h1>Mi perfil</h1>
+        </header>
+
+        <section aria-labelledby="titulo-datos" class="perfil-seccion">
+            <h2 id="titulo-datos">Tus datos</h2>
+            <dl id="perfil-datos" class="detalle-op-datos"></dl>
+            <p class="texto-secundario">Si algún dato no es correcto, pídele a tu Administrador que lo corrija.</p>
+        </section>
+
+        <section aria-labelledby="titulo-contrasena" class="perfil-seccion">
+            <h2 id="titulo-contrasena">Cambiar la contraseña</h2>
+            <form id="formulario-contrasena" class="formulario" novalidate>
+                <label for="contrasena-actual">Contraseña actual</label>
+                <input id="contrasena-actual" type="password" autocomplete="current-password" required>
+                <label for="contrasena-nueva">Contraseña nueva</label>
+                <input id="contrasena-nueva" type="password" autocomplete="new-password" minlength="8" required
+                       aria-describedby="ayuda-contrasena">
+                <p id="ayuda-contrasena" class="ayuda-campo">Al menos 8 caracteres, distinta de la actual.</p>
+                <label for="contrasena-repetir">Repite la contraseña nueva</label>
+                <input id="contrasena-repetir" type="password" autocomplete="new-password" required>
+                <label class="opcion-mostrar">
+                    <input id="mostrar-contrasenas" type="checkbox"> Mostrar las contraseñas
+                </label>
+                <p class="mensaje-formulario" role="alert" hidden></p>
+                <button type="submit" class="boton boton-principal-grande">Cambiar la contraseña</button>
+            </form>
+        </section>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/perfil.js"></script>
+</body>
+</html>

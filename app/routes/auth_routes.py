@@ -35,4 +35,12 @@ def create_blueprint(db):
             usuario["empresa"] = {"nombre": empresa["nombre"], "tiene_logo": empresa["tiene_logo"]}
         return jsonify(usuario), 200
 
+    @bp.put("/contrasena")
+    @requiere_rol()
+    def cambiar_contraseña():
+        """Mi perfil: el usuario con sesión cambia su contraseña ({"actual": ..., "nueva": ...})."""
+        data = request.get_json(force=True, silent=True) or {}
+        service.cambiar_contraseña(usuario_actual(), data.get("actual"), data.get("nueva"))
+        return "", 204
+
     return bp

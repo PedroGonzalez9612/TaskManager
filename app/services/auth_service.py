@@ -1,6 +1,7 @@
 from app.models.enums import Rol
 from app.models.usuario import Usuario
-from app.utils.errors import NoAutorizadoError
+from app.services.usuario_service import LONGITUD_MINIMA_CONTRASEÑA
+from app.utils.errors import NoAutorizadoError, NotFoundError, ValidationError
 
 
 class AuthService:
@@ -25,6 +26,22 @@ class AuthService:
         if empresa and empresa.get("activa") is False:
             raise NoAutorizadoError("Tu empresa está desactivada en GestLab.")
         return Usuario.from_doc(doc)
+
+    def cambiar_contraseña(self, solicitante: dict, actual: str, nueva: str) -> None:
+        """Mi perfil (alcance, Sección 5.1): el usuario cambia su propia contraseña escribiendo la
+        actual. La nueva tiene la misma longitud mínima que al crear un usuario y es distinta."""
+        doc = self.usuario_repository.find_by_id(solicitante["id"])
+        if not doc:
+            raise NotFoundError("Tu usuario ya no existe")
+        usuario = Usuario.desde_documento(doc)
+        if not actual or not usuario.verificar_contraseña(actual):
+            raise ValidationError("La contraseña actual no es correcta")
+        nueva = nueva or ""
+        if len(nueva) < LONGITUD_MINIMA_CONTRASEÑA:
+            raise ValidationError(f"La contraseña nueva debe tener al menos {LONGITUD_MINIMA_CONTRASEÑA} caracteres")
+        if nueva == actual:
+            raise ValidationError("La contraseña nueva debe ser distinta de la actual")
+        self.usuario_repository.update(solicitante["id"], {"contraseña_hash": Usuario.hashear_contraseña(nueva)})
 
     def crear_superadmin_inicial(self, nombre: str, correo: str, contraseña: str) -> bool:
         """Crea el Superadmin la primera vez que arranca el sistema. Devuelve True si lo creó."""
