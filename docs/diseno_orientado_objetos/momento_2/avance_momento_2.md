@@ -848,7 +848,7 @@ El diseño pasó por tres momentos, y de cada uno hay evidencia en el repositori
 |---|---|---|
 | Mockups | Primera propuesta de las pantallas del Operario, en grises y sin datos reales | `docs/diseno_orientado_objetos/momento_2/mockups/` |
 | Bosquejos y maquetas | Composición de cada pantalla antes de programarla | `docs/disenos/` |
-| Exploración con una herramienta de diseño | Propuesta generada en Google Stitch y su revisión crítica | `docs/disenos/stitch_calma_operativa/` |
+| Exploración con una herramienta de diseño | Propuesta generada en Google Stitch y su revisión crítica | `docs/historial/stitch_calma_operativa/` |
 | Prototipo funcional | La interfaz real, conectada a la API y a la base | `app/static/` |
 
 **Mockups de la vista del Operario**
