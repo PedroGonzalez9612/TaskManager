@@ -68,10 +68,11 @@ def _tramo_finalizado(actividad: dict, fecha: str, zona, desde) -> dict:
     return _tramo(actividad, FINALIZADA, momento, momento)
 
 
-def _ubicar_urgentes(urgentes: list, en_curso, tramo_en_curso, ahora) -> tuple:
-    """Las urgentes van primero. Interrumpen lo que el operario lleva, salvo que sea de hora fija:
-    en ese caso esperan a que termine. Devuelve sus tramos y el momento en que el operario queda libre."""
-    cursor = ahora
+def _ubicar_urgentes(urgentes: list, en_curso, tramo_en_curso, desde) -> tuple:
+    """Las urgentes van primero, desde "desde". Interrumpen lo que el operario lleva, salvo que sea
+    de hora fija: en ese caso esperan a que termine. Devuelve sus tramos y el momento en que el
+    operario queda libre."""
+    cursor = desde
     puede_interrumpir = not (en_curso and en_curso.get("hora_programada"))
     if tramo_en_curso and not puede_interrumpir:
         cursor = tramo_en_curso["fin"]
@@ -129,13 +130,16 @@ def _resumen(actividades: list, tramos: list, capacidad_min: int, ventana: tuple
     }
 
 
-def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_min: int, cierre=None) -> dict:
+def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_min: int, cierre=None,
+                  inicio_turno=None) -> dict:
     """Devuelve {"tramos": [...], "resumen": {...}} para la jornada "fecha" de un operario.
 
     "actividades" son las suyas de esa jornada, presentadas con su estado personal y su ejecución.
     "orden" es su OrdenJornada (el orden que eligió para las de horario flexible).
     "cierre" es el momento (UTC) en que termina la jornada: el mayor entre la medianoche siguiente
     y el fin de su turno. Sin él, la jornada termina a la medianoche siguiente.
+    "inicio_turno" es el inicio de su turno (UTC). Si todavía no ha llegado y no hay nada en curso, lo
+    pendiente se proyecta desde ahí y no desde ahora: la línea de tiempo sigue el orden de las horas.
     Cada tramo trae actividad_id, tipo (FINALIZADA, EN_CURSO o PENDIENTE), inicio y fin (reales o
     proyectados, en UTC) y estas marcas: hora_fija, aproximada (hora calculada, no fija), vencida
     (hora fija que ya pasó sin iniciarse), interrumpe (urgente que interrumpe lo que está en curso),
@@ -163,7 +167,10 @@ def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_m
                     for a in resto if a.get("hora_programada")), key=lambda a: a["_inicio"])
     flexibles = orden.aplicar([a for a in resto if not a.get("hora_programada")])
 
-    tramos_urgentes, libre_desde = _ubicar_urgentes(urgentes, en_curso, tramo_en_curso, ahora)
+    desde = ahora
+    if inicio_turno is not None and not en_curso:
+        desde = max(ahora, en_utc(inicio_turno))
+    tramos_urgentes, libre_desde = _ubicar_urgentes(urgentes, en_curso, tramo_en_curso, desde)
     por_hacer = tramos_urgentes + _ubicar_pendientes(fijas, flexibles, libre_desde, ahora)
 
     # La siguiente por hacer: la primera pendiente que no esté vencida, en orden de hora.

@@ -55,16 +55,16 @@ El sistema tendrá dos frentes principales: Gestión y Análisis. La gestión pe
 - Creación y asignación de actividades a uno o varios operarios. La asignación es manual: el sistema solo sugiere reasignar cuando la carga de un operario supera la capacidad de su jornada.
 - Información de la actividad: además de la descripción, el Administrador elige qué bloques lleva cada actividad: **pasos** (en orden), **herramientas y materiales**, **equipo** (la máquina o el equipo en que se trabaja), **precauciones de seguridad**, **contacto** (a quién acudir) y **adjuntos** (manuales, planos o fotos de referencia: PDF o imagen, máximo 5 archivos de 5 MB). Herramientas, equipo, precauciones y contacto se llenan con un campo que sugiere lo que la empresa ya registró: se elige de la lista o se escribe un valor nuevo, que queda en la lista para la próxima vez. La información se edita mientras la actividad se puede editar (hasta que alguien la inicie) y no se borra.
 - "Lista para iniciar": la actividad lo está cuando cada bloque que el Administrador eligió tiene contenido. Si le falta alguno, el Administrador lo ve en Equipo y en Actividades ("Falta información") y el Operario lo ve en el detalle. Es un aviso: no impide iniciar, porque el Operario puede resolverlo en el sitio. Una actividad sin bloques elegidos está lista.
-- El Operario ve la información en el detalle de la actividad; mientras la tiene en curso, la tarjeta muestra las precauciones en una línea y los pasos plegados ("Ver los 4 pasos"), que se abren con un toque sin salir de Hoy. El detalle también dice a qué proyecto pertenece.
+- El Operario ve la información en el detalle de la actividad, que es también donde la ejecuta: antes de iniciarla la ve completa y, mientras la tiene en curso, las precauciones y los pasos quedan debajo del tiempo registrado. El detalle también dice a qué proyecto pertenece.
 - Clasificación de actividades por categoría. Las categorías son fijas en esta versión y sirven para cualquier empresa: Operación (el trabajo principal del área), Atención (atender a clientes o a personas), Administrativa (registros, trámites e informes), Revisión (controlar, verificar o inspeccionar) y Traslado (mover, entregar o despachar).
-- Cada actividad recibe un código consecutivo por empresa (por ejemplo, `OT-0042`) y registra la ubicación donde se realiza (línea, máquina o área).
+- Cada actividad recibe un código consecutivo por empresa con el prefijo `ACT` (por ejemplo, `ACT-0042`) y registra la ubicación donde se realiza (oficina, sede, área o máquina). Las actividades creadas antes del 23 de octubre de 2026 conservan el prefijo anterior, `OT`, sin migrar los datos.
 - Definición de prioridad de las actividades en cuatro niveles: Baja, Media, Alta y Urgente. El nivel Urgente indica que la actividad debe interrumpir la tarea que el operario tenga en curso. La excepción es una actividad de hora fija en curso, que no se interrumpe: el Operario ve el aviso de la urgente y la atiende al terminar, y mientras tanto el Administrador puede asignarla a otra persona.
 - Definición de tiempo estimado de ejecución. El tiempo estimado corresponde a la actividad completa: si la actividad tiene varios operarios, no se reparte entre ellos (cada uno la suma completa a su carga).
 - Definición de una fecha programada para cada actividad, que determina la jornada a la que pertenece. Además, cada actividad es de **hora fija** o de **horario flexible**. Con hora fija, el Administrador le pone una hora y esa hora no se mueve. Con horario flexible, queda asignada al día y el Operario decide en qué momento hacerla. La hora no cambia el cálculo de la carga, que sigue siendo por jornada.
 - Una actividad no se puede programar ni mover a un día que ya pasó. El día de referencia es el de la empresa, según su zona horaria.
 - Actividades sin operario: las que nunca se asignaron o fueron devueltas quedan marcadas como "Sin asignar", y el Administrador las puede consultar aparte para atenderlas.
 - Orden del día del Operario: el sistema sugiere un orden inicial por prioridad y luego por hora. El Operario puede reordenar solo las actividades de horario flexible. Las de hora fija y las urgentes no se mueven; las urgentes van siempre arriba.
-- Programación dinámica del día: la estimación y la ejecución son cosas distintas. El tiempo estimado sirve para planear; lo ejecutado se mide con sus horas reales de inicio y fin. Por eso la programación del día de cada operario se recalcula continuamente: lo terminado ocupa el tiempo que realmente tomó; lo que está en curso va desde su inicio real hasta un fin proyectado (lo que le falta del estimado); y lo pendiente se reacomoda a partir de ese momento. Si una actividad termina antes, las siguientes se adelantan; si se demora, se corren. Las de hora fija no se mueven. El orden que el Operario eligió se conserva.
+- Programación dinámica del día: la estimación y la ejecución son cosas distintas. El tiempo estimado sirve para planear; lo ejecutado se mide con sus horas reales de inicio y fin. Por eso la programación del día de cada operario se recalcula continuamente: lo terminado ocupa el tiempo que realmente tomó; lo que está en curso va desde su inicio real hasta un fin proyectado (lo que le falta del estimado); y lo pendiente se reacomoda a partir de ese momento. Si el turno todavía no empieza y no hay nada en curso, lo pendiente se proyecta desde el inicio del turno. Si una actividad termina antes, las siguientes se adelantan; si se demora, se corren. Las de hora fija no se mueven. El orden que el Operario eligió se conserva.
 - Hora fija que interrumpe: si el orden elegido no alcanza a terminar antes de una actividad de hora fija, el sistema lo avisa pero lo permite. Diez minutos antes de la hora fija el sistema avisa. Al llegar la hora, el Operario pausa la actividad que lleva, inicia la de hora fija y después retoma la otra. Esa pausa queda registrada con el motivo "Actividad de hora fija".
 - Una actividad de hora fija se hace en su hora: una vez iniciada no se puede pausar, y no se reprograma para otro día.
 - Consulta del estado y asignación de las actividades.
@@ -156,11 +156,11 @@ La aplicación será web y tendrá un diseño responsive. La interfaz para admin
 
 Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usuario y un mapa de empatía para el rol Operario, y se definió la primera propuesta de wireframes de baja fidelidad para la interfaz web responsive de ese rol. Estos insumos no cambian el alcance funcional ya definido en la Sección 5, pero sí deben orientar cómo se prioriza y se presenta esa funcionalidad en la interfaz.
 
-**Persona de referencia:** Carlos Andrés Ramírez, 34 años, operario de línea de producción, técnico en electrónica, turno rotativo. Usa únicamente celular durante su jornada.
+**Persona de referencia:** Carlos Andrés Ramírez, 34 años, operario de una tostadora de café (operación, empaque y bodega), técnico en electrónica, turno rotativo. Usa únicamente celular durante su jornada.
 
-**Perfil ampliado de los usuarios:** Carlos es la persona de referencia, pero no representa a todos los usuarios. Quienes usan GestLab son diversos: personas jóvenes y mayores, de todo género y con distintos niveles de familiaridad con la tecnología, en roles técnicos y administrativos. Además, la herramienta se usa durante gran parte de la jornada (el Operario la consulta en cada cambio de actividad y el Administrador trabaja en ella de forma continua). De este perfil se derivan cuatro exigencias de diseño que aplican a todas las vistas:
+**Perfil ampliado de los usuarios:** Carlos es la persona de referencia, pero no representa a todos los usuarios. Quienes usan GestLab son diversos: personas jóvenes y mayores, de todo género y con distintos niveles de familiaridad con la tecnología, que trabajan en equipos de cualquier área (operación, atención al público, oficina, servicios en campo o bodega), en roles técnicos y administrativos. Además, la herramienta se usa durante gran parte de la jornada (el Operario la consulta en cada cambio de actividad y el Administrador trabaja en ella de forma continua). De este perfil se derivan cuatro exigencias de diseño que aplican a todas las vistas:
 - **Legibilidad para vista cansada o envejecida:** alto contraste entre texto y fondo (ver 6.3) y tamaños de texto y controles generosos.
-- **Bajo cansancio visual en uso prolongado:** fondo general sin blanco puro (las tarjetas, tablas y diálogos sí son blancos y se leen sobre ese fondo), texto sin negro puro y color intenso solo donde hay algo que atender.
+- **Bajo cansancio visual en uso prolongado:** fondo general sin blanco puro (las superficies que agrupan, como formularios, tablas y diálogos, sí son blancas y se leen sobre ese fondo), texto sin negro puro y color intenso solo donde hay algo que atender.
 - **Información que no depende solo del color:** todo estado o aviso se comunica con color, ícono y texto, por accesibilidad (daltonismo) y por la menor capacidad de distinguir tonos con la edad.
 - **Interfaz amable y profesional para un público amplio:** sin estereotipos de género en el color y con un tono cercano (por ejemplo, saludo con el nombre del usuario), sin perder la seriedad de una herramienta de trabajo.
 
@@ -170,6 +170,7 @@ Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usua
 - Ver su día ordenado, sin tener que preguntar: lo fijo en su hora y lo demás en el orden que él elija, partiendo de uno sugerido por prioridad.
 - Notar visualmente cuándo una prioridad cambió durante el turno.
 - Registrar inicio/pausa/reanudación/finalización de una actividad de forma rápida.
+- Saber cuánto lleva de la actividad en curso como tiempo en minutos contra lo estimado, sin segundos corriendo en la pantalla.
 - Ver el historial de pausas de la actividad en curso (para no perder contexto al retomarla).
 - Dejar una constancia (observación) al finalizar una actividad, no solo cerrarla.
 - Registrar un motivo/causa al pausar una actividad, no solo el hecho de que se pausó.
@@ -182,12 +183,12 @@ Como parte del trabajo de Diseño de Interfaces, se construyó una ficha de usua
 
 **Pantallas mínimas definidas para el flujo del Operario (sitio web responsive, vista móvil):**
 1. Bienvenida + Inicio de sesión (unificadas — el Operario no se autoregistra, según Sección 4)
-2. Inicio: la página que recibe al Operario después de iniciar sesión; nunca llega directo a sus actividades. Muestra el saludo, la hora actual con la barra del turno (cuánto del turno ha pasado), la barra de la jornada (lo trabajado, lo que falta y lo libre; si el trabajo no cabe, la parte que pasa de la capacidad se ve rayada en coral), cuántas actividades tiene y cuál sigue, y los avisos del turno (15 minutos antes del inicio y del fin, y la llegada tarde). Sus acciones dependen de la asistencia:
-   - Antes de marcar la entrada: "Marcar entrada" como única acción principal (al marcarla pasa a Hoy) y "Ver mi día" para consultar Hoy en modo de lectura.
-   - Con la entrada marcada: "Ir a mi día" y, al final, "Marcar salida".
-   - Después de marcar la salida: el cierre de la jornada, con sus marcas, el tiempo trabajado, las actividades finalizadas y las que pasan a la siguiente jornada.
-3. Hoy: su día ordenado. El encabezado tiene la hora, la barra del turno y la barra de la jornada; no repite el saludo ni las cifras en una frase. La actividad en curso se ejecuta en su lugar del día, con cronómetro, control de estado, historial de pausas y observación final; ya no hay una pantalla aparte de ejecución. "Ordenar mi día" está en la línea de tiempo, justo antes de lo que sigue; mientras se ordena, cada actividad muestra la hora en que quedaría y no se puede marcar la salida. "Marcar salida" va al final del día, después del fin del turno. Sin la entrada marcada, o después de la salida, Hoy se ve en modo de lectura: el día completo, sin acciones para iniciar o reanudar.
-4. Detalle de actividad (información completa antes de iniciar una tarea; desde aquí se inicia o se devuelve)
+2. Inicio: la página que recibe al Operario después de iniciar sesión; nunca llega directo a sus actividades. Responde "¿qué hago ahora?": la fecha, el saludo, el estado del turno ("Tu turno empieza a las 19:00, en 1 h 20 min" o "En turno hasta las 23:00"), la actividad en curso o lo que sigue, y una sola acción principal. No muestra la barra del turno ni la de la jornada: esas cifras están en Hoy. Los avisos del turno (15 minutos antes del inicio y del fin, y la llegada tarde) van en una línea con su ícono. Sus acciones dependen de la asistencia:
+   - Antes de marcar la entrada: lo que sigue (la fila abre su detalle), cuántas actividades tiene y cuánto tiempo suman, "Marcar entrada" como acción principal (al marcarla pasa a Hoy) y "Ver mi día sin marcar la entrada" para consultar Hoy en modo de lectura.
+   - Con la entrada marcada: el bloque "Ahora" con la actividad en curso (desde qué hora, el tiempo en minutos contra lo estimado, una barra de avance y cuánto queda) y la siguiente de hora fija; si no hay ninguna en curso, el bloque muestra lo que sigue. Si hay una actividad Urgente pendiente, el bloque la muestra primero, en rojo lleno, para abrirla y atenderla. La acción principal es abrir esa actividad. Al final, "Marcar salida", que solo está en Inicio; con una actividad en curso se ve desactivada y dice una sola vez por qué.
+   - Después de marcar la salida: el balance de la jornada, en frases: sus marcas, el tiempo trabajado, las actividades finalizadas y las que pasan a la siguiente jornada.
+3. Hoy: su día como una línea de tiempo de solo lectura. El encabezado tiene la fecha, "Tu día", la carga y el tiempo disponible de la jornada en una frase ("2 h 05 min de trabajo y 1 h 55 min disponibles"), una barra con esas dos cifras y el horario del turno; no repite el saludo. Cada actividad es una fila con su hora, su nombre y sus datos en una frase, y toda fila abre el detalle. La actividad en curso es la única fila resaltada y dice cuánto lleva ("En curso, 16 min de 40"). Una actividad Urgente pendiente es el único bloque rojo lleno: va sobre la línea "Ahora", con la acción de abrir su detalle para pausar la que lleva y atenderla. Hoy no tiene cronómetro ni botones para iniciar, pausar o finalizar: eso se hace en el detalle. "Ordenar mi día" está en la línea de tiempo, justo después de la línea "Ahora"; mientras se ordena, cada actividad muestra la hora en que quedaría. "Reportar actividad" va al final. Sin la entrada marcada, o después de la salida, Hoy se ve igual, en modo de lectura, y el detalle no ofrece iniciar ni reanudar: en lugar del botón dice por qué ("Marca la entrada en Inicio para iniciar").
+4. Detalle de actividad: donde el Operario ejecuta su trabajo. Antes de iniciar muestra la información completa (datos, "Lista para iniciar", pasos, herramientas y materiales, precauciones y contacto), con "Iniciar actividad" y "Devolver actividad". En curso muestra "Registrando tiempo", el tiempo en minutos contra lo estimado con una barra de avance, desde qué hora y cuánto queda, el registro de ejecución (sus pausas con el motivo), las precauciones y los pasos, con "Pausar" y "Finalizar". Pausar pide el motivo y Finalizar pide la observación y la evidencia, cada uno en una hoja inferior. "Devolver actividad" es una acción de baja: pide el motivo y confirma antes de hacerlo. Cada acción confirma con un aviso breve y el detalle cambia de estado al momento; si falla, el aviso dice qué pasó y cómo resolverlo. En celular ocupa toda la pantalla, con "Hoy" para volver arriba y las acciones fijas abajo.
 
 **Principios de usabilidad que orientan el diseño de la interfaz** (Diseño de Interfaces, Semana 7):
 - **Ley de Hick:** más opciones implican más tiempo para decidir; cada pantalla debe mostrar solo las opciones necesarias para el paso actual.
@@ -212,18 +213,18 @@ Cada rol ingresa por la misma pantalla de inicio de sesión y es llevado a su pr
 |---|---|---|
 | Superadmin | Computador | Empresas (lista, registro, detalle con usuarios, edición de datos, límites y logo) |
 | Administrador | Computador (también usable en celular) | **Equipo** (el tablero del turno: una fila por persona y las horas de izquierda a derecha, con lo que está por atender; el Administrador reasigna una actividad moviendo su tarjeta a la fila de otra persona, sin cambiarle la hora) · **Actividades** (todas, independientes o de un proyecto, con filtros "Por hacer", "Sin asignar", "En curso o pausadas", "Terminadas" y "Todas", agrupadas por día) · **Proyectos** (lista y detalle, con su avance en horas) · **Usuarios**. Pendientes: Turnos y asistencia · Indicadores |
-| Operario | Celular | **Inicio** (lo recibe: saludo, hora, barra del turno y de la jornada, marcar entrada y salida, y el cierre de la jornada) · **Hoy** (su fila del tablero en vertical: el día sobre una línea de tiempo, con la actividad en curso abierta en su hora; sin entrada, en modo de lectura) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios) |
+| Operario | Celular | **Inicio** (responde "¿qué hago ahora?": el estado del turno, la actividad en curso o lo que sigue, marcar entrada y salida, y el balance de la jornada) · **Hoy** (su renglón del tablero, en vertical: el día sobre una línea de tiempo de solo lectura, donde cada fila abre el detalle) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios). Las actividades se ejecutan en su detalle |
 
 Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestran enlaces a pantallas que aún no existen.
 
-**Varias vistas de la misma información.** Las actividades se pueden ver de tres maneras, y cada una responde una pregunta distinta: como **día** (qué sigue y a qué hora, en la línea de tiempo de Hoy), como **horario** (cuándo y cuánto ocupa) y como **resumen** (cuánto trabajo hay). El detalle de una actividad se abre en una ventana sobre la vista en la que se esté, sin cambiar de pantalla.
+**Varias vistas de la misma información.** Las actividades se pueden ver de tres maneras, y cada una responde una pregunta distinta: como **día** (qué sigue y a qué hora, en la línea de tiempo de Hoy), como **horario** (cuándo y cuánto ocupa) y como **resumen** (cuánto trabajo hay). El detalle de una actividad se abre en una ventana sobre la vista en la que se esté, sin cambiar de pantalla. En celular esa ventana ocupa toda la pantalla, con "Hoy" para volver arriba y las acciones fijas abajo, al alcance del pulgar.
 
 **Decisiones de diseño comunes a todas las vistas:**
 - **Marco común:** barra superior con la marca, las vistas del rol como pestañas y, a la derecha, el avatar del usuario con su nombre, su rol y el botón de cerrar sesión. En celular las vistas pasan a una barra fija en la parte inferior, al alcance del pulgar. Reemplaza el menú lateral de la primera versión.
 - **Primero la información:** cada pantalla muestra primero su lista o tabla. Crear o editar es una acción secundaria: un botón ("+ Nueva empresa", "+ Nuevo usuario") abre el formulario en una ventana (diálogo). Al guardar, la ventana se cierra y aparece una confirmación breve.
 - **Estados vacíos y límites explicados:** cuando no hay datos, la pantalla explica qué hacer y ofrece el botón para hacerlo. Cuando una acción no está disponible (por ejemplo, se alcanzó el límite de usuarios), el botón se desactiva y un aviso explica por qué.
-- **Paleta sobria con significado:** fondos casi neutros, un color principal para las acciones y un acento de marca (coral) reservado para el logo, el avatar y la sobrecarga. Los colores fuertes se reservan para lo que tiene significado (prioridades, estados, avisos) y siempre van acompañados de ícono y texto. El sistema de color completo se define en la Sección 6.3.
-- **Tipografía legible:** Figtree para todo lo que se lee, incluidas las cifras, los códigos y el cronómetro (con números de ancho fijo). Los tamaños dependen del dispositivo y se expresan en rem. El sistema tipográfico completo se define en la Sección 6.4.
+- **Paleta sobria con significado:** fondos casi neutros y un solo color principal, azul profundo, para las acciones, la línea de tiempo y la marca. No hay un acento de marca aparte. Los colores fuertes se reservan para lo que tiene significado (prioridades, estados, avisos) y siempre van acompañados de ícono y texto. El sistema de color completo se define en la Sección 6.3.
+- **Tipografía legible:** Hanken Grotesk para todo lo que se lee, incluidas las cifras y los códigos (con números de ancho fijo). El tiempo se escribe en horas y minutos; la pantalla del Operario no muestra segundos corriendo. Los tamaños dependen del dispositivo y se expresan en rem. El sistema tipográfico completo se define en la Sección 6.4.
 
 **Sistema de composición** (para que la interfaz transmita calma y orden; aplica a todas las pantallas):
 - **Una sola escala de espacios:** todo relleno y toda separación sale de siete pasos (4, 8, 12, 16, 24, 32 y 48 px sobre la base de 16 px; en la interfaz se expresan en rem). No se usan valores sueltos.
@@ -231,8 +232,10 @@ Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestr
 - **Dos pesos de letra:** 600 para lo que identifica (título de la pantalla, nombre de la empresa o de la persona, acción) y 400 para todo lo demás. Los encabezados de tabla y las etiquetas de dato van en 400 y en el color de texto secundario.
 - **Una sola familia de letra:** las cifras y los códigos usan la misma fuente del texto, con números de ancho fijo. El código se distingue por su peso, no por otra letra.
 - **Datos en un renglón sin separadores de adorno:** los datos de una fila (código, categoría, ubicación) se separan con espacio, no con puntos medios (·). Si los datos forman una frase, se escriben como frase ("Tomó 40 min de 45 estimados", "6 operarios, 22 h de trabajo para 42 h de capacidad").
-- **Paneles con jerarquía:** el panel (superficie blanca con borde) encierra la superficie de trabajo principal de la pantalla y lo que se consulta junto. Una lista de apoyo, como "Por atender" en Equipo, va sobre el fondo con su título. Los indicadores de un resumen van juntos en una sola franja, no en una tarjeta por número.
-- **Bordes suaves y sombras muy suaves:** los paneles se separan del fondo por el contraste de color, un borde tenue y una sombra apenas visible. Los controles (campos y botones secundarios) llevan un borde más marcado, con contraste de al menos 3:1.
+- **Espacio y líneas finas antes que paneles:** las partes de una pantalla se separan con espacio y con líneas finas. La superficie blanca con borde se usa solo donde agrupa algo de verdad: la superficie de trabajo principal, un formulario o un diálogo. Una lista de apoyo, como "Por atender" en Equipo, va sobre el fondo con su título. Los indicadores de un resumen van juntos en una sola franja, escritos como frases, no en una tarjeta por número.
+- **Sin sombra en cada elemento:** las superficies se separan del fondo por el contraste de color y un borde tenue, sin sombra. Solo los diálogos y los avisos flotantes llevan sombra, para separarse de lo que tienen detrás. Los controles (campos y botones secundarios) llevan un borde más marcado, con contraste de al menos 3:1.
+- **Etiquetas solo para las excepciones:** llevan etiqueta Urgente, Hora fija y Retraso. El estado de la actividad va como texto con su ícono ("Por iniciar", "En curso, 16 min de 40"), sin etiqueta. La categoría y las prioridades Alta, Media y Baja van como texto en la frase de datos ("Operación, 30 min, prioridad media"), con su ícono.
+- **Tamaño para tocar:** en celular, el botón principal mide 52 px de alto y toda zona tocable mide 44 px o más.
 - **Filas de la misma altura:** en una lista, todas las filas miden lo mismo, tengan o no logo, límite o datos opcionales.
 - **Un solo botón principal por pantalla;** las demás acciones son secundarias.
 - **Acciones de baja** (cancelar una actividad, desactivar un usuario o una empresa): van al final de su grupo de acciones, en el color de error (texto rojo, o borde y texto rojos si es un botón), y siempre abren una ventana que dice qué va a pasar antes de hacerlo. Nunca son la acción principal.
@@ -251,83 +254,82 @@ Las vistas se habilitan a medida que se construye cada pantalla; nunca se muestr
 
 **Leyes de Gestalt aplicadas** (requerimiento 2 de la Fase 2; las del tablero y la línea de tiempo se evidenciarán cuando se construyan esas pantallas):
 - **Proximidad:** cada etiqueta va pegada a su campo y separada del siguiente; los dos límites de usuarios forman un grupo bajo un mismo título; "Cancelar" y la acción principal van juntos al pie del diálogo; el avatar, el nombre del usuario, su rol y el botón de cerrar sesión forman un bloque en la barra superior; en el tablero, cada persona tiene su fila y sus actividades quedan dentro de ella. Resuelve la duda de qué dato pertenece a qué control.
-- **Semejanza:** todos los botones de acción principal comparten relleno y forma, los secundarios comparten borde, las etiquetas de rol y de prioridad comparten la forma de píldora y todos los enlaces comparten color. El usuario aprende un elemento una vez y lo reconoce en las demás pantallas.
+- **Semejanza:** todos los botones de acción principal comparten relleno y forma, los secundarios comparten borde, las etiquetas de rol y de excepción (Urgente, Hora fija, Retraso) comparten la forma de píldora y todos los enlaces comparten color. El usuario aprende un elemento una vez y lo reconoce en las demás pantallas.
 - **Continuidad:** el tablero del Administrador, de izquierda a derecha, y la línea de tiempo del Operario, de arriba abajo, siguen el paso de las horas; las tablas alinean cada dato en su columna para recorrerlo de arriba abajo; los formularios tienen una sola columna que termina en el botón de acción; las migas de pan ("Empresas / Metalicas SAS") muestran el camino recorrido.
-- **Figura y fondo:** los paneles blancos se separan del fondo gris neutro; al abrir un diálogo o el menú en celular, el resto de la pantalla se oscurece para que solo quede en primer plano lo que se está atendiendo.
-- **Cierre:** la línea de tiempo del Operario se lee como una sola línea continua aunque esté punteado después de "Ahora". Una actividad partida por una hora fija se mostrará como "Parte 1" y "Parte 2", para que se perciba como una sola actividad (pendiente: llega con el aviso de hora fija, Etapa 5).
+- **Figura y fondo:** las superficies blancas se separan del fondo gris neutro, y en la línea de tiempo la actividad en curso es la única fila con fondo de color; en celular, el detalle de actividad ocupa toda la pantalla y reemplaza a Hoy mientras está abierto; al abrir un diálogo o el menú en celular, el resto de la pantalla se oscurece para que solo quede en primer plano lo que se está atendiendo.
+- **Cierre:** la línea de tiempo del Operario se lee como una sola línea continua: sólida en lo recorrido hasta "Ahora" y punteada en lo que viene. Los nodos completan la lectura: llenos en lo hecho, un anillo grueso en la actividad en curso y abiertos en lo que falta. Una actividad partida por una hora fija se mostrará como "Parte 1" y "Parte 2", para que se perciba como una sola actividad (pendiente: llega con el aviso de hora fija, Etapa 5).
 
 
-### 6.3 Identidad visual: sistema de color "Calma operativa" (Diseño de Interfaces)
+### 6.3 Identidad visual: sistema de color "Planificador sereno" (Diseño de Interfaces)
 
 Esta subsección define la propuesta cromática del producto, exigida en la Fase 2 del Proyecto Integrador de Diseño de Interfaces. Reemplaza la paleta inicial de la interfaz (acento verde azulado `#0f766e` en `estilos.css`). El color se eligió por su función y por el contexto de uso, no por gusto estético: cada color tiene un único significado y ese significado es el mismo en todas las pantallas de los tres roles.
 
 **Fundamentos de la propuesta:**
-- **Estudios de color y trabajo.** En el estudio de Nancy Kwallek (Universidad de Texas), las personas cometieron más errores en una oficina blanca que en una de color, y el espacio aqua (verde azulado) resultó el más agradable y productivo; las personas sensibles al entorno se sintieron abrumadas en espacios de colores intensos. Mehta y Zhu (Universidad de British Columbia, *Science*, 2009) mostraron que el rojo induce una motivación de alerta y evitación que mejora las tareas que exigen atención al detalle, mientras que el azul favorece la calma. De aquí salen tres decisiones: fondo general de color suave en lugar de una pantalla toda blanca, color principal aqua profundo y rojo reservado para lo que exige atención inmediata. Estos estudios se usan como respaldo, no como verdad absoluta: sus efectos varían según la persona.
-- **Normas de color de la industria.** Los significados de los colores de estado siguen la norma ISO 3864 (rojo: peligro o prohibición; amarillo: precaución; verde: condición segura; azul: indicación u obligación), que los operarios ya conocen por la señalización de planta. La escala de prioridades sigue la jerarquía de riesgo de ANSI Z535 (amarillo para precaución, naranja para advertencia, rojo para peligro). Lo que está en estado normal va en gris, según el principio de la norma ISA-101 para interfaces de operación industrial: el color se reserva para lo que requiere acción.
-- **Visión de personas mayores.** Con la edad, el cristalino se vuelve amarillento, el azul se percibe más oscuro y cuesta distinguir azules de verdes. Por eso se usan colores de saturación media, el azul no se usa en texto pequeño y el verde de "finalizada" se inclina hacia el amarillo para separarse del aqua principal.
+- **Estudios de color y trabajo.** Mehta y Zhu (Universidad de British Columbia, *Science*, 2009) mostraron que el azul favorece la calma y una motivación de acercamiento, mientras que el rojo induce una motivación de alerta y evitación que mejora las tareas que exigen atención al detalle. Labrecque y Milne (*Journal of the Academy of Marketing Science*, 2012) encontraron que el azul es el color que más se asocia con competencia, una cualidad que se espera de una herramienta de trabajo. En el estudio de Nancy Kwallek (Universidad de Texas), las personas cometieron más errores en una oficina blanca que en una de color, y las personas sensibles al entorno se sintieron abrumadas en espacios de colores intensos. De aquí salen tres decisiones: fondo general neutro y suave en lugar de una pantalla toda blanca, un solo color principal azul profundo y rojo reservado para lo que exige atención inmediata. Estos estudios se usan como respaldo, no como verdad absoluta: sus efectos varían según la persona.
+- **Normas de color.** Los significados de los colores de estado siguen la norma ISO 3864 (rojo: peligro o prohibición; amarillo: precaución; verde: condición segura), que la mayoría de las personas reconoce por la señalización de los espacios públicos y de los lugares de trabajo. La escala de prioridades sigue la jerarquía de riesgo de ANSI Z535 (amarillo para precaución, naranja para advertencia, rojo para peligro). Lo que está en estado normal va en gris, según el principio de la norma ISA-101 para interfaces de supervisión: el color se reserva para lo que requiere acción.
+- **Visión de personas mayores.** Con la edad, el cristalino se vuelve amarillento, el azul se percibe más oscuro y cuesta distinguir azules de verdes. Por eso se usan colores de saturación media, el azul principal es oscuro (7,2:1 sobre blanco) para que se siga leyendo aunque se perciba más oscuro, y el verde de "finalizada" y el azul principal nunca se distinguen solo por el color: cada uno lleva su ícono y su texto.
 - **Contraste (WCAG 2.1).** Todo texto cumple al menos 4,5:1 contra su fondo y los componentes de interfaz al menos 3:1. Los textos principales superan 7:1 (nivel AAA).
 
 **Teoría del color aplicada:**
-- **Armonía complementaria:** el aqua principal (tono 190°) y el coral de marca (tono 9°) están separados 181° en la rueda de color. Siguiendo lo visto en clase, esta armonía se usa para destacar: el coral ocupa muy poca superficie: marca la identidad y, rayado, la sobrecarga.
-- **Jerarquía por saturación y luminosidad:** el fondo es casi neutro (10 % de saturación, 96 % de luminosidad), el principal es firme (69 % de saturación, 28 % de luminosidad) y los estados intensos aparecen solo cuando hay algo que atender.
-- **Proporción 60-30-10:** alrededor de 60 % de fondo y superficies, 30 % de texto y color principal, y 10 % de acento de marca y colores de estado.
+- **Armonía análoga:** el azul principal (tono 208°) y los grises de la base (fondo y textos, tono 217° a 220° con muy poca saturación) son de la misma familia de tonos, lo que da una superficie tranquila. Los colores de estado (verde, ámbar, naranja y rojo) son los únicos que salen de esa familia, y por eso se notan: el contraste de tono se reserva para lo que significa algo.
+- **Jerarquía por saturación y luminosidad:** el fondo es casi neutro (97 % de luminosidad), el principal es firme (51 % de saturación, 34 % de luminosidad) y los estados intensos aparecen solo cuando hay algo que atender.
+- **Proporción 60-30-10:** alrededor de 60 % de fondo y superficies, 30 % de texto y color principal, y 10 % de colores de estado.
 
 **Base e identidad:**
 
 | Rol | HEX | Uso | Contraste |
 |---|---|---|---|
-| Fondo | `#F4F6F5` | Fondo general de todas las pantallas (gris neutro; evita la pantalla toda blanca) | — |
-| Superficie | `#FFFFFF` | Tarjetas, tablas, diálogos (separa figura y fondo) | — |
-| Principal | `#16697A` | Botones de acción principal, enlace activo, foco, actividad en curso, la línea "Ahora" y el tramo ya recorrido de la línea de tiempo | Texto blanco sobre principal 6,3:1; principal sobre el fondo 5,8:1 |
-| Principal (hover/presionado) | `#0F5563` | Estado del botón principal al pasar el cursor o presionar | 7,1:1 sobre su fondo suave |
-| Principal suave | `#E0EFF0` | Fondo de la etiqueta "En curso" y de elementos seleccionados | — |
-| Acento de marca (coral) | `#E9806E` | Logo, avatar del usuario y sobrecarga (lo programado después de la hora de fin del turno, con un rayado). Nunca en texto | No se usa para texto |
-| Texto principal | `#1F2A2E` | Títulos y texto (sin negro puro) | 14,7:1 sobre blanco |
-| Texto secundario | `#5B6664` | Textos de apoyo, metadatos | 5,95:1 sobre blanco y 5,48:1 sobre el fondo |
+| Fondo | `#F5F6F8` | Fondo general de todas las pantallas (gris neutro con un tinte frío; evita la pantalla toda blanca) | — |
+| Superficie | `#FFFFFF` | Lo que agrupa algo de verdad: la superficie de trabajo principal, formularios, tablas y diálogos (6.2) | — |
+| Principal | `#2B5B84` | Botón de acción principal, enlace activo, foco, la línea "Ahora", el tramo recorrido de la línea de tiempo, la barra de avance y el logo | 7,2:1 sobre blanco (y texto blanco sobre él); 6,6:1 sobre el fondo |
+| Principal (hover/presionado) | `#22496B` | Estado del botón principal al pasar el cursor o presionar | 9,4:1 con texto blanco |
+| Principal suave | `#E8EEF4` | Fondo de la fila de la actividad en curso y de elementos seleccionados | Principal sobre él 6,1:1 |
+| Texto principal | `#1B2230` | Títulos y texto (sin negro puro) | 15,9:1 sobre blanco y 14,7:1 sobre el fondo |
+| Texto secundario | `#566070` | Textos de apoyo, datos, horas de horario flexible y avisos de información | 6,4:1 sobre blanco y 5,9:1 sobre el fondo |
 
 **Colores de estado** (cada uno con tres variantes: base para rellenos y bordes, fondo suave para etiquetas y avisos, y texto oscuro para escribir sobre ese fondo):
 
 | Significado | Base | Fondo suave | Texto sobre fondo | Ícono | Norma | Contraste texto/fondo |
 |---|---|---|---|---|---|---|
-| Error, prioridad Urgente | `#A8322A` | `#FBE9E7` | `#8A2620` | ⚠ | ISO 3864 (peligro, prohibición) | 7,5:1 |
+| Error, prioridad Urgente, sobrecarga | `#B42318` | `#FDECEA` | `#B42318` | ⚠ | ISO 3864 (peligro, prohibición) | 5,8:1; texto blanco sobre la base 6,6:1 |
 | Prioridad Alta | `#B34F0B` | `#FDEBDD` | `#8A3D08` | ▲ | ANSI Z535 (advertencia) | 6,6:1 |
-| Advertencia, prioridad Media, actividad pausada, cambio de prioridad | `#E3A32B` | `#FBF1D9` | `#6B4A0E` | ! / ❚❚ / ↑ | ISO 3864 (precaución) | 7,2:1 |
-| Confirmación, actividad finalizada, en turno | `#3E7B3A` | `#E6F0E2` | `#2F5F2C` | ✓ / ● | ISO 3864 (condición segura) | 6,4:1 |
-| Información | `#2F5DA8` | `#E6EDF8` | `#24498A` | i | ISO 3864 (azul, indicación) | 7,5:1 |
-| Normal: prioridad Baja, actividad por iniciar, fuera de turno (el fondo suave solo se usa en "Fuera de turno") | `#6B7478` | `#ECEFEF` | `#5B6664` | • / ○ | ISA-101 (lo normal en gris) | 5,15:1 (sin fondo, 5,95:1 sobre blanco) |
+| Advertencia, prioridad Media, actividad pausada, retraso, cambio de prioridad | `#E3A32B` | `#FFF3DD` | `#8A5300` | ! / ❚❚ / reloj / ↑ | ISO 3864 (precaución) | 5,8:1 (6,3:1 sobre blanco) |
+| Confirmación, actividad finalizada, en turno | `#25704A` | `#E6F4EC` | `#25704A` | ✓ / ● | ISO 3864 (condición segura) | 5,3:1; texto blanco sobre la base 6,0:1 |
+| Normal e información: prioridad Baja, actividad por iniciar, fuera de turno y avisos que no exigen acción (el fondo suave solo se usa en "Fuera de turno") | `#566070` | `#EEF0F3` | `#566070` | • / ○ / i | ISA-101 (lo normal en gris) | 5,6:1 (sin fondo, 6,4:1 sobre blanco) |
 
 **Asignación por elemento de la interfaz:**
-- **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco), Alta (fondo naranja suave con su texto oscuro), Media (fondo ámbar suave con su texto oscuro), Baja (texto gris, sin fondo). Solo lo urgente usa un bloque lleno. La intensidad del color crece con la urgencia y la etiqueta siempre muestra el nombre del nivel.
-- **Estados de actividad:** Sin asignar y Por iniciar (texto gris con su ícono, sin fondo, porque son lo normal), En curso (fondo principal suave), Pausada (ámbar suave), Finalizada (verde suave).
-- **Estados nuevos** (colores provisionales, pendientes de validar con las pantallas construidas): Reprogramada (ámbar suave, con el texto "Retraso: 1 día" o los días que lleva), Devuelta (ámbar suave: espera una decisión del Administrador), No realizada (rojo suave con su texto oscuro: cuenta como incumplida), Cancelada (texto gris, sin fondo).
-- **Jornada:** En turno (verde con punto ●), Fuera de turno (fondo gris suave con texto que lo indica). Lo programado después de la hora de fin del turno se marca con el rayado coral de sobrecarga. La alerta de carga por encima del 100 % de la capacidad (Sección 5.2) es una señal distinta: va en texto, con ícono de advertencia, junto a las horas de la persona, porque con el descanso se puede superar la capacidad sin pasar de la hora de salida.
+- **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco). Alta, Media y Baja no llevan etiqueta: van como texto en la frase de datos ("prioridad media"); Alta con su ícono en el naranja oscuro, Media con su ícono en el ámbar oscuro y Baja con su guion en gris. Solo lo urgente usa un bloque lleno. La intensidad del color crece con la urgencia y siempre se escribe el nombre del nivel.
+- **Estados de actividad** (texto con su ícono, sin etiqueta; 6.2): Sin asignar y Por iniciar (gris, porque son lo normal), En curso (texto principal; en la línea de tiempo, toda la fila lleva el fondo principal suave), Pausada (texto ámbar oscuro), Finalizada (texto verde), Devuelta (texto ámbar oscuro: espera una decisión del Administrador), No realizada (texto rojo: cuenta como incumplida), Cancelada (gris). En listas y tablas del Administrador, donde el estado es una columna, puede ir sobre su fondo suave.
+- **Excepciones con etiqueta:** Urgente (rojo lleno con texto blanco y ⚠), Retraso de una actividad reprogramada (ámbar suave con reloj y el texto "Retraso: 7 días" o los días que lleva) y Hora fija (fondo gris suave `#EEF0F3` con candado y texto principal, 13,9:1: no es una alerta, solo dice que no se mueve).
+- **Jornada:** En turno (punto verde con el texto, por ejemplo "En turno hasta las 23:00"), Fuera de turno (fondo gris suave con texto que lo indica). Lo programado después de la hora de fin del turno se marca con el rayado rojo de sobrecarga, con su texto. La alerta de carga por encima del 100 % de la capacidad (Sección 5.2) es una señal distinta: va en texto, con ícono de advertencia, junto a las horas de la persona, porque con el descanso se puede superar la capacidad sin pasar de la hora de salida.
 - **Errores:** el error de formulario y la prioridad Urgente comparten el rojo porque significan lo mismo, "algo requiere tu atención", y se diferencian por la forma: el error de formulario es un borde rojo en el campo con el mensaje debajo; la alerta de Urgente pendiente es un bloque rojo lleno con ícono ⚠ y texto.
-- **Información:** avisos que no exigen acción (por ejemplo, la hora de fin de turno), siempre como fondo suave con el ícono "i", nunca como botón lleno, para no confundirse con una acción.
+- **Información:** avisos que no exigen acción (por ejemplo, la hora de fin de turno) van en texto secundario con el ícono "i", sin color propio, para no confundirse con una acción ni con el azul principal.
 
 **Reglas obligatorias del sistema de color:**
 1. Todo estado, prioridad o aviso se comunica con **color, ícono y texto**; nunca solo con color.
 2. Cada color tiene **un solo significado** en todo el producto.
 3. El **color intenso** (bloques llenos) se reserva para lo que exige atención inmediata; lo normal se muestra en gris.
-4. El **coral de marca** nunca se usa en texto, etiquetas de estado ni botones de acción. Fuera de la identidad tiene un solo uso: marcar la sobrecarga, es decir, lo programado después de la hora de fin del turno. Ahí va siempre rayado y con su texto, nunca como relleno liso.
-5. El **azul de información** nunca se usa en texto pequeño ni como relleno de botón.
+4. El **rojo** tiene un solo significado, "esto exige atención", y tres formas: bloque lleno en la prioridad Urgente, borde con mensaje en el error de formulario y rayado con su texto en la sobrecarga (lo programado después de la hora de fin del turno). La sobrecarga nunca va como relleno liso.
+5. **La información no tiene color propio:** va en texto secundario con el ícono "i". El azul es solo del color principal.
 6. Todos los colores se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`) para garantizar la consistencia entre pantallas.
-7. El **ámbar base** (`#E3A32B`) es un color claro y tiene dos restricciones: sobre blanco solo alcanza 2,2:1, así que nunca se usa como borde, ícono o texto sobre superficies claras (para eso se usa su texto oscuro `#6B4A0E`, 8,0:1 sobre blanco); y como relleno lleva siempre texto principal oscuro `#1F2A2E` (6,7:1), nunca blanco. Los demás colores base admiten texto blanco como relleno (rojo 6,7:1; naranja 5,2:1; verde 5,1:1; gris 4,8:1).
-8. Ningún **gris de texto** es más claro que `#66716E` (5,06:1 sobre blanco y 4,66:1 sobre el fondo). El `#8A9592` queda prohibido para texto: solo alcanza 3,09:1.
+7. El **ámbar base** (`#E3A32B`) es un color claro y tiene dos restricciones: sobre blanco solo alcanza 2,2:1, así que nunca se usa como borde, ícono o texto sobre superficies claras (para eso se usa su texto oscuro `#8A5300`, 6,3:1 sobre blanco); y como relleno lleva siempre texto principal oscuro `#1B2230` (7,2:1), nunca blanco. Los demás colores base admiten texto blanco como relleno (rojo 6,6:1; naranja 5,2:1; verde 6,0:1; gris 6,4:1).
+8. Ningún **gris de texto** es más claro que el texto secundario `#566070` (6,4:1 sobre blanco y 5,9:1 sobre el fondo). El borde de control `#7F8A99` queda prohibido para texto: solo alcanza 3,5:1.
 
 **Precisiones de la implementación** (valores que el sistema necesitaba y que las tablas anteriores no definían):
-- **Bordes:** el borde de paneles y tablas es decorativo y tenue (`#E1E5E3`, gris neutro como el fondo). El borde de los controles (campos de formulario y botones secundarios) es `#7F8A87`: 3,57:1 sobre blanco y 3,29:1 sobre el fondo.
-- **Sombra:** los paneles y tarjetas llevan una sombra muy suave (1 px de desplazamiento, 2 px de difuminado, texto principal al 6 % de opacidad). Los diálogos y avisos flotantes usan una más amplia (16 px y 40 px, al 18 %) para separarse de lo que tienen detrás.
-- **Rayado de sobrecarga:** franjas diagonales de coral `#E9806E` sobre un fondo coral suave `#FBE5E0`. El texto que va encima es el principal `#1F2A2E` (12,2:1 sobre el fondo suave).
-- **Logo:** un cuadro redondeado en principal suave `#E0EFF0`, con tres barras horizontales escalonadas en principal `#16697A`, como las tarjetas del tablero del turno, y una barra vertical coral `#E9806E` que representa la línea "Ahora". El dibujo está en un solo archivo (`app/static/favicon.svg`) y se usa en la pestaña del navegador, en la barra superior y en el inicio de sesión. Una empresa sin logo propio muestra este logo junto a su nombre.
-- **Texto sobre el coral de marca:** la inicial del logo y del avatar se escribe con el texto principal `#1F2A2E` (5,4:1). El coral sigue sin usarse como color de texto.
-- **Ícono de "En curso":** ▶, sobre el fondo principal suave con texto `#0F5563`.
-- **Tarjetas sin borde lateral de color:** la prioridad de una actividad se indica solo con su etiqueta (color, ícono y texto).
+- **Bordes:** el borde de las superficies, las tablas y las líneas finas que separan las filas es decorativo y tenue (`#E1E5EA`, gris neutro como el fondo). El borde de los controles (campos de formulario y botones secundarios) es `#7F8A99`: 3,5:1 sobre blanco y 3,2:1 sobre el fondo.
+- **Sombra:** las superficies no llevan sombra. Solo los diálogos y los avisos flotantes usan una sombra amplia (16 px de desplazamiento y 40 px de difuminado, texto principal al 18 % de opacidad) para separarse de lo que tienen detrás.
+- **Rayado de sobrecarga:** franjas diagonales del rojo `#B42318` al 25 % de opacidad sobre el rojo suave `#FDECEA`. El texto que va encima es el principal `#1B2230` (13,9:1 sobre el rojo suave). En el tablero del turno, donde el rayado va encima de las tarjetas, el espacio entre franjas queda transparente para que el texto de las tarjetas se siga leyendo.
+- **Logo:** un cuadro redondeado en principal suave `#E8EEF4`, con tres barras horizontales escalonadas en texto secundario `#566070`, como las actividades del tablero del turno, y una barra vertical en principal `#2B5B84` que representa la línea "Ahora". El dibujo está en un solo archivo (`app/static/favicon.svg`) y se usa en la pestaña del navegador, en la barra superior y en el inicio de sesión. Una empresa sin logo propio muestra este logo junto a su nombre.
+- **Avatar:** un círculo en texto principal `#1B2230` con las iniciales del usuario en blanco (15,9:1).
+- **Ícono de "En curso":** un anillo, en principal sobre el fondo principal suave (6,1:1). Ya no es ▶: iniciar es una acción del detalle, no un estado.
+- **Filas y tarjetas sin borde lateral de color:** la prioridad de una actividad se indica con su texto e ícono, o con la etiqueta si es Urgente.
 - **Etiquetas de rol** (Administrador, Operario): van en gris neutro, porque el rol no es un estado ni una prioridad y no debe tomar un color con significado.
 
 **Conflictos identificados y cómo se resuelven:**
-- **Coral de marca (9°) frente a rojo de Urgente (4°) y naranja de Alta (25°):** son tonos cálidos cercanos. Se separan por luminosidad (el coral es claro y rosado, el rojo y el naranja son oscuros), por uso (el coral nunca aparece en etiquetas de estado) y porque las prioridades siempre llevan su texto.
-- **Coral en la identidad y en la sobrecarga:** se distinguen por la forma. En el logo y el avatar es un relleno liso; en la sobrecarga es un rayado con texto.
-- **Aqua principal (190°) frente a azul de información (217°) y verde de finalizada (116°):** se separan por tono, por forma de uso (el principal es relleno de botón; información y finalizada son fondos suaves) y por el ícono que acompaña a cada estado.
+- **Rojo de Urgente, error y sobrecarga:** comparten el significado "esto exige atención" y se distinguen por la forma: bloque lleno, borde con mensaje y rayado con texto.
+- **Rojo de Urgente (4°) frente a naranja de Alta (25°):** son tonos cálidos cercanos. Se separan porque solo Urgente lleva bloque o etiqueta, porque Alta va como texto con su ícono y porque las prioridades siempre llevan su nombre.
+- **Azul principal (208°) frente a verde de finalizada (150°):** se separan por tono, por forma de uso (el principal es relleno de botón y línea de tiempo; finalizada es un fondo suave) y por el ícono que acompaña a cada estado.
+- **Información y lo normal, los dos en gris:** comparten el gris porque ninguno exige acción. La información se reconoce por su ícono "i". El azul de información de la versión anterior (`#2F5DA8`) se retiró porque era casi igual al nuevo principal y rompía la regla 2.
 - **Ámbar compartido** entre advertencia, prioridad Media, pausada y cambio de prioridad: comparten el significado de "precaución, atención no urgente"; el ícono y el texto indican de cuál se trata.
 
 **Paleta de categorías (solo para el horario).** Los bloques del horario pueden colorearse de dos maneras, a elección del usuario: por **prioridad** (los colores de estado de esta sección; es el modo por defecto) o por **categoría**. La paleta de categorías es un conjunto aparte, de tonos que no coinciden con ningún color de estado, y se usa únicamente en los bloques del horario y en el ícono de la etiqueta de categoría:
@@ -340,9 +342,9 @@ Esta subsección define la propuesta cromática del producto, exigida en la Fase
 | Revisión | `#A33D72` | `#F6E1EC` | Lupa |
 | Traslado | `#3D5A6C` | `#DFE8EC` | Camión |
 
-El texto de los bloques es siempre el texto principal `#1F2A2E` (al menos 11,7:1 sobre cada fondo) y cada color supera 5,8:1 sobre blanco. Las reglas 1 y 2 se mantienen: la categoría siempre lleva ícono y nombre, la prioridad sigue visible por su ícono dentro del bloque, y una actividad Urgente conserva un borde rojo completo, alrededor de todo el bloque y no solo a un lado, también en el modo categoría.
+El texto de los bloques es siempre el texto principal `#1B2230` (al menos 12,7:1 sobre cada fondo) y cada color supera 5,8:1 sobre blanco. Las reglas 1 y 2 se mantienen: la categoría siempre lleva ícono y nombre, la prioridad sigue visible por su ícono dentro del bloque, y una actividad Urgente conserva un borde rojo completo, alrededor de todo el bloque y no solo a un lado, también en el modo categoría.
 
-**Íconos.** Los íconos de prioridad, estado, categoría y navegación son de la colección Lucide (trazo uniforme, licencia ISC) y reemplazan los símbolos de texto de la tabla de estados: Urgente (triángulo de alerta), Alta (flecha hacia arriba), Media (círculo de alerta), Baja (guion), En curso (reproducir), Finalizada (visto bueno), Por iniciar (círculo).
+**Íconos.** Los íconos de prioridad, estado, categoría y navegación son de la colección Lucide (trazo uniforme, licencia ISC) y reemplazan los símbolos de texto de la tabla de estados: Urgente (triángulo de alerta), Alta (flecha hacia arriba), Media (círculo de alerta), Baja (guion), En curso (anillo), Finalizada (visto bueno), Por iniciar (círculo).
 
 **Relación con la marca blanca (Sección 4):** cuando una empresa carga su logo, este reemplaza la marca GestLab, pero el sistema de color no cambia. Los colores de estado deben significar lo mismo en todas las empresas para no perder la consistencia ni la accesibilidad.
 
@@ -353,7 +355,7 @@ Esta subsección define el sistema tipográfico del producto como parte de la id
 
 **Criterios de selección:**
 - **Sin serifas:** la evidencia sobre serifas en pantalla no es concluyente, pero hay indicios de que dificultan la lectura a personas con trastornos de lectura; por eso la buena práctica en web es usar fuentes sin serifas.
-- **Tamaño según la distancia de lectura:** en celular, 16 px es el mínimo recomendado para texto y es el que usa el Operario. En escritorio, donde la pantalla está más cerca y hay más datos por vista, el texto va de 14 a 16 px.
+- **Tamaño según la distancia de lectura:** en celular, 16 px es el mínimo recomendado para texto y es el que usa el Operario. En escritorio, donde la pantalla está más cerca y hay más datos por vista, el texto va de 14 a 16 px. Lo secundario y las etiquetas pueden ser más pequeños, nunca por debajo de 13 px.
 - **Interlineado:** entre 130 % y 150 % del tamaño de la letra, para no perder el renglón.
 - **Grosor:** evitar pesos delgados, sobre todo en tamaños pequeños.
 - **Caracteres inconfundibles:** en un sistema donde se leen códigos de actividad y el NIT de las empresas, la `l` minúscula, la `I` mayúscula y el `1`, así como la `O` y el `0`, no deben confundirse.
@@ -363,31 +365,32 @@ Esta subsección define el sistema tipográfico del producto como parte de la id
 
 | Fuente | Función | Motivo |
 |---|---|---|
-| **Figtree** | Todo lo que se *lee*: títulos, textos, botones, etiquetas, tablas y menús; también las cifras y el cronómetro | Fuente sin serifas de formas simples y aspecto neutro y amable. Es más angosta que Lexend, la fuente anterior, así que caben más datos por renglón en fichas y tablas. Licencia SIL Open Font License |
-**Conflicto identificado y cómo se resuelve:** en Figtree, la `I` mayúscula y la `l` minúscula se parecen. Ese riesgo no aparece en los datos que se leen carácter por carácter: el código de actividad tiene la forma `OT-0063` (dos letras fijas y cifras) y el NIT solo tiene cifras y guion. Por eso los códigos también van en Figtree, en semibold y con números de ancho fijo (`tabular-nums`), igual que las cifras (cantidades, porcentajes, duraciones, horas y el cronómetro), para que se alineen en columnas y el cronómetro no "salte" mientras corre. Si un formato nuevo de código llegara a usar letras que se confunden, se revisa esta decisión.
+| **Hanken Grotesk** | Todo lo que se *lee*: títulos, textos, botones, etiquetas, tablas y menús; también las cifras y los códigos | Fuente sin serifas de formas abiertas y aspecto sobrio, de herramienta de trabajo más que de aplicación de consumo. Sus cifras de ancho fijo mantienen las horas alineadas en la línea de tiempo. Reemplaza a Figtree, que con los mismos colores se veía como la plantilla de cualquier aplicación. Licencia SIL Open Font License |
+
+**Conflicto identificado y cómo se resuelve:** en Hanken Grotesk, la `I` mayúscula y la `l` minúscula se parecen. Ese riesgo no aparece en los datos que se leen carácter por carácter: el código de actividad tiene la forma `ACT-0063` (letras fijas y cifras) y el NIT solo tiene cifras y guion. Por eso los códigos también van en Hanken Grotesk, en semibold y con números de ancho fijo (`tabular-nums`), igual que las cifras (cantidades, porcentajes, duraciones y horas), para que se alineen en columnas. En los códigos anteriores, con la forma `OT-0042`, la `O` y el `0` conviven: se distinguen porque el cero de ancho fijo es más angosto que la `O` mayúscula, y se verifica en pantalla. Si un formato nuevo de código llegara a usar letras que se confunden, se revisa esta decisión.
 
 **Tamaños por dispositivo.** El Operario lee en celular, de pie y a un brazo de distancia; el Administrador y el Superadmin leen en computador, sentados y con más información por pantalla. Por eso los tamaños no son los mismos:
 
 | Elemento | Celular | Escritorio |
 |---|---|---|
-| Título de pantalla | 22 px | 26 px |
+| Título de pantalla | 28 px | 26 px |
+| Nombre de la actividad en el detalle | 26 px | 26 px |
 | Título de sección | 20 px | 18 px |
-| Título de tarjeta | 16 px, semibold | 16 px, semibold |
+| Nombre en la fila o en la tarjeta | 17 px, semibold | 16 px, semibold |
 | Texto | 16 px | 15 px |
-| Texto secundario | 14 px | 14 px |
+| Texto secundario | 14 a 15 px | 14 px |
 | Etiquetas | 13 px | 13 px |
-| Cronómetro | 40 px | 40 px |
 
-En escritorio el título de sección es más pequeño que en celular porque encabeza paneles dentro de una pantalla con más información. Interlineados: 1,25 en el título de pantalla, 1,3 en el de sección, 1,35 en el de tarjeta, 1,5 en el texto, 1,45 en el texto secundario y 1,2 en las etiquetas.
+En celular el título de pantalla es más grande que en escritorio porque es lo primero que se lee en una pantalla con poca información; en escritorio el título de sección es más pequeño porque encabeza secciones dentro de una pantalla con más información. Interlineados: 1,25 en el título de pantalla y en el nombre del detalle, 1,3 en el de sección, 1,35 en el nombre de la fila, 1,5 en el texto, 1,45 en el texto secundario y 1,2 en las etiquetas. En celular, el botón principal mide 52 px de alto y toda zona tocable, 44 px o más.
 
 La raíz del documento usa el tamaño que el usuario tenga configurado en su navegador (16 px por defecto), y todos los tamaños se expresan en rem.
 
 **Reglas obligatorias del sistema tipográfico:**
-1. **Solo dos pesos en Figtree:** regular (400) para leer y semibold (600) para jerarquía y acción.
-2. **Ningún texto por debajo de 13 px.** En celular el texto corrido no baja de 16 px.
+1. **Solo dos pesos en Hanken Grotesk:** regular (400) para leer y semibold (600) para jerarquía y acción.
+2. **Ningún texto por debajo de 13 px.** En celular el texto corrido (descripciones, pasos, frases de lectura) no baja de 16 px; el texto secundario y las etiquetas siguen la tabla.
 3. **Tamaños en rem, no en px fijos:** si el usuario agranda la letra en su dispositivo, toda la interfaz crece en proporción sin romperse (WCAG 2.1, criterio 1.4.4, cambio de tamaño del texto hasta 200 %).
 4. **El diseño soporta ajustes de espaciado del usuario** (interlineado 1,5, espacio entre párrafos de 2 veces el tamaño, espaciado entre letras de 0,12 y entre palabras de 0,16) sin perder contenido (WCAG 2.1, criterio 1.4.12).
-5. **Los códigos, las cifras y el cronómetro van en Figtree con números de ancho fijo.** Una sola familia de letra en toda la interfaz; el código se distingue con el peso semibold.
+5. **Los códigos y las cifras van en Hanken Grotesk con números de ancho fijo.** Una sola familia de letra en toda la interfaz; el código se distingue con el peso semibold. El tiempo se escribe en horas y minutos ("1 h 05 min"); la pantalla del Operario no muestra segundos corriendo.
 6. **Texto alineado a la izquierda,** sin justificar, para mantener espacios regulares entre palabras.
 7. Todos los estilos se definen como **variables CSS** en un único lugar (`:root` de `estilos.css`), igual que el color.
 
@@ -396,18 +399,18 @@ La raíz del documento usa el tamaño que el usuario tenga configurado en su nav
 - **Consistencia (usabilidad):** los mismos roles tipográficos se usan en las vistas de los tres roles.
 - **Semejanza (Gestalt):** todos los elementos del mismo tipo comparten estilo (por ejemplo, todos los títulos de tarjeta), así el usuario los reconoce como equivalentes.
 
-**Implementación:** como el despliegue es local (Sección 7) y la planta puede no tener conexión estable a internet, los archivos de la fuente se incluyen dentro del proyecto (en formato `.woff2`, en la carpeta `app/static/fuentes/`) en lugar de cargarse desde Google Fonts. Si la fuente no carga, el sistema usa como respaldo la fuente sin serifas del dispositivo (`system-ui, sans-serif`).
+**Implementación:** como el despliegue es local (Sección 7) y la interfaz no depende de servicios externos (igual que las bibliotecas de `app/static/vendor/`), los archivos de la fuente se incluyen dentro del proyecto (en formato `.woff2`, en la carpeta `app/static/fuentes/`) en lugar de cargarse desde Google Fonts. Si la fuente no carga, el sistema usa como respaldo la fuente sin serifas del dispositivo (`system-ui, sans-serif`).
 
 ### 6.5 Metáforas de la interfaz (Diseño de Interfaces)
 
 Una metáfora de interfaz representa objetos, acciones o conceptos conocidos del mundo real para facilitar la comprensión y el uso de una interfaz digital (clase de la Semana 11). Es el requisito 4 de la Fase 2. En GestLab cada metáfora es un objeto que el usuario ya conoce, convertido en un elemento de la pantalla.
 
-**Metáfora central: la planilla del turno** (organizacional). Es la planilla que se pega en la pared de la planta para saber quién hace qué y a qué hora. En la interfaz se llama tablero del turno. Se ve en Equipo (Administrador) y en Hoy (Operario).
+**Metáfora central: la planilla del turno** (organizacional). Es la planilla con la que un equipo de trabajo, en cualquier área (una oficina, un restaurante, un equipo de servicio en campo o una bodega), sabe quién hace qué y a qué hora. En la interfaz se llama tablero del turno. Se ve en Equipo (Administrador) y en Hoy (Operario).
 - El Administrador ve la planilla completa: una fila por persona y las horas de izquierda a derecha.
 - El Operario ve su propio renglón, en vertical: las horas de arriba abajo.
-- Cada actividad es una tarjeta puesta en su hora.
-- La línea "Ahora", en el color principal, marca la hora actual.
-- Lo que pasa de la hora de fin del turno se raya, como tiempo fuera del turno.
+- Cada actividad está puesta en su hora: como tarjeta en el tablero y como fila en la línea de tiempo.
+- La línea "Ahora", en el color principal, marca la hora actual. En el Operario, lo recorrido es una línea sólida y lo que viene, punteada.
+- Lo que pasa de la hora de fin del turno se raya, como sobrecarga.
 
 Reemplaza la metáfora del tanque de carga, que se probó en una propuesta intermedia (`docs/disenos/stitch_calma_operativa/`). El tanque decía cuánto trabajo había, pero no cuándo; la planilla responde las dos preguntas.
 
@@ -415,34 +418,34 @@ Reemplaza la metáfora del tanque de carga, que se probó en una propuesta inter
 
 | Del mundo real | En GestLab | Tipo | Dónde se ve |
 |---|---|---|---|
-| Candado | Actividad de hora fija: está cerrada, no se puede mover | Visual | Hoy (Operario) y Equipo (Administrador), en la tarjeta de la actividad |
+| Candado | Actividad de hora fija: está cerrada, no se puede mover | Visual | Hoy (Operario), en la fila, y Equipo (Administrador), en la tarjeta de la actividad |
 | Carpeta | Proyecto: guarda un grupo de actividades | Organizacional | Proyectos y Actividades (Administrador) |
-| Botones de un reproductor (reproducir, pausa y visto bueno) | Iniciar, pausar y finalizar una actividad | Funcional | Hoy (Operario), en la actividad en curso |
-| Cronómetro | El tiempo que lleva la actividad en curso | Visual | Hoy (Operario), en la actividad en curso |
+| Botones de un reproductor (reproducir, pausa y visto bueno) | Iniciar, pausar y finalizar una actividad | Funcional | Detalle de actividad (Operario) |
+| Barra de avance, como la de una descarga | El tiempo trabajado contra lo estimado | Visual | Inicio y detalle de actividad (Operario), en la actividad en curso |
 | Flecha de devolver, como al devolver un paquete | Devolver la actividad al Administrador | Funcional | Detalle de actividad (Operario) |
 | Lista de chequeo numerada | Los pasos de la actividad | Organizacional | Detalle de actividad (los dos roles) |
 | Clip | Adjuntos de la actividad y de la evidencia | Visual | Detalle de actividad (los dos roles) y la ventana de Finalizar |
 | Cámara | Fotos de la evidencia | Visual | Ventana de Finalizar (Operario) |
 | Teléfono | Contacto de la actividad | Visual | Detalle de actividad (los dos roles) |
-| Marcador de mapa | Ubicación donde se hace el trabajo | Visual | Detalle de actividad y tarjeta de la actividad (los dos roles) |
-| Franjas diagonales de zona restringida, como las de seguridad industrial | Lo que queda fuera del turno | Visual | Equipo (Administrador) y Hoy (Operario), después de la hora de fin |
+| Marcador de mapa | Ubicación donde se hace el trabajo | Visual | Detalle de actividad (los dos roles) y tarjeta del tablero (Administrador) |
+| Franjas diagonales de zona restringida, como las de una cinta de precaución | Lo que queda fuera del turno (en gris) y lo que pasa de la hora de fin (en rojo, sobrecarga) | Visual | Equipo (Administrador) y Hoy (Operario), después de la hora de fin |
 | Puerta de salida | Cerrar sesión | Visual | Barra superior (los tres roles) |
 | Reorganizar tarjetas sobre una mesa | Ordenar mi día (con flechas de subir y bajar); pasar una actividad a otra persona (arrastrando su tarjeta) | Funcional | Hoy (Operario) y Equipo (Administrador) |
 
-**Qué metáforas se ven hoy.** Construidas: la planilla del turno, completa en Equipo (Administrador) y en su renglón vertical en Hoy (Operario), el candado, los botones del reproductor (iniciar, pausar y finalizar), el cronómetro, el marcador de mapa, las franjas de fuera del turno, la puerta de salida, el clip, la cámara y ordenar mi día con flechas. Pendientes: la carpeta (pantalla de Proyectos), la flecha de devolver, la lista de chequeo y el teléfono (información de la actividad) y arrastrar una tarjeta a otra persona.
+**Qué metáforas se ven hoy.** Construidas: la planilla del turno, completa en Equipo (Administrador) y en su renglón vertical en Hoy (Operario), el candado, los botones del reproductor (todavía en Hoy; pasan al detalle con el rediseño v3), el marcador de mapa, las franjas de fuera del turno, la puerta de salida, el clip, la cámara, la lista de chequeo y el teléfono (información de la actividad) y ordenar mi día con flechas. Pendientes: la barra de avance (rediseño v3), la carpeta (pantalla de Proyectos), la flecha de devolver y arrastrar una tarjeta a otra persona. El cronómetro sale de la interfaz con el rediseño v3.
 
 La captura de cada metáfora construida va en el documento de diseño de la Fase 2.
 
 **Buenas prácticas de la clase que se aplican:**
 - **Usar metáforas universales:** cada objeto de la tabla se reconoce sin explicación.
-- **Pensar en el usuario y su contexto:** la planilla del turno y las franjas de zona restringida son objetos de la planta.
+- **Pensar en el usuario y su contexto:** la planilla del turno y la cinta de precaución se usan en equipos de trabajo de cualquier área.
 - **Mantener la consistencia:** los dos roles ven la misma metáfora central; uno la planilla completa y el otro su renglón. Cada objeto significa lo mismo en todas las pantallas.
 - **Combinar íconos y texto:** ningún ícono va solo; siempre lo acompaña su nombre o su dato (regla 1 de la Sección 6.3).
 - **Priorizar la claridad sobre el realismo:** todo se dibuja plano, sin imitar texturas ni relieves de los objetos físicos.
 
 **Límites de la metáfora central y cómo se compensan:**
-- La planilla muestra cuándo se hace cada actividad, pero no cuánto pesa el día para la persona. Por eso se suman las horas en texto (por ejemplo, "2 h 55 min de trabajo · 4 h 05 min disponibles").
-- El renglón vertical del Operario se alarga en los días cargados. Por eso los espacios sin actividad se comprimen a una línea (por ejemplo, "Disponible · 1 h 30 min").
+- La planilla muestra cuándo se hace cada actividad, pero no cuánto pesa el día para la persona. Por eso se suman las horas en texto (por ejemplo, "2 h 05 min de trabajo y 1 h 55 min disponibles").
+- El renglón vertical del Operario se alarga en los días cargados. Por eso los intervalos disponibles se comprimen a una línea (por ejemplo, "Disponible, 1 h 30 min").
 
 ---
 
@@ -571,12 +574,12 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 
 | Término | Significado |
 |---|---|
-| Actividad | Unidad de trabajo que se programa, se asigna y se ejecuta. Su código es el de su orden de trabajo (por ejemplo, `OT-0042`); en los textos siempre se dice "actividad", no "orden" |
+| Actividad | Unidad de trabajo que se programa, se asigna y se ejecuta. Su código es un consecutivo por empresa con el prefijo `ACT` (por ejemplo, `ACT-0042`); las creadas antes del 23 de octubre de 2026 conservan el prefijo `OT`. En los textos siempre se dice "actividad", nunca "orden" ni "orden de trabajo" |
 | Actividad independiente | Actividad que no pertenece a ningún proyecto |
 | Proyecto | Conjunto de actividades. Su avance se mide en horas |
 | Hora fija | La actividad se hace a la hora que definió el Administrador. No se pausa ni se reprograma |
 | Horario flexible | La actividad queda asignada al día y el Operario decide en qué momento hacerla |
-| Jornada | El día de trabajo de un operario. Mientras no existan los turnos, coincide con el día calendario en la zona horaria de la empresa |
+| Jornada | El día de trabajo de un operario. Pertenece al día en que inicia su turno; sin turno, coincide con el día calendario en la zona horaria de la empresa |
 | Capacidad | Tiempo de trabajo disponible en una jornada: duración del turno menos el descanso |
 | Carga | Suma del tiempo estimado de las actividades de un operario en una jornada. Sobrecarga: carga por encima del 100 % de la capacidad |
 | Asignación | Vínculo entre una actividad y un operario. No se borra: termina cuando el operario la devuelve o el Administrador se la retira |
@@ -594,7 +597,7 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 | Actividad iniciada | Actividad que al menos un operario empezó a trabajar, aunque después la haya pausado, finalizado o se la hayan retirado. Ya no se edita ni se reasigna |
 | Jornada vigente | La jornada del turno que el operario está trabajando. En un turno de noche, después de la medianoche sigue siendo la del día en que empezó |
 | Tiempo presente | Tiempo entre la entrada y la salida de una jornada |
-| Cierre de jornada | Lo que hace el sistema cuando termina el día: pausa lo que quedó en curso, reprograma lo de horario flexible y marca como No realizado lo de hora fija |
+| Cierre de jornada | Lo que hace el sistema cuando termina el día: pausa lo que quedó en curso, reprograma lo de horario flexible y marca como No realizada lo de hora fija |
 | Reprogramación automática | Paso de una actividad de horario flexible a la jornada siguiente porque no se terminó. La actividad queda **reprogramada** |
 | Días de retraso | Días entre la fecha para la que se programó una actividad y la fecha en que está ahora |
 | Cambio de fecha | Cuando el Administrador mueve una actividad a otro día. No es una reprogramación automática |
@@ -603,13 +606,20 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 | Cancelada | Actividad que el Administrador anuló, con su motivo. Es definitivo |
 | Sin asignar | Actividad que no tiene operario: nunca se asignó o fue devuelta. El Administrador las consulta aparte |
 | Límite de usuarios | Máximo de Administradores y de Operarios que puede tener una empresa |
-| Tablero del turno | Vista del Administrador: una fila por persona y las horas de izquierda a derecha |
-| Línea de tiempo | Vista del Operario: las horas del día de arriba abajo, con sus actividades |
-| Inicio | Página que recibe al Operario después de iniciar sesión: su turno, su jornada y la marca de entrada y de salida |
+| Tablero del turno | Vista del Administrador (Equipo): una fila por persona y las horas de izquierda a derecha. El Operario ve su propio renglón, en vertical, en Hoy. Es la metáfora de la planilla del turno (6.5) |
+| Línea "Ahora" | Línea que marca la hora actual en el tablero y en la línea de tiempo. En Inicio, el bloque "Ahora" muestra la actividad en curso |
+| Tiempo disponible | Capacidad de la jornada que la carga no ocupa. Se muestra junto a la carga ("2 h 05 min de trabajo y 1 h 55 min disponibles") |
+| Hoja inferior | Diálogo que sube desde abajo en celular para una acción corta, como pausar o finalizar |
+| Balance de la jornada | Lo que Inicio muestra después de la salida: las marcas, el tiempo trabajado, las actividades finalizadas y las que pasan a la siguiente jornada. No es el cierre de jornada, que es el proceso del sistema |
+| Línea de tiempo | Vista del Operario: las horas del día de arriba abajo, con una fila por actividad. Es de solo lectura: cada fila abre el detalle |
+| Inicio | Página que recibe al Operario después de iniciar sesión y responde "¿qué hago ahora?": el estado de su turno, la actividad en curso o lo que sigue, y la marca de entrada y de salida |
+| Lo que sigue | La próxima actividad del Operario según la programación del día. Inicio la muestra antes de la entrada o cuando no hay una actividad en curso |
+| Registro de ejecución | Lo que el detalle de una actividad muestra de la ejecución de cada operario: desde qué hora, el tiempo trabajado contra lo estimado y sus pausas con el motivo |
 | Llegada tarde | El turno empezó hace más que la tolerancia (10 minutos) y el operario no ha marcado la entrada |
 | Tiempo fuera del turno | Minutos de las actividades en curso o pendientes que la programación deja después de la hora de fin del turno |
-| Tarjeta | Recuadro que representa una actividad en el tablero o en la línea de tiempo |
-| Intervalo disponible | Tiempo sin actividades entre dos tarjetas de la línea de tiempo |
+| Tarjeta | Recuadro que representa una actividad en el tablero del turno |
+| Fila | Renglón que representa una actividad en la línea de tiempo: su hora, su nombre y sus datos en una frase |
+| Intervalo disponible | Tiempo sin actividades entre dos filas de la línea de tiempo |
 
 ## Bitácora de cambios
 
@@ -706,8 +716,193 @@ Términos que usa el sistema en sus pantallas, en este documento y en el código
 | 2026-10-16 | Diseño de Interfaces | Sección 5.1 | En la tarjeta en curso, las precauciones van en una línea y los pasos se pliegan | Revisión del usuario antes de la presentación: con los pasos abiertos, la tarjeta ocupaba toda la pantalla del celular y contradecía la calma del diseño |
 | 2026-10-14 | Ambas | Secciones 5.1 y 14 | Se construye la información de la actividad por bloques y se agrega el bloque "Precauciones de seguridad". Los catálogos pasan de lista desplegable con "Otro" a un campo con sugerencias que se va llenando. "Lista para iniciar" es un aviso, no impide iniciar. Pasos y precauciones a la vista en la tarjeta en curso; proyecto en el detalle. Se agregan al glosario Información de la actividad y Lista para iniciar | Revisión del usuario: el Operario solo tenía un texto libre para saber qué hacer y la decisión D del 2026-10-10 no estaba construida. El usuario pidió sumar las precauciones de seguridad. El campo con sugerencias evita el paso extra de elegir "Otro" para cada herramienta |
 | 2026-10-14 | Diseño de Interfaces | Secciones 6.2 y 6.4 | Atkinson Hyperlegible Mono sale del sistema: los códigos van en Figtree, semibold y con números de ancho fijo. Reglas nuevas: datos en un renglón sin puntos medios, y paneles con jerarquía (una lista de apoyo va sobre el fondo; los indicadores, en una sola franja) | Revisión con el enfoque del plugin de diseño `frontend-design`: la letra monoespaciada en datos pequeños, los puntos medios entre datos y un panel igual para todo son rasgos de plantilla que hacen ver la interfaz genérica. Los formatos de código y NIT no tienen los caracteres que se confunden en Figtree |
+| 2026-10-23 | Diseño de Interfaces | Secciones 5.1, 6.1 a 6.5 y 14 | Rediseño del Operario v3 ("Planificador sereno", plan en `docs/plan_rediseno_operario_v3.md`, diseño en `docs/disenos/operario_v3/`). Inicio responde "¿qué hago ahora?" y deja las barras del turno y de la jornada para Hoy; Hoy es una línea de tiempo de solo lectura, con filas en lugar de tarjetas; la ejecución (iniciar, pausar, finalizar y devolver) pasa al detalle, que en celular ocupa toda la pantalla; el tiempo se muestra en horas y minutos, sin cronómetro. Principal azul `#2B5B84` en lugar del aqua, Hanken Grotesk en lugar de Figtree, sin sombra en cada elemento, etiquetas solo para las excepciones. Sin coral: la sobrecarga se raya en rojo y el logo usa el principal. La información pasa a gris con su ícono. Código `ACT-` para las actividades nuevas. "Marcar salida" solo en Inicio. Glosario: Fila, Lo que sigue y Registro de ejecución | El usuario rediseñó la vista del Operario con varios asistentes (Google Stitch y Claude): la versión anterior se veía genérica, con lenguaje de planta industrial, y saturaba la pantalla con el cronómetro y los botones en el día. GestLab es para equipos de cualquier área. Decisiones 1 a 5 del plan confirmadas por el usuario. Colores medidos con `herramientas/contraste.py` |
+| 2026-10-23 | Diseño de Interfaces | Secciones 6.1 a 6.5 y 14 | Correcciones tras la revisión del agente `profesor-interfaces`: Carlos pasa a ser operario de una tostadora de café; la actividad Urgente pendiente se ve en Hoy y en Inicio; la pantalla después de la salida se llama "balance de la jornada" (el "cierre de jornada" es el proceso del sistema); el estado va como texto con ícono y solo las excepciones llevan etiqueta (se define la de Hora fija); la Baja lleva su guion; retroalimentación de las acciones del detalle y Devolver como acción de baja; "registro de ejecución", "renglón" e "intervalo disponible" como únicos nombres. Glosario: Línea "Ahora", Tiempo disponible, Hoja inferior y Balance de la jornada | Revisión de contradicciones de la Etapa 1. Decisiones del usuario sobre la persona, la urgente en Inicio y el nombre de la pantalla |
+| 2026-10-23 | POO | Sección 5.1 | Si el turno del operario todavía no empieza y no tiene nada en curso, lo pendiente se proyecta desde el inicio del turno y no desde ahora | Rediseño del Operario v3, Etapa 4: antes del turno, la línea de tiempo mostraba las actividades de horario flexible a la hora actual, debajo de "Inicio del turno", y no seguía el orden de las horas |
 
 ### Texto original de las secciones modificadas (para referencia)
+
+**Rediseño del Operario v3 (previo al 2026-10-23).** Texto de cada fragmento antes del cambio:
+
+*5.1, información en el detalle:*
+> - El Operario ve la información en el detalle de la actividad; mientras la tiene en curso, la tarjeta muestra las precauciones en una línea y los pasos plegados ("Ver los 4 pasos"), que se abren con un toque sin salir de Hoy. El detalle también dice a qué proyecto pertenece.
+
+*5.1, código de la actividad:*
+> - Cada actividad recibe un código consecutivo por empresa (por ejemplo, `OT-0042`) y registra la ubicación donde se realiza (línea, máquina o área).
+
+*6.1, perfil ampliado:*
+> Quienes usan GestLab son diversos: personas jóvenes y mayores, de todo género y con distintos niveles de familiaridad con la tecnología, en roles técnicos y administrativos.
+
+*6.1, necesidad de registrar la ejecución:*
+> - Registrar inicio/pausa/reanudación/finalización de una actividad de forma rápida.
+
+*6.1, pantallas 2, 3 y 4:*
+> 2. Inicio: la página que recibe al Operario después de iniciar sesión; nunca llega directo a sus actividades. Muestra el saludo, la hora actual con la barra del turno (cuánto del turno ha pasado), la barra de la jornada (lo trabajado, lo que falta y lo libre; si el trabajo no cabe, la parte que pasa de la capacidad se ve rayada en coral), cuántas actividades tiene y cuál sigue, y los avisos del turno (15 minutos antes del inicio y del fin, y la llegada tarde). Sus acciones dependen de la asistencia:
+>    - Antes de marcar la entrada: "Marcar entrada" como única acción principal (al marcarla pasa a Hoy) y "Ver mi día" para consultar Hoy en modo de lectura.
+>    - Con la entrada marcada: "Ir a mi día" y, al final, "Marcar salida".
+>    - Después de marcar la salida: el cierre de la jornada, con sus marcas, el tiempo trabajado, las actividades finalizadas y las que pasan a la siguiente jornada.
+> 3. Hoy: su día ordenado. El encabezado tiene la hora, la barra del turno y la barra de la jornada; no repite el saludo ni las cifras en una frase. La actividad en curso se ejecuta en su lugar del día, con cronómetro, control de estado, historial de pausas y observación final; ya no hay una pantalla aparte de ejecución. "Ordenar mi día" está en la línea de tiempo, justo antes de lo que sigue; mientras se ordena, cada actividad muestra la hora en que quedaría y no se puede marcar la salida. "Marcar salida" va al final del día, después del fin del turno. Sin la entrada marcada, o después de la salida, Hoy se ve en modo de lectura: el día completo, sin acciones para iniciar o reanudar.
+> 4. Detalle de actividad (información completa antes de iniciar una tarea; desde aquí se inicia o se devuelve)
+
+*6.2, fila del Operario en la tabla de vistas:*
+> | Operario | Celular | **Inicio** (lo recibe: saludo, hora, barra del turno y de la jornada, marcar entrada y salida, y el cierre de la jornada) · **Hoy** (su fila del tablero en vertical: el día sobre una línea de tiempo, con la actividad en curso abierta en su hora; sin entrada, en modo de lectura) · **Semana** (horario por día, semana o lista) · **Resumen** (carga de la semana e indicadores propios) |
+
+*6.2, el detalle en celular:*
+> El detalle de una actividad se abre en una ventana sobre la vista en la que se esté, sin cambiar de pantalla.
+
+*6.2, paleta sobria:*
+> - **Paleta sobria con significado:** fondos casi neutros, un color principal para las acciones y un acento de marca (coral) reservado para el logo, el avatar y la sobrecarga.
+
+*6.2, tipografía legible:*
+> - **Tipografía legible:** Figtree para todo lo que se lee, incluidas las cifras, los códigos y el cronómetro (con números de ancho fijo).
+
+*6.2, paneles y sombras:*
+> - **Paneles con jerarquía:** el panel (superficie blanca con borde) encierra la superficie de trabajo principal de la pantalla y lo que se consulta junto. Una lista de apoyo, como "Por atender" en Equipo, va sobre el fondo con su título. Los indicadores de un resumen van juntos en una sola franja, no en una tarjeta por número.
+> - **Bordes suaves y sombras muy suaves:** los paneles se separan del fondo por el contraste de color, un borde tenue y una sombra apenas visible. Los controles (campos y botones secundarios) llevan un borde más marcado, con contraste de al menos 3:1.
+
+*6.2, Gestalt semejanza:*
+> las etiquetas de rol y de prioridad comparten la forma de píldora
+
+*6.2, Gestalt figura y fondo:*
+> - **Figura y fondo:** los paneles blancos se separan del fondo gris neutro; al abrir un diálogo
+
+*6.2, Gestalt cierre:*
+> - **Cierre:** la línea de tiempo del Operario se lee como una sola línea continua aunque esté punteado después de "Ahora".
+
+*6.3, título:*
+> ### 6.3 Identidad visual: sistema de color "Calma operativa" (Diseño de Interfaces)
+
+*6.3, fundamentos:*
+> - **Estudios de color y trabajo.** En el estudio de Nancy Kwallek (Universidad de Texas), las personas cometieron más errores en una oficina blanca que en una de color, y el espacio aqua (verde azulado) resultó el más agradable y productivo; las personas sensibles al entorno se sintieron abrumadas en espacios de colores intensos. Mehta y Zhu (Universidad de British Columbia, *Science*, 2009) mostraron que el rojo induce una motivación de alerta y evitación que mejora las tareas que exigen atención al detalle, mientras que el azul favorece la calma. De aquí salen tres decisiones: fondo general de color suave en lugar de una pantalla toda blanca, color principal aqua profundo y rojo reservado para lo que exige atención inmediata. Estos estudios se usan como respaldo, no como verdad absoluta: sus efectos varían según la persona.
+> - **Normas de color de la industria.** Los significados de los colores de estado siguen la norma ISO 3864 (rojo: peligro o prohibición; amarillo: precaución; verde: condición segura; azul: indicación u obligación), que los operarios ya conocen por la señalización de planta. La escala de prioridades sigue la jerarquía de riesgo de ANSI Z535 (amarillo para precaución, naranja para advertencia, rojo para peligro). Lo que está en estado normal va en gris, según el principio de la norma ISA-101 para interfaces de operación industrial: el color se reserva para lo que requiere acción.
+> - **Visión de personas mayores.** Con la edad, el cristalino se vuelve amarillento, el azul se percibe más oscuro y cuesta distinguir azules de verdes. Por eso se usan colores de saturación media, el azul no se usa en texto pequeño y el verde de "finalizada" se inclina hacia el amarillo para separarse del aqua principal.
+
+*6.3, teoría del color:*
+> - **Armonía complementaria:** el aqua principal (tono 190°) y el coral de marca (tono 9°) están separados 181° en la rueda de color. Siguiendo lo visto en clase, esta armonía se usa para destacar: el coral ocupa muy poca superficie: marca la identidad y, rayado, la sobrecarga.
+> - **Jerarquía por saturación y luminosidad:** el fondo es casi neutro (10 % de saturación, 96 % de luminosidad), el principal es firme (69 % de saturación, 28 % de luminosidad) y los estados intensos aparecen solo cuando hay algo que atender.
+> - **Proporción 60-30-10:** alrededor de 60 % de fondo y superficies, 30 % de texto y color principal, y 10 % de acento de marca y colores de estado.
+
+*6.3, tabla de base:*
+> | Fondo | `#F4F6F5` | Fondo general de todas las pantallas (gris neutro; evita la pantalla toda blanca) | — |
+> | Superficie | `#FFFFFF` | Tarjetas, tablas, diálogos (separa figura y fondo) | — |
+> | Principal | `#16697A` | Botones de acción principal, enlace activo, foco, actividad en curso, la línea "Ahora" y el tramo ya recorrido de la línea de tiempo | Texto blanco sobre principal 6,3:1; principal sobre el fondo 5,8:1 |
+> | Principal (hover/presionado) | `#0F5563` | Estado del botón principal al pasar el cursor o presionar | 7,1:1 sobre su fondo suave |
+> | Principal suave | `#E0EFF0` | Fondo de la etiqueta "En curso" y de elementos seleccionados | — |
+> | Acento de marca (coral) | `#E9806E` | Logo, avatar del usuario y sobrecarga (lo programado después de la hora de fin del turno, con un rayado). Nunca en texto | No se usa para texto |
+> | Texto principal | `#1F2A2E` | Títulos y texto (sin negro puro) | 14,7:1 sobre blanco |
+> | Texto secundario | `#5B6664` | Textos de apoyo, metadatos | 5,95:1 sobre blanco y 5,48:1 sobre el fondo |
+
+*6.3, tabla de estados:*
+> | Error, prioridad Urgente | `#A8322A` | `#FBE9E7` | `#8A2620` | ⚠ | ISO 3864 (peligro, prohibición) | 7,5:1 |
+> | Prioridad Alta | `#B34F0B` | `#FDEBDD` | `#8A3D08` | ▲ | ANSI Z535 (advertencia) | 6,6:1 |
+> | Advertencia, prioridad Media, actividad pausada, cambio de prioridad | `#E3A32B` | `#FBF1D9` | `#6B4A0E` | ! / ❚❚ / ↑ | ISO 3864 (precaución) | 7,2:1 |
+> | Confirmación, actividad finalizada, en turno | `#3E7B3A` | `#E6F0E2` | `#2F5F2C` | ✓ / ● | ISO 3864 (condición segura) | 6,4:1 |
+> | Información | `#2F5DA8` | `#E6EDF8` | `#24498A` | i | ISO 3864 (azul, indicación) | 7,5:1 |
+> | Normal: prioridad Baja, actividad por iniciar, fuera de turno (el fondo suave solo se usa en "Fuera de turno") | `#6B7478` | `#ECEFEF` | `#5B6664` | • / ○ | ISA-101 (lo normal en gris) | 5,15:1 (sin fondo, 5,95:1 sobre blanco) |
+
+*6.3, prioridades:*
+> - **Prioridades:** Urgente (bloque o etiqueta rojo lleno con texto blanco), Alta (fondo naranja suave con su texto oscuro), Media (fondo ámbar suave con su texto oscuro), Baja (texto gris, sin fondo). Solo lo urgente usa un bloque lleno. La intensidad del color crece con la urgencia y la etiqueta siempre muestra el nombre del nivel.
+
+*6.3, estados:*
+> - **Estados de actividad:** Sin asignar y Por iniciar (texto gris con su ícono, sin fondo, porque son lo normal), En curso (fondo principal suave), Pausada (ámbar suave), Finalizada (verde suave).
+> - **Estados nuevos** (colores provisionales, pendientes de validar con las pantallas construidas): Reprogramada (ámbar suave, con el texto "Retraso: 1 día" o los días que lleva), Devuelta (ámbar suave: espera una decisión del Administrador), No realizada (rojo suave con su texto oscuro: cuenta como incumplida), Cancelada (texto gris, sin fondo).
+> - **Jornada:** En turno (verde con punto ●), Fuera de turno (fondo gris suave con texto que lo indica). Lo programado después de la hora de fin del turno se marca con el rayado coral de sobrecarga.
+
+*6.3, información:*
+> - **Información:** avisos que no exigen acción (por ejemplo, la hora de fin de turno), siempre como fondo suave con el ícono "i", nunca como botón lleno, para no confundirse con una acción.
+
+*6.3, reglas 4 y 5:*
+> 4. El **coral de marca** nunca se usa en texto, etiquetas de estado ni botones de acción. Fuera de la identidad tiene un solo uso: marcar la sobrecarga, es decir, lo programado después de la hora de fin del turno. Ahí va siempre rayado y con su texto, nunca como relleno liso.
+> 5. El **azul de información** nunca se usa en texto pequeño ni como relleno de botón.
+
+*6.3, regla 7:*
+> (para eso se usa su texto oscuro `#6B4A0E`, 8,0:1 sobre blanco); y como relleno lleva siempre texto principal oscuro `#1F2A2E` (6,7:1), nunca blanco. Los demás colores base admiten texto blanco como relleno (rojo 6,7:1; naranja 5,2:1; verde 5,1:1; gris 4,8:1).
+
+*6.3, regla 8:*
+> 8. Ningún **gris de texto** es más claro que `#66716E` (5,06:1 sobre blanco y 4,66:1 sobre el fondo). El `#8A9592` queda prohibido para texto: solo alcanza 3,09:1.
+
+*6.3, precisiones:*
+> - **Bordes:** el borde de paneles y tablas es decorativo y tenue (`#E1E5E3`, gris neutro como el fondo). El borde de los controles (campos de formulario y botones secundarios) es `#7F8A87`: 3,57:1 sobre blanco y 3,29:1 sobre el fondo.
+> - **Sombra:** los paneles y tarjetas llevan una sombra muy suave (1 px de desplazamiento, 2 px de difuminado, texto principal al 6 % de opacidad). Los diálogos y avisos flotantes usan una más amplia (16 px y 40 px, al 18 %) para separarse de lo que tienen detrás.
+> - **Rayado de sobrecarga:** franjas diagonales de coral `#E9806E` sobre un fondo coral suave `#FBE5E0`. El texto que va encima es el principal `#1F2A2E` (12,2:1 sobre el fondo suave).
+> - **Logo:** un cuadro redondeado en principal suave `#E0EFF0`, con tres barras horizontales escalonadas en principal `#16697A`, como las tarjetas del tablero del turno, y una barra vertical coral `#E9806E` que representa la línea "Ahora". El dibujo está en un solo archivo (`app/static/favicon.svg`) y se usa en la pestaña del navegador, en la barra superior y en el inicio de sesión. Una empresa sin logo propio muestra este logo junto a su nombre.
+> - **Texto sobre el coral de marca:** la inicial del logo y del avatar se escribe con el texto principal `#1F2A2E` (5,4:1). El coral sigue sin usarse como color de texto.
+> - **Ícono de "En curso":** ▶, sobre el fondo principal suave con texto `#0F5563`.
+> - **Tarjetas sin borde lateral de color:** la prioridad de una actividad se indica solo con su etiqueta (color, ícono y texto).
+
+*6.3, conflictos:*
+> - **Coral de marca (9°) frente a rojo de Urgente (4°) y naranja de Alta (25°):** son tonos cálidos cercanos. Se separan por luminosidad (el coral es claro y rosado, el rojo y el naranja son oscuros), por uso (el coral nunca aparece en etiquetas de estado) y porque las prioridades siempre llevan su texto.
+> - **Coral en la identidad y en la sobrecarga:** se distinguen por la forma. En el logo y el avatar es un relleno liso; en la sobrecarga es un rayado con texto.
+> - **Aqua principal (190°) frente a azul de información (217°) y verde de finalizada (116°):** se separan por tono, por forma de uso (el principal es relleno de botón; información y finalizada son fondos suaves) y por el ícono que acompaña a cada estado.
+
+*6.3, texto de los bloques de categoría:*
+> El texto de los bloques es siempre el texto principal `#1F2A2E` (al menos 11,7:1 sobre cada fondo)
+
+*6.3, ícono de En curso en Lucide:*
+> En curso (reproducir), Finalizada (visto bueno), Por iniciar (círculo).
+
+*6.4, tabla de fuentes y conflicto:*
+> | **Figtree** | Todo lo que se *lee*: títulos, textos, botones, etiquetas, tablas y menús; también las cifras y el cronómetro | Fuente sin serifas de formas simples y aspecto neutro y amable. Es más angosta que Lexend, la fuente anterior, así que caben más datos por renglón en fichas y tablas. Licencia SIL Open Font License |
+> **Conflicto identificado y cómo se resuelve:** en Figtree, la `I` mayúscula y la `l` minúscula se parecen. Ese riesgo no aparece en los datos que se leen carácter por carácter: el código de actividad tiene la forma `OT-0063` (dos letras fijas y cifras) y el NIT solo tiene cifras y guion. Por eso los códigos también van en Figtree, en semibold y con números de ancho fijo (`tabular-nums`), igual que las cifras (cantidades, porcentajes, duraciones, horas y el cronómetro), para que se alineen en columnas y el cronómetro no "salte" mientras corre.
+
+*6.4, tabla de tamaños:*
+> | Título de pantalla | 22 px | 26 px |
+> | Título de sección | 20 px | 18 px |
+> | Título de tarjeta | 16 px, semibold | 16 px, semibold |
+> | Texto | 16 px | 15 px |
+> | Texto secundario | 14 px | 14 px |
+> | Etiquetas | 13 px | 13 px |
+> | Cronómetro | 40 px | 40 px |
+>
+> En escritorio el título de sección es más pequeño que en celular porque encabeza paneles dentro de una pantalla con más información. Interlineados: 1,25 en el título de pantalla, 1,3 en el de sección, 1,35 en el de tarjeta, 1,5 en el texto, 1,45 en el texto secundario y 1,2 en las etiquetas.
+
+*6.4, regla 1:*
+> 1. **Solo dos pesos en Figtree:**
+
+*6.4, regla 5:*
+> 5. **Los códigos, las cifras y el cronómetro van en Figtree con números de ancho fijo.** Una sola familia de letra en toda la interfaz; el código se distingue con el peso semibold.
+
+*6.4, implementación:*
+> **Implementación:** como el despliegue es local (Sección 7) y la planta puede no tener conexión estable a internet, los archivos de la fuente se incluyen
+
+*6.5, metáfora central:*
+> **Metáfora central: la planilla del turno** (organizacional). Es la planilla que se pega en la pared de la planta para saber quién hace qué y a qué hora. En la interfaz se llama tablero del turno. Se ve en Equipo (Administrador) y en Hoy (Operario).
+> - El Administrador ve la planilla completa: una fila por persona y las horas de izquierda a derecha.
+> - El Operario ve su propio renglón, en vertical: las horas de arriba abajo.
+> - Cada actividad es una tarjeta puesta en su hora.
+> - La línea "Ahora", en el color principal, marca la hora actual.
+> - Lo que pasa de la hora de fin del turno se raya, como tiempo fuera del turno.
+
+*6.5, reproductor y cronómetro:*
+> | Botones de un reproductor (reproducir, pausa y visto bueno) | Iniciar, pausar y finalizar una actividad | Funcional | Hoy (Operario), en la actividad en curso |
+> | Cronómetro | El tiempo que lleva la actividad en curso | Visual | Hoy (Operario), en la actividad en curso |
+
+*6.5, franjas:*
+> | Franjas diagonales de zona restringida, como las de seguridad industrial | Lo que queda fuera del turno | Visual | Equipo (Administrador) y Hoy (Operario), después de la hora de fin |
+
+*6.5, qué metáforas se ven hoy:*
+> **Qué metáforas se ven hoy.** Construidas: la planilla del turno, completa en Equipo (Administrador) y en su renglón vertical en Hoy (Operario), el candado, los botones del reproductor (iniciar, pausar y finalizar), el cronómetro, el marcador de mapa, las franjas de fuera del turno, la puerta de salida, el clip, la cámara y ordenar mi día con flechas. Pendientes: la carpeta (pantalla de Proyectos), la flecha de devolver, la lista de chequeo y el teléfono (información de la actividad) y arrastrar una tarjeta a otra persona.
+
+*6.5, contexto del usuario:*
+> - **Pensar en el usuario y su contexto:** la planilla del turno y las franjas de zona restringida son objetos de la planta.
+
+*6.5, límites:*
+> (por ejemplo, "2 h 55 min de trabajo · 4 h 05 min disponibles").
+> - El renglón vertical del Operario se alarga en los días cargados. Por eso los espacios sin actividad se comprimen a una línea (por ejemplo, "Disponible · 1 h 30 min").
+
+*14, Actividad:*
+> | Actividad | Unidad de trabajo que se programa, se asigna y se ejecuta. Su código es el de su orden de trabajo (por ejemplo, `OT-0042`); en los textos siempre se dice "actividad", no "orden" |
+
+*14, Jornada:*
+> | Jornada | El día de trabajo de un operario. Mientras no existan los turnos, coincide con el día calendario en la zona horaria de la empresa |
+
+*14, Línea de tiempo:*
+> | Línea de tiempo | Vista del Operario: las horas del día de arriba abajo, con sus actividades |
+> | Inicio | Página que recibe al Operario después de iniciar sesión: su turno, su jornada y la marca de entrada y de salida |
+
+*14, Tarjeta e intervalo:*
+> | Tarjeta | Recuadro que representa una actividad en el tablero o en la línea de tiempo |
+> | Intervalo disponible | Tiempo sin actividades entre dos tarjetas de la línea de tiempo |
 
 **Sección 6.2, decisión "Paleta sobria" (previo al sistema de color, 2026-10-02):**
 > - "**Paleta sobria:** fondos neutros y un solo color de acento. Los colores fuertes se reservan para lo que tiene significado (prioridades, avisos) y siempre van acompañados de texto."

@@ -17,7 +17,7 @@ class Actividad:
                  proyecto_id=None, requerimiento_id=None, informacion=None):
         # Una actividad nueva no tiene id ni historial: eso lo pone desde_documento al leerla.
         self.id = None
-        self.codigo = codigo                    # Consecutivo por empresa, por ejemplo "OT-0042".
+        self.codigo = codigo                    # Consecutivo por empresa, por ejemplo "ACT-0042" (las anteriores al 2026-10-23, "OT-").
         self.titulo = titulo
         self.descripcion = descripcion
         # Lo que el Administrador deja para hacer el trabajo, por bloques (pasos, herramientas...).

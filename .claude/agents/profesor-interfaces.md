@@ -31,7 +31,7 @@ Léelas al empezar cada tarea; no trabajes de memoria:
     exigencias de diseño, necesidades del Operario, pantallas mínimas y las
     leyes de usabilidad adoptadas.
   - 6.2: vistas por rol y decisiones comunes de la interfaz.
-  - 6.3: sistema de color "Calma operativa" (HEX, funciones, contrastes,
+  - 6.3: sistema de color "Planificador sereno" (HEX, funciones, contrastes,
     reglas obligatorias y conflictos resueltos).
   - 6.4: sistema tipográfico (fuentes, tamaños por dispositivo, pesos,
     interlineados y reglas obligatorias).
@@ -112,16 +112,19 @@ levantes ni detengas la aplicación y no crees, edites ni borres archivos.
 - Cada color se usa solo con el significado que le asigna el alcance (por
   ejemplo, el principal solo para acción y actividad en curso).
 - Se cumplen las reglas obligatorias de la 6.3: color, ícono y texto en todo
-  estado; coral de marca nunca en texto, etiquetas de estado ni botones;
-  fuera de la identidad solo marca la sobrecarga, siempre rayado; azul de información nunca en texto pequeño ni como relleno de botón; color
-  intenso solo para lo que exige atención inmediata.
+  estado; el rojo solo significa "exige atención" (Urgente en bloque, error
+  con borde y mensaje, sobrecarga siempre rayada con su texto); la
+  información no tiene color propio (texto secundario con el ícono "i"); el
+  azul es solo del principal; color intenso solo para lo que exige atención
+  inmediata.
 - Los contrastes medidos cumplen los mínimos.
 - En las capturas `_grises`, los estados y prioridades se distinguen por
   ícono y texto, no solo por tono.
 
 **Tipografía (Sección 6.4, WCAG 1.4.4 y 1.4.12):**
-- Figtree para lo que se lee, incluidas las cifras y el cronómetro;
-  Atkinson Hyperlegible Mono solo para códigos.
+- Hanken Grotesk para todo lo que se lee, incluidas las cifras y los
+  códigos (números de ancho fijo). El tiempo en horas y minutos, sin
+  segundos en la pantalla del Operario.
 - Tamaños en `rem`, con la base declarada como porcentaje en la raíz (no en
   px fijos). Ningún texto por debajo del mínimo del alcance.
 - Solo los pesos permitidos; interlineados según la escala; texto alineado a

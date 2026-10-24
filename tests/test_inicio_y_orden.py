@@ -109,3 +109,13 @@ def test_vista_previa_por_la_api(cliente_de, empresa, tres):
     assert [tramo["actividad_id"] for tramo in respuesta.get_json()["tramos"]] == ids
     assert cliente_de(empresa.admin).post("/orden-del-dia/vista-previa", json={"actividad_ids": ids},
                                           headers=PROPIA).status_code == 403
+
+
+# ---------- Antes del turno, la línea de tiempo arranca en el inicio del turno ----------
+
+def test_antes_del_turno_lo_pendiente_se_proyecta_desde_el_inicio_del_turno(servicios, empresa, crear_actividad):
+    turno(servicios, empresa, empresa.luis, "06:00", "14:00")    # Empieza dentro de tres horas.
+    crear_actividad([empresa.luis])
+
+    datos = programacion(servicios, empresa.luis)
+    assert datos["tramos"][0]["inicio"] == datos["turno"]["inicio"]

@@ -6,72 +6,61 @@
 /* ================= Fuentes (incluidas en el proyecto, sin depender de internet) ================= */
 
 @font-face {
-    font-family: "Figtree";
-    src: url("/static/fuentes/figtree-400.woff2") format("woff2");
+    font-family: "Hanken Grotesk";
+    src: url("/static/fuentes/hanken-grotesk-400.woff2") format("woff2");
     font-weight: 400;
     font-display: swap;
 }
 
 @font-face {
-    font-family: "Figtree";
-    src: url("/static/fuentes/figtree-600.woff2") format("woff2");
+    font-family: "Hanken Grotesk";
+    src: url("/static/fuentes/hanken-grotesk-600.woff2") format("woff2");
     font-weight: 600;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: "Bricolage Grotesque";
-    src: url("/static/fuentes/bricolage-grotesque-700.woff2") format("woff2");
-    font-weight: 700;
     font-display: swap;
 }
 
 :root {
     /* ---- Color: base e identidad (6.3) ---- */
-    --fondo: #F4F6F5;
+    --fondo: #F5F6F8;
     --superficie: #FFFFFF;
-    --principal: #16697A;
-    --principal-hover: #0F5563;
-    --principal-suave: #E0EFF0;
-    --marca: #E9806E;               /* Coral: logo, avatar y sobrecarga (rayado). Nunca texto ni estados. */
-    --marca-suave: #FBE5E0;         /* Fondo del rayado de sobrecarga; lleva texto principal (12,2:1) */
-    --texto: #1F2A2E;
-    --texto-secundario: #5B6664;    /* Regla 8: ningún gris de texto más claro que #66716E */
+    --principal: #2B5B84;           /* 7,2:1 sobre blanco. Acción, línea "Ahora", tramo recorrido, avance y logo */
+    --principal-hover: #22496B;
+    --principal-suave: #E8EEF4;     /* Fila en curso y elementos seleccionados; principal sobre él 6,1:1 */
+    --texto: #1B2230;
+    --texto-secundario: #566070;    /* Regla 8: ningún gris de texto más claro que este (5,9:1 sobre el fondo) */
     --texto-sobre-color: #FFFFFF;   /* Texto sobre rellenos (principal, rojo, verde) */
 
     /* ---- Color: estados (6.3). Base para rellenos, suave para fondos, texto para escribir encima ---- */
-    --error: #A8322A;               /* Error y prioridad Urgente */
-    --error-suave: #FBE9E7;
-    --error-texto: #8A2620;
+    --error: #B42318;               /* Error, prioridad Urgente y sobrecarga: "esto exige atención" */
+    --error-suave: #FDECEA;
+    --error-texto: #B42318;
+    --sobrecarga: rgb(180 35 24 / 0.25);  /* Franjas del rayado de sobrecarga: el rojo al 25 %, sobre --error-suave */
     --alta: #B34F0B;                /* Prioridad Alta */
     --alta-suave: #FDEBDD;
     --alta-texto: #8A3D08;
     --advertencia: #E3A32B;         /* Ámbar. Regla 7: solo como relleno y con texto oscuro. */
-    --advertencia-suave: #FBF1D9;
-    --advertencia-texto: #6B4A0E;
-    --exito: #3E7B3A;               /* Confirmación, finalizada, en turno */
-    --exito-suave: #E6F0E2;
-    --exito-texto: #2F5F2C;
-    --info: #2F5DA8;                /* Información: nunca en texto pequeño ni como relleno de botón */
-    --info-suave: #E6EDF8;
-    --info-texto: #24498A;
-    --neutro: #6B7478;              /* Lo normal va en gris: prioridad Baja, pendiente, fuera de turno */
-    --neutro-suave: #ECEFEF;
-    --neutro-texto: #5B6664;
+    --advertencia-suave: #FFF3DD;
+    --advertencia-texto: #8A5300;
+    --exito: #25704A;               /* Confirmación, finalizada, en turno */
+    --exito-suave: #E6F4EC;
+    --exito-texto: #25704A;
+    --neutro: #566070;              /* Lo normal y la información van en gris: Baja, por iniciar, avisos "i" */
+    --neutro-suave: #EEF0F3;
+    --neutro-texto: #566070;
 
-    /* Bordes: el de los paneles es decorativo; el de los controles debe verse (al menos 3:1). */
-    --borde: #E1E5E3;
-    --borde-control: #7F8A87;        /* 3,57:1 sobre blanco y 3,29:1 sobre el fondo */
+    /* Bordes: el de las superficies y las líneas finas es decorativo; el de los controles debe verse (3:1). */
+    --borde: #E1E5EA;
+    --borde-control: #7F8A99;        /* 3,5:1 sobre blanco y 3,2:1 sobre el fondo */
 
     /* ---- Tipografía (6.4). Tamaños de celular; los de escritorio están en la media query ---- */
-    --fuente-texto: "Figtree", system-ui, sans-serif;
-    --fuente-cifras: "Bricolage Grotesque", var(--fuente-texto);   /* La hora y las cifras que mandan */
+    --fuente-texto: "Hanken Grotesk", system-ui, sans-serif;
     --peso-normal: 400;
     --peso-fuerte: 600;
 
-    --tamano-h1: 1.375rem;          /* 22 px en celular; 26 px en escritorio */
+    --tamano-h1: 1.75rem;           /* 28 px en celular; 26 px en escritorio */
+    --tamano-nombre-detalle: 1.625rem; /* 26 px: nombre de la actividad en el detalle */
     --tamano-h2: 1.25rem;           /* 20 px en celular; 18 px en escritorio */
-    --tamano-h3: 1rem;              /* 16 px */
+    --tamano-h3: 1.0625rem;         /* 17 px en celular (nombre en la fila); 16 px en escritorio */
     --tamano-texto: 1rem;           /* 16 px en celular; 15 px en escritorio */
     --tamano-secundario: 0.875rem;  /* 14 px */
     --tamano-etiqueta: 0.8125rem;   /* 13 px: el mínimo */
@@ -118,9 +107,10 @@
     /* ---- Forma ---- */
     --radio: 0.75rem;
     --radio-control: 0.5rem;
-    --sombra: 0 1px 2px rgba(31, 42, 46, 0.06);             /* Muy suave: paneles y tarjetas */
-    --sombra-flotante: 0 16px 40px rgba(31, 42, 46, 0.18);  /* Diálogos y avisos flotantes */
+    --sombra-flotante: 0 16px 40px rgb(27 34 48 / 0.18);  /* Solo diálogos y avisos flotantes; las superficies no llevan sombra */
+    --velo: rgb(27 34 48 / 0.5);    /* Lo que queda detrás de un diálogo (figura y fondo) */
     --alto-control: 2.75rem;        /* Al menos 44 px: fácil de tocar en celular (Ley de Fitts) */
+    --alto-boton-principal: 3.25rem; /* 52 px: el botón principal en celular */
 
     /* ---- Horario (EventCalendar) ---- */
     --alto-franja-horario: 2rem;    /* Alto de 30 min: cabe el título de un bloque corto. Lo lee actividades-comun.js */
@@ -250,7 +240,7 @@ a {
     height: 2rem;
 }
 
-/* El coral de marca solo aparece en el logo, en el avatar y en la sobrecarga. */
+/* El avatar: círculo en el color del texto con las iniciales en blanco (15,9:1). */
 .avatar {
     display: grid;
     place-items: center;
@@ -258,8 +248,8 @@ a {
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    background: var(--marca);
-    color: var(--texto);
+    background: var(--texto);
+    color: var(--texto-sobre-color);
     font-weight: var(--peso-fuerte);
     font-size: var(--tamano-secundario);
 }
@@ -430,6 +420,7 @@ body.ancho-angosto {
     :root {
         --tamano-h1: 1.625rem;      /* 26 px */
         --tamano-h2: 1.125rem;      /* 18 px */
+        --tamano-h3: 1rem;          /* 16 px */
         --tamano-texto: 0.9375rem;  /* 15 px */
     }
 }
@@ -525,7 +516,6 @@ body.ancho-angosto {
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
-    box-shadow: var(--sombra);
     margin-bottom: var(--e5);
 }
 
@@ -613,10 +603,6 @@ body.ancho-angosto {
 
 .texto-suave {
     color: var(--texto-secundario);
-}
-
-.dato-fuerte {
-    font-weight: var(--peso-fuerte);
 }
 
 /* Estado vacío: explica qué pasa y qué hacer (Nielsen: ayuda y documentación). */
@@ -721,19 +707,6 @@ body.ancho-angosto {
     color: var(--texto-secundario);
 }
 
-/* Acciones de la tarjeta compacta (lo que está en curso cuando llega una urgente). */
-.tarjeta-compacta-acciones {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e3);
-}
-
-.tarjeta-compacta-acciones .boton-texto {
-    margin-top: 0;
-    padding-inline: 0;
-}
-
 /* Mostrar la contraseña al iniciar sesión. */
 .opcion-mostrar {
     display: flex;
@@ -826,10 +799,10 @@ body.ancho-angosto {
     gap: var(--e2);
 }
 
-/* Información que no pide una acción inmediata. */
+/* Información que no pide una acción inmediata: texto secundario con su ícono, sin color propio (6.3). */
 .aviso-info {
-    background: var(--info-suave);
-    color: var(--info-texto);
+    background: none;
+    color: var(--texto-secundario);
 }
 
 .aviso-bloque {
@@ -1163,7 +1136,7 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 
 /* Figura y fondo: lo que está detrás del diálogo se oscurece. */
 .dialogo::backdrop {
-    background: rgba(31, 42, 46, 0.5);
+    background: var(--velo);
 }
 
 .dialogo-encabezado {
@@ -1393,7 +1366,6 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: 0.8rem;
-    box-shadow: var(--sombra);
 }
 
 .tarjeta-login .marca {
@@ -1415,522 +1387,26 @@ html[data-color-bloques="categoria"] .leyenda-categoria {
 
 /* ================= Operario: vista "Hoy" (su fila del tablero, en vertical) ================= */
 
-.turno-encabezado {
-    margin-bottom: var(--e5);
-}
-
-.turno-encabezado h1,
-.turno-encabezado p {
-    margin: 0;
-}
-
-.turno-fecha {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
-}
-
-.turno-encabezado .aviso {
-    margin-top: var(--e3);
-}
-
-/* La línea de tiempo: la línea de las horas, de arriba abajo. Continua y en el color principal hasta
-   "Ahora"; punteada y gris en lo que falta (Gestalt: continuidad y cierre). */
-.linea-tiempo {
-    --linea-ancho-hora: 3.25rem;
-    --linea-x: calc(var(--linea-ancho-hora) + var(--e3));    /* Centro de la línea */
-    --linea-punto-y: 1.25rem;                                /* Altura del punto en cada nodo */
-    --linea-punto: 0.625rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.linea-nodo {
-    position: relative;
-    display: grid;
-    grid-template-columns: var(--linea-ancho-hora) minmax(0, 1fr);
-    column-gap: var(--e5);
-    padding-bottom: var(--e3);
-}
-
-.linea-nodo::before,
-.linea-nodo.actual::after {
-    content: "";
-    position: absolute;
-    left: calc(var(--linea-x) - 1px);
-    top: 0;
-    bottom: 0;
-    border-left: 2px dashed var(--borde-control);
-}
-
-.linea-nodo.pasado::before,
-.linea-nodo.actual::before {
-    border-left: 2px solid var(--principal);
-}
-
-/* En "Ahora" la línea cambia: continua hasta el punto, punteada después. */
-.linea-nodo.actual::before {
-    bottom: auto;
-    height: var(--linea-punto-y);
-}
-
-.linea-nodo.actual::after {
-    top: var(--linea-punto-y);
-}
-
-/* La línea empieza en el primer punto y termina en el último. */
-.linea-nodo:first-child::before {
-    top: var(--linea-punto-y);
-}
-
-.linea-nodo.actual:first-child::before,
-.linea-nodo.actual:last-child::after {
-    display: none;
-}
-
-.linea-nodo:last-child:not(.actual)::before {
-    bottom: auto;
-    height: var(--linea-punto-y);
-}
-
-.linea-hora {
-    padding-top: var(--e3);
-    color: var(--texto);
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-fuerte);
-    line-height: var(--interlineado-etiqueta);
-    text-align: right;
-}
-
-/* Hora calculada (la actividad no tiene hora fija): en gris y sin negrita. */
-.linea-hora-aproximada {
-    color: var(--texto-secundario);
-    font-weight: var(--peso-normal);
-}
-
-.linea-hora-ahora {
-    display: flex;
-    flex-direction: column;
-    color: var(--principal);
-}
-
-.linea-hora-ahora span + span {
-    font-size: var(--tamano-etiqueta);
-}
-
-.linea-punto {
-    position: absolute;
-    left: calc(var(--linea-x) - var(--linea-punto) / 2);
-    top: calc(var(--linea-punto-y) - var(--linea-punto) / 2);
-    width: var(--linea-punto);
-    height: var(--linea-punto);
-    border: 2px solid var(--borde-control);
-    border-radius: 50%;
-    background: var(--fondo);
-}
-
-.linea-nodo.pasado .linea-punto,
-.linea-nodo.actual .linea-punto {
-    border-color: var(--principal);
-    background: var(--principal);
-}
-
-.linea-nodo.actual .linea-punto {
-    box-shadow: 0 0 0 var(--e1) var(--principal-suave);
-}
-
-/* Fija cuya hora pasó sin iniciarse: el punto queda vacío, porque no se hizo. */
-.linea-nodo .linea-punto-pendiente {
-    background: var(--fondo);
-}
-
-.linea-nodo .linea-punto-urgente {
-    border-color: var(--error);
-    background: var(--error);
-    box-shadow: 0 0 0 var(--e1) var(--error-suave);
-}
-
-/* Espacio libre: una sola línea de texto, sin caja ni punto. */
-.linea-nodo-intervalo {
-    padding-bottom: var(--e2);
-}
-
-.linea-intervalo,
-.linea-ahora {
-    grid-column: 2;
-    margin: 0;
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
-}
-
-.linea-ahora {
-    padding-top: var(--e3);
-}
-
 /* ---------- Tarjetas: una por actividad, puesta en su hora ---------- */
 
-/* Toda la tarjeta es tocable: objetivo grande (Ley de Fitts). */
-.tarjeta {
-    display: flex;
-    align-items: center;
-    gap: var(--e3);
-    width: 100%;
-    min-height: 3rem;
-    padding: var(--e3) var(--e4);
-    border: 1px solid var(--borde);
-    border-radius: var(--radio);
-    background: var(--superficie);
-    box-shadow: var(--sombra);
-    color: var(--texto);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.tarjeta:hover {
-    border-color: var(--borde-control);
-}
-
-.tarjeta > .icono {
-    color: var(--texto-secundario);
-}
-
-.tarjeta-textos {
-    flex: 1;
-    min-width: 0;
-}
-
-.tarjeta-titulo,
-.tarjeta-datos {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e1) var(--e2);
-}
-
-.tarjeta-datos {
-    margin-top: var(--e1);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
-}
-
-/* "Siguiente": la próxima por atender. Usa el color principal suave, como todo lo que está en curso. */
-.etiqueta-siguiente {
-    background: var(--principal-suave);
-    color: var(--principal-hover);
-}
-
-/* Reprogramada o con la hora vencida: ámbar suave (color provisional, alcance 6.3). */
+/* Reprogramada o con la hora vencida: ámbar suave con reloj (alcance, Sección 6.3). */
 .etiqueta-retraso {
     background: var(--advertencia-suave);
     color: var(--advertencia-texto);
 }
 
-/* Finalizada: se queda en su hora, pero deja de competir por la atención. */
-.tarjeta-hecha {
-    border-color: transparent;
-    background: transparent;
-    box-shadow: none;
-}
-
-.tarjeta-hecha .tarjeta-titulo {
-    color: var(--texto-secundario);
-    font-weight: var(--peso-normal);
-}
-
-.tarjeta-hecha .tarjeta-titulo strong {
-    font-weight: var(--peso-normal);
-}
-
-/* En curso: el bloque que domina la pantalla, abierto en su lugar del día. */
-.tarjeta-en-curso,
-.tarjeta-urgente,
-.tarjeta-compacta {
-    padding: var(--e4);
-    border-radius: var(--radio);
-}
-
-.tarjeta-en-curso {
-    background: var(--principal);
-    color: var(--texto-sobre-color);
-}
-
-.tarjeta-urgente {
-    background: var(--error);
-    color: var(--texto-sobre-color);
-}
-
-.tarjeta-compacta {
-    background: var(--principal-suave);
-    color: var(--texto);
-}
-
-.tarjeta-en-curso h2,
-.tarjeta-urgente h2,
-.tarjeta-en-curso p,
-.tarjeta-urgente p,
-.tarjeta-compacta p {
-    margin: 0;
-}
-
-.tarjeta-en-curso h2,
-.tarjeta-urgente h2 {
-    margin-top: var(--e2);
-}
-
-.tarjeta-cabecera {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e2);
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-fuerte);
-    line-height: var(--interlineado-secundario);
-}
-
-.tarjeta-urgente .tarjeta-cabecera {
-    justify-content: flex-start;
-}
-
-.tarjeta-compacta .tarjeta-cabecera {
-    color: var(--principal-hover);
-}
-
-.tarjeta-lugar,
-.tarjeta-nota {
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
-}
-
-.tarjeta-lugar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e1) var(--e3);
-}
-
-.tarjeta-cabecera > span,
-.tarjeta-lugar > span {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--e1);
-}
-
-.tarjeta-nota {
-    margin-block: var(--e1) var(--e3);
-    color: var(--texto-secundario);
-}
-
-.tarjeta-tiempo {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--e3);
-    margin-top: var(--e3);
-    font-size: var(--tamano-secundario);
-}
-
-.cronometro {
-    font-variant-numeric: tabular-nums;
-    font-size: var(--tamano-cronometro);
-    font-weight: var(--peso-fuerte);
-    line-height: 1.1;
-}
-
-/* Avance contra el tiempo estimado. */
-.tarjeta-avance {
-    height: var(--e1);
-    margin-top: var(--e2);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--texto-sobre-color) 30%, transparent);
-    overflow: hidden;
-}
-
-.tarjeta-avance-relleno {
-    height: 100%;
-    border-radius: 999px;
-    background: var(--texto-sobre-color);
-}
-
-.tarjeta-acciones {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--e3);
-    margin-top: var(--e4);
-}
-
-.tarjeta-acciones button {
-    flex: 1;
-    padding-inline: var(--e3);
-    white-space: nowrap;
-}
-
-.tarjeta-tiempo > .cifra {
-    white-space: nowrap;
-}
-
-/* Botones del Operario: al menos 48 px de alto. */
-.linea-tiempo .boton,
-.linea-tiempo .boton-secundario {
-    min-height: 3rem;
-}
-
-/* Sobre un bloque de color, la acción principal es el botón blanco. */
-.tarjeta-en-curso .boton,
-.tarjeta-urgente .boton {
-    border-color: var(--superficie);
-    background: var(--superficie);
-    color: var(--texto);
-}
-
-.tarjeta-urgente .boton {
-    width: 100%;
-    margin-top: var(--e4);
-    color: var(--error-texto);
-}
-
-.tarjeta-en-curso .boton:hover {
-    background: var(--principal-suave);
-}
-
-.tarjeta-urgente .boton:hover {
-    background: var(--error-suave);
-}
-
-.tarjeta-en-curso .boton-secundario {
-    border-color: var(--texto-sobre-color);
-    background: transparent;
-    color: var(--texto-sobre-color);
-}
-
-.tarjeta-en-curso .boton-secundario:hover {
-    background: var(--principal-hover);
-}
-
-/* La prioridad Baja no tiene fondo: sobre el bloque principal su texto gris no se leería. */
-.tarjeta-en-curso .etiqueta.prioridad-baja {
-    color: var(--texto-sobre-color);
-}
-
-/* "Ver detalle" dentro de un bloque de color: enlace en blanco, sin borde. */
-.tarjeta-en-curso .boton-texto,
-.tarjeta-urgente .boton-texto {
-    color: var(--texto-sobre-color);
-}
-
-.tarjeta-enlace {
-    margin-top: var(--e2);
-    padding-inline: 0;
-}
-
-.tarjeta-urgente .tarjeta-enlace {
-    width: 100%;
-    justify-content: center;
-}
-
-.tarjeta-nota-urgente {
-    margin-top: var(--e3);
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
-}
-
-/* Sobre un bloque de color, el anillo de foco va en blanco: el principal no se vería. */
-.tarjeta-en-curso :focus-visible,
-.tarjeta-urgente :focus-visible {
-    outline-color: var(--texto-sobre-color);
-}
-
 /* ---------- Turno: estado, entrada, salida y fin del turno ---------- */
 
-/* El estado del turno va en su propio renglón: no se parte a la mitad en el celular. */
-.turno-estado {
-    display: block;
-    color: var(--texto-secundario);
-}
-
-.turno-estado::before {
-    content: "";
-    display: inline-block;
-    width: var(--e2);
-    height: var(--e2);
-    margin: 0 var(--e1) 0 0;
-    border-radius: 50%;
-    background: var(--neutro);
-    vertical-align: 0.1em;
-}
-
-.turno-estado.en-turno {
-    color: var(--exito-texto);
-}
-
-.turno-estado.en-turno::before {
-    background: var(--exito);
-}
-
 /* Datos del cierre de la jornada, en Inicio (alcance, Sección 6.1). */
-.portada-datos {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: var(--e2) var(--e4);
-}
-
-.portada-datos dt {
-    color: var(--texto-secundario);
-}
-
-.portada-datos dd {
-    margin: 0;
-    font-weight: var(--peso-fuerte);
-    text-align: right;
-}
 
 .portada-nota {
     margin: 0;
 }
 
-.linea-marca {
-    margin: 0;
-    padding-top: var(--e3);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.linea-marca strong {
-    color: var(--texto);
-}
-
-.linea-tiempo .linea-nodo > .boton {
-    justify-self: start;
-    margin-top: var(--e1);
-}
-
-/* Lo que queda después del turno se raya, como tiempo fuera del turno (alcance, Sección 6.5). */
-.linea-fin-turno {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e2) var(--e3);
-    min-height: 3rem;
-    padding: var(--e2) var(--e4);
-    border: 1px dashed var(--borde-control);
-    border-radius: var(--radio);
-    background: repeating-linear-gradient(135deg, var(--neutro-suave) 0 var(--e2), transparent var(--e2) var(--e4));
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.linea-fin-turno .linea-marca {
-    padding-top: 0;
-}
-
-/* Hora fija: candado y texto, en gris neutro (no es un estado ni una prioridad). */
+/* Hora fija: fondo gris suave, candado y texto principal (13,9:1). No es una alerta: dice que no se mueve. */
 .etiqueta-hora-fija {
     background: var(--neutro-suave);
-    color: var(--neutro-texto);
+    color: var(--texto);
 }
 
 /* ---------- Ordenar el día ---------- */
@@ -2443,7 +1919,6 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: var(--radio);
-    box-shadow: var(--sombra);
 }
 
 .indicador {
@@ -2720,7 +2195,7 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     border-bottom: none;
 }
 
-/* Cuadro del logo. Sin logo muestra la inicial en gris: el coral queda solo para la marca. */
+/* Cuadro del logo. Sin logo muestra la inicial en gris. */
 .logo-cuadro {
     display: grid;
     place-items: center;
@@ -2920,8 +2395,8 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 }
 
 .etiqueta.asistencia-corregida {
-    background: var(--info-suave);
-    color: var(--info-texto);
+    background: var(--neutro-suave);
+    color: var(--neutro-texto);
 }
 
 /* Sin marca con turno asignado (posible ausencia) o sin salida de una jornada anterior: requieren al Administrador. */
@@ -3339,7 +2814,7 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     border-left: 1px dotted var(--borde);
 }
 
-/* Lo que no es turno, rayado en gris; lo que pasa del fin del turno, rayado en coral (sobrecarga). */
+/* Lo que no es turno, rayado en gris; lo que pasa del fin del turno, rayado en rojo (sobrecarga). */
 .tablero-fuera-turno,
 .tablero-sobrecarga {
     position: absolute;
@@ -3354,8 +2829,8 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
 
 .tablero-sobrecarga {
     z-index: 2;
-    background: repeating-linear-gradient(135deg, var(--marca) 0 var(--e1), transparent var(--e1) var(--e3));
-    opacity: 0.55;
+    /* Va encima de las tarjetas: entre franjas queda transparente para que su texto se siga leyendo. */
+    background: repeating-linear-gradient(135deg, var(--sobrecarga) 0 var(--e1), transparent var(--e1) var(--e3));
 }
 
 /* La línea "Ahora", en el color principal, cruza todas las filas (Gestalt: continuidad). */
@@ -3658,44 +3133,6 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     color: var(--advertencia-texto);
 }
 
-/* En la tarjeta en curso: las precauciones en una línea y los pasos plegados, para que la tarjeta
-   no ocupe toda la pantalla. */
-.tarjeta-precauciones,
-.tarjeta-pasos {
-    margin: var(--e2) 0 0;
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
-}
-
-.tarjeta-precauciones {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--e2);
-}
-
-.tarjeta-precauciones .icono {
-    flex-shrink: 0;
-    margin-top: 0.15em;
-}
-
-.tarjeta-pasos summary {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--e2);
-    min-height: var(--alto-control);
-    font-weight: var(--peso-fuerte);
-    cursor: pointer;
-    list-style: none;
-}
-
-.tarjeta-pasos summary::-webkit-details-marker {
-    display: none;
-}
-
-.tarjeta-pasos .lista-informacion {
-    margin-bottom: var(--e2);
-}
-
 /* En la columna de estado de Actividades, "Falta información" va debajo del estado, a su medida. */
 .dato-doble > .etiqueta {
     display: flex;
@@ -3706,15 +3143,29 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     margin-top: var(--e1);
 }
 
-.tarjeta-pasos + .tarjeta-tiempo,
-.tarjeta-precauciones + .tarjeta-tiempo {
-    margin-top: var(--e3);
+/* ================= Operario: Inicio (alcance, Sección 6.1; diseño en docs/disenos/operario_v3/) ================= */
+/* Responde "¿qué hago ahora?". Se separa con espacio y líneas finas; la superficie blanca solo
+   agrupa la fila de lo que sigue. Las acciones van abajo, al alcance del pulgar. */
+
+.texto-secundario {
+    color: var(--texto-secundario);
 }
 
-/* ================= Operario: Inicio y encabezado de Hoy (alcance, Sección 6.1) ================= */
+.inicio {
+    display: flex;
+    flex-direction: column;
+    gap: var(--e5);
+}
+
+.inicio > * {
+    margin: 0;
+}
 
 .inicio-encabezado {
-    margin-bottom: var(--e4);
+    display: grid;
+    gap: var(--e2);
+    padding-bottom: var(--e5);
+    border-bottom: 1px solid var(--borde);
 }
 
 .inicio-encabezado h1,
@@ -3722,43 +3173,150 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     margin: 0;
 }
 
-.inicio-encabezado + .aviso {
-    margin-bottom: var(--e4);
+.inicio-fecha {
+    color: var(--texto-secundario);
 }
 
-.inicio-panel {
+.inicio-turno {
     display: grid;
-    gap: var(--e4);
-    padding: var(--e5);
+    gap: var(--e1);
 }
 
-.inicio-panel > * {
+.inicio-turno-texto {
+    color: var(--texto-secundario);
+}
+
+.inicio-turno-texto strong {
+    color: var(--texto);
+}
+
+.punto-en-turno {
+    display: inline-block;
+    width: 0.625rem;
+    height: 0.625rem;
+    margin-right: var(--e2);
+    border-radius: 50%;
+    background: var(--exito);
+}
+
+.inicio-turno-texto .texto-en-turno {
+    color: var(--exito-texto);
+}
+
+/* Avisos del turno como una línea con su ícono, sin caja (6.1). */
+.linea-advertencia,
+.linea-info {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--e2);
+}
+
+.linea-advertencia {
+    color: var(--advertencia-texto);
+}
+
+.linea-info {
+    color: var(--texto-secundario);
+}
+
+.linea-advertencia .icono,
+.linea-info .icono {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: 0.2em;
+}
+
+.inicio-ahora {
+    display: grid;
+    gap: var(--e5);
+}
+
+.inicio-ahora > *,
+.inicio-ahora p,
+.inicio-ahora h2 {
     margin: 0;
 }
 
-.inicio-subtitulo {
-    margin: var(--e2) 0 0;
-    font-size: var(--tamano-h3);
-    line-height: var(--interlineado-h3);
+.inicio-cabeza {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--e2);
 }
 
-.inicio-nota {
+.inicio-rotulo {
     color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
+    font-size: var(--tamano-texto);
+    font-weight: var(--peso-fuerte);
+    line-height: var(--interlineado-texto);
 }
 
-/* Lo que sigue: se toca para ir a Hoy. */
+.inicio-actividad-nombre {
+    font-size: var(--tamano-nombre-detalle);
+    line-height: var(--interlineado-h1);
+}
+
+/* El estado va como texto con su ícono, sin etiqueta (6.2). */
+.inicio-estado-en-curso {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--principal);
+    font-weight: var(--peso-fuerte);
+}
+
+.inicio-estado-en-curso .icono {
+    width: 0.875rem;
+    height: 0.875rem;
+    stroke-width: 3;
+}
+
+.inicio-en-curso,
+.inicio-sigue-bloque {
+    display: grid;
+    gap: var(--e3);
+}
+
+.inicio-avance {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--e1) var(--e4);
+}
+
+/* Barra de avance: el tiempo trabajado contra lo estimado (metáfora, 6.5). */
+.barra-avance {
+    height: 0.5rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--borde);
+}
+
+.barra-avance-relleno {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--principal);
+}
+
+/* Lo que sigue: toda la fila abre el detalle. Es lo único que va sobre una superficie. */
 .inicio-sigue {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--e3);
+    width: 100%;
     min-height: var(--alto-control);
-    padding: var(--e3) var(--e4);
+    padding: var(--e4) var(--e5);
     border: 1px solid var(--borde);
-    border-radius: var(--radio-control);
+    border-radius: var(--radio);
+    background: var(--superficie);
     color: var(--texto);
-    text-decoration: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
 .inicio-sigue:hover {
@@ -3770,170 +3328,91 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     gap: var(--e1);
 }
 
-.inicio-sigue-etiqueta {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
+.inicio-sigue-textos strong {
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
 }
 
-.inicio-acciones {
-    display: grid;
-    justify-items: center;
-    gap: var(--e3);
-}
-
-.inicio-acciones .boton-bloque {
-    width: 100%;
-}
-
-/* La hora, grande, y la barra del turno: cuánto del turno ya pasó. */
-.reloj-turno > * {
-    margin: 0;
-}
-
-.reloj-hora {
-    font-size: var(--tamano-cronometro);
-    font-weight: var(--peso-fuerte);
-    line-height: 1.1;
-}
-
-.reloj-estado {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.barra-turno {
-    height: var(--e2);
-    margin-top: var(--e3);
-    overflow: hidden;
-    border-radius: var(--e1);
-    background: var(--neutro-suave);
-}
-
-.barra-turno-relleno {
-    height: 100%;
-    background: var(--principal);
-}
-
-.barra-extremos {
-    display: flex;
-    justify-content: space-between;
-    margin-top: var(--e1);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-}
-
-/* La jornada en una barra: lo trabajado, lo que falta y, si no cabe, lo que pasa rayado en coral. */
-.barra-jornada-pista {
-    position: relative;
-    display: flex;
-    height: var(--e4);
-    overflow: hidden;
-    border-radius: var(--e1);
-    background: var(--neutro-suave);
-}
-
-.barra-trabajado {
-    background: var(--principal);
-}
-
-.barra-por-hacer {
-    background: color-mix(in srgb, var(--principal) 35%, var(--superficie));
-}
-
-.barra-exceso {
-    position: absolute;
-    inset-block: 0;
-    right: 0;
-    border-left: 2px solid var(--texto);
-    background: repeating-linear-gradient(135deg, var(--marca) 0 var(--e1), transparent var(--e1) var(--e3));
-}
-
-.barra-leyenda {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--e1) var(--e4);
-    margin: var(--e2) 0 0;
-    padding: 0;
-    list-style: none;
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.barra-leyenda li {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--e1);
-}
-
-.barra-leyenda li::before {
-    content: "";
-    width: var(--e4);
-    height: var(--e2);
-    border-radius: 2px;
-}
-
-.barra-leyenda strong {
-    color: var(--texto);
-}
-
-.leyenda-trabajado::before { background: var(--texto); }
-.leyenda-por-hacer::before { background: color-mix(in srgb, var(--texto) 30%, var(--superficie)); }
-.leyenda-libre::before { background: var(--neutro-suave); }
-.leyenda-exceso::before {
-    background: repeating-linear-gradient(135deg, var(--marca) 0 2px, transparent 2px 5px);
-    box-shadow: inset 0 0 0 1px var(--marca);
-}
-
-.barra-jornada-aviso {
+.inicio-fija {
     display: flex;
     align-items: flex-start;
-    gap: var(--e2);
-    margin: var(--e2) 0 0;
-    color: var(--advertencia-texto);
-    font-size: var(--tamano-secundario);
+    gap: var(--e3);
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+    color: var(--texto-secundario);
 }
 
-.barra-jornada-aviso .icono {
+.inicio-fija .icono {
     flex-shrink: 0;
     margin-top: 0.15em;
 }
 
-.turno-encabezado .reloj-turno + div {
-    margin-top: var(--e4);
+.inicio-fija strong {
+    color: var(--texto);
 }
 
-.turno-encabezado #barra-jornada {
-    margin-top: var(--e4);
-}
-
-/* Hoy sin la entrada marcada, o después de la salida: modo de lectura. */
-.aviso-lectura {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e2) var(--e3);
-}
-
-.aviso-lectura-texto {
-    display: inline-flex;
-    align-items: flex-start;
+/* La urgente: el único bloque rojo lleno (6.3). */
+.inicio-urgente {
+    display: grid;
     gap: var(--e2);
+    padding: var(--e5);
+    border-radius: var(--radio);
+    background: var(--error);
+    color: var(--texto-sobre-color);
 }
 
-.aviso-lectura .boton-texto {
-    min-height: 0;
-    padding: 0;
+.inicio-urgente > * {
+    margin: 0;
 }
 
-/* "Ordenar mi día", en la línea de tiempo antes de lo que sigue. */
-.linea-ordenar {
-    grid-column: 2;
-    justify-self: start;
-    padding-inline: 0;
+.inicio-urgente-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    font-weight: var(--peso-fuerte);
 }
 
-/* Lo que pasa del fin del turno: su horario y cuánto implica quedarse, con el coral de la sobrecarga. */
-.tarjeta-fuera-turno,
+.inicio-acciones {
+    display: grid;
+    gap: var(--e3);
+    margin-top: auto;
+    text-align: center;
+}
+
+.inicio-acciones > p {
+    margin: 0;
+}
+
+.boton-principal-grande {
+    width: 100%;
+    min-height: var(--alto-boton-principal);
+    font-size: var(--tamano-h3);
+}
+
+.enlace-grande {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    color: var(--principal);
+    font-weight: var(--peso-fuerte);
+    text-decoration: none;
+}
+
+.enlace-grande:hover {
+    text-decoration: underline;
+}
+
+/* En celular, las acciones quedan al fondo de la pantalla, encima de la barra de vistas. */
+@media (max-width: 50em) {
+    /* Alto de la pantalla menos la barra superior; el relleno de abajo deja libre la barra de vistas. */
+    .inicio {
+        min-height: calc(100dvh - 3.25rem);
+        padding-bottom: calc(3.8rem + var(--e5));
+    }
+}
+
+/* Al ordenar el día: el horario de cada actividad y cuánto implica quedarse, con el rojo de la sobrecarga. */
 .orden-horario {
     display: flex;
     flex-wrap: wrap;
@@ -3943,344 +3422,400 @@ html[data-color-bloques] .ec.ec-list .ec-event.bloque {
     font-size: var(--tamano-secundario);
 }
 
-.tarjeta-fuera-turno {
-    margin-top: var(--e1);
-}
-
 .etiqueta.etiqueta-fuera-turno {
-    background: var(--marca-suave);
+    background: var(--error-suave);
     color: var(--texto);
 }
 
-.linea-fin-turno-extra {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--e1);
-    color: var(--texto);
+/* En lo que sigue, la etiqueta de Urgente ocupa solo su ancho. */
+.inicio-sigue-textos .etiqueta {
+    justify-self: start;
 }
 
-/* El final del día: "Marcar salida", separada de lo demás. */
-.fin-del-dia {
+/* ================= Operario: Hoy (alcance, Sección 6.1; diseño en docs/disenos/operario_v3/3_hoy.png) ================= */
+/* Una línea de tiempo de solo lectura. Tres columnas: la hora, el riel y lo que pasa a esa hora.
+   El riel es sólido en lo recorrido (hasta "Ahora") y punteado en lo que viene (Gestalt: cierre). */
+
+.dia {
+    display: grid;
+    gap: var(--e5);
+}
+
+.dia > * {
+    margin: 0;
+}
+
+.dia-encabezado {
+    display: grid;
+    gap: var(--e2);
+    padding-bottom: var(--e5);
+    border-bottom: 1px solid var(--borde);
+}
+
+.dia-encabezado h1,
+.dia-encabezado p {
+    margin: 0;
+}
+
+.dia-fecha,
+.dia-horario {
+    color: var(--texto-secundario);
+}
+
+.dia-carga {
+    display: grid;
+    gap: var(--e2);
+    margin-top: var(--e3);
+}
+
+.dia-frase strong {
+    font-weight: var(--peso-fuerte);
+}
+
+/* La barra de la carga: trabajo en el color principal, lo disponible en blanco con borde de control. */
+.dia-barra {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e3);
-    margin-top: var(--e6);
-    padding-top: var(--e5);
-    border-top: 1px solid var(--borde);
+    height: 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--borde-control);
+    border-radius: 999px;
+    background: var(--superficie);
 }
 
-.fin-del-dia p {
+.dia-barra-trabajo {
+    background: var(--principal);
+}
+
+.dia-barra-exceso {
+    background: repeating-linear-gradient(135deg, var(--sobrecarga) 0 3px, var(--error-suave) 3px 7px);
+}
+
+.dia-avisos {
+    display: grid;
+    gap: var(--e2);
+}
+
+.dia-avisos:empty {
+    display: none;
+}
+
+.dia-avisos p {
+    margin: 0;
+}
+
+/* ---------- La línea de tiempo ---------- */
+
+.dia-linea {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dia-nodo {
+    --riel: var(--principal);
+    position: relative;
+    display: grid;
+    grid-template-columns: 3.75rem 1.5rem minmax(0, 1fr);
+    align-items: center;
+    column-gap: var(--e2);
+    min-height: 2.75rem;
+    padding: var(--e2) 0;
+}
+
+/* El riel: una línea en la segunda columna, de arriba abajo de cada nodo. */
+.dia-nodo::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: calc(3.75rem + var(--e2) + 0.75rem - 1px);
+    width: 2px;
+    background: var(--riel);
+}
+
+.dia-futuro::before {
+    width: 0;
+    border-left: 2px dashed var(--borde-control);
+    background: none;
+}
+
+/* "Ahora": sólido hasta su línea, punteado después. */
+.dia-actual::before {
+    background: linear-gradient(var(--principal) 50%, transparent 50%);
+}
+
+.dia-actual::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    bottom: 0;
+    left: calc(3.75rem + var(--e2) + 0.75rem - 1px);
+    border-left: 2px dashed var(--borde-control);
+}
+
+.dia-nodo:first-child::before {
+    top: 50%;
+}
+
+.dia-nodo-fin-turno::before {
+    bottom: 50%;
+}
+
+.dia-hora {
+    align-self: start;
+    padding-top: var(--e3);
+    color: var(--texto);
+    font-variant-numeric: tabular-nums;
+}
+
+.dia-hora-exacta {
+    font-weight: var(--peso-fuerte);
+}
+
+.dia-hora-aproximada {
+    color: var(--texto-secundario);
+    font-weight: var(--peso-normal);
+}
+
+.dia-hora-ahora {
+    align-self: center;
+    padding-top: 0;
+    color: var(--principal);
+    font-weight: var(--peso-fuerte);
+}
+
+.dia-nodo-inicio-turno .dia-hora,
+.dia-nodo-fin-turno .dia-hora,
+.dia-nodo-intervalo .dia-hora {
+    align-self: center;
+    padding-top: 0;
+}
+
+/* Los nodos: llenos en lo hecho, un anillo grueso en lo que está en curso, abiertos en lo que viene. */
+.dia-punto {
+    position: relative;
+    z-index: 1;
+    align-self: start;
+    justify-self: center;
+    width: 0.875rem;
+    height: 0.875rem;
+    margin-top: calc(var(--e3) + 0.25rem);
+    border: 2px solid var(--borde-control);
+    border-radius: 50%;
+    background: var(--fondo);
+}
+
+.dia-punto-lleno {
+    border-color: var(--principal);
+    background: var(--principal);
+}
+
+.dia-punto-curso {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: calc(var(--e3) + 0.125rem);
+    border: 4px solid var(--principal);
+    background: var(--superficie);
+}
+
+.dia-punto-fin {
+    border: 0;
+    border-radius: 2px;
+    background: var(--texto);
+}
+
+.dia-punto-ninguno {
+    visibility: hidden;
+}
+
+.dia-nodo-inicio-turno .dia-punto,
+.dia-nodo-fin-turno .dia-punto,
+.dia-nodo-ahora .dia-punto {
+    align-self: center;
+    margin-top: 0;
+}
+
+.dia-nodo-inicio-turno .dia-punto.dia-punto-lleno {
+    width: 0.625rem;
+    height: 0.625rem;
+}
+
+.dia-marca {
+    color: var(--texto-secundario);
+}
+
+.dia-marca p {
+    margin: 0;
+}
+
+/* La línea "Ahora": cruza el contenido, con su nombre a la derecha. */
+.dia-ahora {
+    display: flex;
+    align-items: center;
+    gap: var(--e3);
+    color: var(--principal);
+    font-weight: var(--peso-fuerte);
+}
+
+.dia-ahora::before {
+    content: "";
+    flex: 1;
+    height: 2px;
+    background: var(--principal);
+}
+
+.dia-ordenar {
+    justify-self: start;
+}
+
+.dia-intervalo {
     margin: 0;
     color: var(--texto-secundario);
 }
 
-/* ================= Dirección visual: la jornada como capacidad (Hoy del Operario) ================= */
+/* ---------- Filas: una actividad, separadas por una línea fina ---------- */
 
-/* Lienzo blanco, como un planificador: el día se lee sobre la superficie, sin cajas con sombra. */
-body.lienzo {
-    background: var(--superficie);
-}
-
-.barra-jornada-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin: 0 0 var(--e2);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.barra-jornada-total strong {
-    color: var(--texto);
-    font-size: var(--tamano-texto);
-}
-
-/* Bloque de tiempo: el tono suave de su categoría, su ícono y su duración. */
-.bloque-dia {
-    --tono: var(--neutro-suave);
-    --acento: var(--neutro);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: var(--e1);
+.fila {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--e3);
     width: 100%;
-    padding: var(--e2) var(--e3);
-    border: 1px solid transparent;
-    border-radius: var(--radio-control);
-    background: var(--tono);
+    min-height: var(--alto-control);
+    padding: var(--e3) var(--e2) var(--e3) 0;
+    border: 0;
+    border-bottom: 1px solid var(--borde);
+    border-radius: 0;
+    background: none;
     color: var(--texto);
     font: inherit;
     text-align: left;
     cursor: pointer;
 }
 
-.bloque-dia:hover {
-    border-color: var(--acento);
+.fila:hover .fila-nombre {
+    text-decoration: underline;
 }
 
-.bloque-cat-operacion    { --tono: var(--cat-operacion-suave);    --acento: var(--cat-operacion); }
-.bloque-cat-administrativa { --tono: var(--cat-administrativa-suave); --acento: var(--cat-administrativa); }
-.bloque-cat-revision       { --tono: var(--cat-revision-suave);       --acento: var(--cat-revision); }
-.bloque-cat-atencion      { --tono: var(--cat-atencion-suave);      --acento: var(--cat-atencion); }
-.bloque-cat-traslado     { --tono: var(--cat-traslado-suave);     --acento: var(--cat-traslado); }
-
-.bloque-cabeza {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--e3);
-}
-
-.bloque-nombre {
-    display: inline-flex;
-    align-items: flex-start;
-    gap: var(--e2);
-    line-height: var(--interlineado-h3);
-}
-
-.bloque-nombre .icono {
-    flex-shrink: 0;
-    margin-top: 0.15em;
-    color: var(--acento);
-}
-
-.bloque-duracion {
-    flex-shrink: 0;
+.fila > .icono {
     color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-fuerte);
 }
 
-.bloque-datos {
+/* La actividad en curso es la única fila con fondo de color (Gestalt: figura y fondo). */
+.fila-en-curso {
+    padding: var(--e4);
+    border-bottom: 0;
+    border-radius: var(--radio);
+    background: var(--principal-suave);
+}
+
+.fila-textos {
+    display: grid;
+    gap: var(--e1);
+}
+
+.fila-excepciones {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--e1) var(--e2);
-    padding-left: calc(1.25rem + var(--e2));
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    line-height: var(--interlineado-secundario);
+    gap: var(--e2);
 }
 
-.bloque-dia .tarjeta-fuera-turno {
-    padding-left: calc(1.25rem + var(--e2));
-}
-
-/* Dentro del bloque, las señales van como texto con su ícono y su color, sin fondo: el bloque ya es
-   el color de fondo, y una píldora encima de otra satura (sigue la regla de color, ícono y texto). */
-.bloque-dia .etiqueta {
-    padding: 0;
-    background: none;
+.fila-siguiente {
+    color: var(--principal);
+    font-size: var(--tamano-etiqueta);
     font-weight: var(--peso-fuerte);
 }
 
-.bloque-dia .etiqueta-retraso {
-    color: var(--advertencia-texto);
+.fila-nombre {
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
 }
 
-/* Sobre los tonos de categoría, las prioridades usan su texto oscuro: así cumplen 4,5:1. */
-.bloque-dia .prioridad-alta  { color: var(--alta-texto); }
-.bloque-dia .prioridad-media { color: var(--advertencia-texto); }
-
-/* Proyectado: hora aproximada. Rayado y con borde punteado, como lo tentativo de un planificador. */
-.bloque-proyectado {
-    border: 1px dashed var(--acento);
-}
-
-/* Terminado: el mismo tono, más tenue; el ícono pasa a ser la marca de visto. */
-.bloque-hecho {
-    background: color-mix(in srgb, var(--tono) 55%, var(--superficie));
-}
-
-.bloque-hecho .bloque-nombre {
+.fila-datos {
     color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.fila-datos-en-curso {
+    color: var(--principal);
+    font-size: var(--tamano-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.fila-hecha .fila-nombre {
     font-weight: var(--peso-normal);
 }
 
-.bloque-hecho .bloque-nombre .icono {
-    color: var(--exito);
+.fila-prioridad,
+.fila-estado {
+    display: inline;
 }
 
-/* Vencida: hora fija que pasó sin iniciarse. Sin el color de su categoría, para no confundirse con
-   lo que está por hacer ni con lo terminado. */
-.bloque-vencido {
-    --tono: var(--neutro-suave);
-    --acento: var(--advertencia-texto);
-    border: 1px solid var(--advertencia);
+.fila-prioridad .icono,
+.fila-estado .icono {
+    width: 1rem;
+    height: 1rem;
+    margin-right: var(--e1);
+    vertical-align: -0.15em;
 }
 
-/* El tiempo libre ocupa espacio: el texto va centrado en su hueco. */
-.lienzo .linea-nodo-intervalo {
-    align-items: center;
+.prioridad-texto-alta .icono { color: var(--alta-texto); }
+.prioridad-texto-media .icono { color: var(--advertencia-texto); }
+.prioridad-texto-baja .icono { color: var(--neutro-texto); }
+.estado-finalizada .icono { color: var(--exito-texto); }
+.estado-pausada { color: var(--advertencia-texto); }
+
+/* Lo que queda después del fin del turno va sobre el rayado de sobrecarga (6.3). */
+.dia-desborde {
+    background: repeating-linear-gradient(135deg, var(--sobrecarga) 0 2px, var(--error-suave) 2px 9px);
 }
 
-.lienzo .linea-nodo-intervalo .linea-intervalo {
-    align-self: center;
+.dia-desborde .fila {
+    border-bottom-color: transparent;
 }
 
-/* ================= Cinta del día: el elemento firma (dirección visual "Cinta del día") ================= */
+/* ---------- La urgente: el único bloque rojo lleno (6.3) ---------- */
 
-/* La hora y las cifras que mandan llevan la voz de la marca. */
-.cifra-firma,
-.lienzo .linea-hora,
-.lienzo .cronometro {
-    font-family: var(--fuente-cifras);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
+.dia-urgente {
+    display: grid;
+    gap: var(--e2);
+    margin: var(--e2) 0;
+    padding: var(--e5);
+    border-radius: var(--radio);
+    background: var(--error);
+    color: var(--texto-sobre-color);
 }
 
-.cinta-dia > * {
+.dia-urgente > * {
     margin: 0;
 }
 
-.cinta-cabeza {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: var(--e3);
+.dia-urgente h2 {
+    font-size: var(--tamano-h2);
 }
 
-.cinta-hora {
-    font-size: 2.75rem;
-    line-height: 1;
-    letter-spacing: -0.02em;
-}
-
-.cinta-estado {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    text-align: right;
-}
-
-/* La cinta: el marco es el turno; dentro, una actividad por segmento; la aguja es la hora actual. */
-.cinta {
-    position: relative;
-    height: 1.75rem;
-    margin-top: var(--e4);
-}
-
-.cinta-marco {
-    position: absolute;
-    inset-block: 0;
-    left: 0;
-    border: 1px solid var(--borde-control);
-    border-radius: 3px;
-    background: var(--neutro-suave);
-}
-
-.cinta-desborde {
-    position: absolute;
-    inset-block: 0;
-    right: 0;
-    border-radius: 0 3px 3px 0;
-    background: repeating-linear-gradient(135deg, var(--marca) 0 2px, var(--marca-suave) 2px 7px);
-}
-
-.cinta-segmento {
-    position: absolute;
-    inset-block: 4px;
-    border-radius: 2px;
-}
-
-.cinta-hecho,
-.cinta-curso {
-    background: var(--acento);
-}
-
-.cinta-pendiente {
-    background: var(--tono);
-    box-shadow: inset 0 0 0 1px var(--acento);
-}
-
-.cinta-urgente {
-    background: var(--error);
-    box-shadow: none;
-}
-
-.cinta-aguja {
-    position: absolute;
-    top: -6px;
-    bottom: -6px;
-    width: 2px;
-    margin-left: -1px;
-    background: var(--texto);
-}
-
-.cinta-aguja::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -3px;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--texto);
-}
-
-.cinta-escala {
-    position: relative;
-    height: 1.25rem;
-    margin-top: var(--e1);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-}
-
-.cinta-escala > span {
-    position: absolute;
-    top: 0;
-}
-
-.cinta-escala-inicio {
-    left: 0;
-}
-
-.cinta-escala-fin {
-    transform: translateX(-100%);
-}
-
-.cinta-escala-desborde {
-    padding-left: var(--e2);
-    color: var(--texto);
+.dia-urgente-etiqueta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
     font-weight: var(--peso-fuerte);
 }
 
-.cinta-total {
-    margin-top: var(--e3);
-    color: var(--texto-secundario);
-}
-
-.cinta-total strong {
-    color: var(--texto);
-    font-size: 1.5rem;
-    line-height: 1.2;
-}
-
-.cinta-dia .barra-leyenda {
-    margin-top: var(--e1);
-}
-
-/* El fin del turno: una línea fuerte. Lo que queda debajo, sobre la franja coral del desborde. */
-.lienzo .linea-fin-turno {
-    min-height: 0;
-    padding: var(--e2) 0 var(--e1);
+.boton-sobre-urgente {
+    min-height: var(--alto-control);
+    margin-top: var(--e2);
     border: 0;
-    border-top: 2px solid var(--texto);
-    border-radius: 0;
-    background: none;
-    color: var(--texto);
+    border-radius: var(--radio-control);
+    background: var(--superficie);
+    color: var(--error-texto);
+    font: inherit;
     font-weight: var(--peso-fuerte);
+    cursor: pointer;
 }
 
-.lienzo .linea-nodo-desborde {
-    background: repeating-linear-gradient(135deg, var(--marca-suave) 0 6px, transparent 6px 12px);
-}
-
-/* Inicio sobre el lienzo: sin tarjeta; la cinta y las acciones bastan. */
-.lienzo .inicio-panel {
-    padding: 0;
-    border: 0;
-    background: none;
-    box-shadow: none;
+/* En celular, el final de la línea queda libre de la barra de vistas. */
+@media (max-width: 50em) {
+    .dia {
+        padding-bottom: calc(3.8rem + var(--e5));
+    }
 }

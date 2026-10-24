@@ -202,9 +202,10 @@ class ProgramacionService:
         orden = orden or self._orden_de(operario["id"], fecha)
         turno = turnos.turno_de(operario["id"], fecha)
         cierre = turnos.cierre_de([operario["id"]], fecha, zona)
-        programacion = programar_dia(jornada.actividades, orden, ahora, fecha, zona,
-                                     turnos.capacidad_de(operario["id"], fecha), cierre)
         turno_hoy = _turno_de_hoy(turno, fecha, zona)
+        programacion = programar_dia(jornada.actividades, orden, ahora, fecha, zona,
+                                     turnos.capacidad_de(operario["id"], fecha), cierre,
+                                     inicio_turno=turno_hoy["inicio"] if turno_hoy else None)
         asistencia = self.asistencia_service.actual(operario["id"], fecha, ahora)
         # Lo que pasaría del fin del turno: cuánto tendría que quedarse el operario (alcance, Sección 5.1).
         fin_turno = turno_hoy["fin"] if turno_hoy else None

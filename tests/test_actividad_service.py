@@ -142,3 +142,11 @@ def test_la_carga_no_cuenta_las_canceladas_pero_si_las_no_realizadas(servicios, 
 
     carga = servicios.carga.consultar(HOY, HOY, empresa.admin)
     assert minutos_de(carga, empresa.ana) == 105
+
+
+def test_el_codigo_de_una_actividad_nueva_usa_el_prefijo_act(empresa, crear_actividad):
+    primera = crear_actividad([empresa.ana])
+    segunda = crear_actividad([empresa.ana])
+
+    assert primera["codigo"] == "ACT-0001"
+    assert segunda["codigo"] == "ACT-0002"

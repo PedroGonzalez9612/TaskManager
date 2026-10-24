@@ -97,7 +97,7 @@ class ActividadService:
         # La clase deja la fecha original igual a la fecha programada.
         informacion = campos.pop("informacion", None)
         actividad = Actividad(
-            codigo=f"OT-{consecutivo:04d}",
+            codigo=f"ACT-{consecutivo:04d}",
             empresa_id=empresa_id,
             estado=EstadoActividad.ASIGNADA if operario_ids else EstadoActividad.PENDIENTE,
             informacion=informacion,
