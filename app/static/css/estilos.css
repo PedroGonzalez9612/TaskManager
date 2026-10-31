@@ -1261,73 +1261,98 @@ fieldset.grupo-botones {
 
 /* ---------- Ordenar el día ---------- */
 
-.ordenador .panel-encabezado h2 {
+/* Ordenar mi día (alcance, Sección 6.1): la lista con la hora en que queda cada actividad. Las de hora
+   fija van en su lugar, sin flechas. Sin panel: espacio y líneas finas, como Hoy. */
+.ordenador {
+    display: grid;
+    gap: var(--e4);
+}
+
+.ordenador > * {
+    margin: 0;
+}
+
+.ordenador h2 {
     font-size: var(--tamano-h2);
 }
 
-.orden-nota {
-    margin: 0 0 var(--e4);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
 .orden-lista {
-    list-style: none;
     margin: 0;
     padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--borde);
 }
 
 .orden-fila {
     display: grid;
-    grid-template-columns: var(--e6) minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: var(--e2);
-    padding: var(--e2) 0;
+    gap: var(--e3);
+    padding: var(--e3) 0;
     border-bottom: 1px solid var(--borde);
 }
 
-.orden-fila:last-child {
-    border-bottom: none;
+.orden-textos {
+    display: grid;
+    gap: var(--e1);
 }
 
-.orden-posicion {
+.orden-textos > * {
+    margin: 0;
+}
+
+.orden-nombre {
+    font-size: var(--tamano-h3);
+    line-height: var(--interlineado-h3);
+}
+
+.orden-fija {
     color: var(--texto-secundario);
+}
+
+.orden-fija .orden-nombre {
+    color: var(--texto);
+    font-weight: var(--peso-normal);
+}
+
+.orden-fija .fila-datos {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+}
+
+.orden-horario-exacto {
+    color: var(--texto);
     font-weight: var(--peso-fuerte);
-    text-align: center;
 }
 
-.orden-textos strong,
-.orden-datos {
-    display: block;
+.orden-flechas {
+    display: flex;
+    gap: var(--e2);
 }
 
-.orden-datos {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-}
-
-.orden-fila .boton-icono {
-    width: 3rem;
-    height: 3rem;
+.orden-flechas .boton-icono {
     border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
 }
 
-.orden-fila .boton-icono:disabled {
-    opacity: 0.4;
+.orden-flechas .boton-icono:disabled {
+    border-color: var(--borde);
+    color: var(--borde-control);
     cursor: not-allowed;
 }
 
 .orden-acciones {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    display: grid;
     gap: var(--e3);
-    margin-top: var(--e5);
+    justify-items: stretch;
 }
 
-.orden-acciones .boton,
-.orden-acciones .boton-secundario {
-    min-height: 3rem;
+@media (min-width: 50.01em) {
+    .orden-acciones {
+        grid-auto-flow: column;
+        justify-content: start;
+    }
 }
 
 /* ================= Administrador: filtros y actividades ================= */

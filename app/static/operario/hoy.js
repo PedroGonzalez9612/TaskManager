@@ -316,20 +316,42 @@ function actividadesQueSeOrdenan() {
         .filter((actividad) => actividad && actividad.prioridad !== "URGENTE");
 }
 
-// Cada fila dice a qué hora quedaría la actividad con el orden que se está armando.
-function crearFilaOrden(actividad, indice, total, mover, tramo) {
+// La hora en que quedaría una actividad: "~16:30 a 17:30".
+function textoHorario(tramo) {
+    return `~${horaLocal(tramo.inicio)} a ${horaLocal(tramo.fin)}`;
+}
+
+// El choque con una hora fija (alcance, Sección 5.1): si el orden elegido deja una actividad donde no
+// alcanza a terminar antes de una de hora fija, la programación la pasa después de ella. Se avisa,
+// pero se permite. "libreDesde" es cuándo queda libre el operario antes de esa actividad.
+function horaFijaQueLaCorre(tramo, libreDesde, fijas) {
+    const duracion = new Date(tramo.fin) - new Date(tramo.inicio);
+    return fijas.find((fija) => {
+        const inicioFija = new Date(fija.tramo.inicio).getTime();
+        const hueco = inicioFija - libreDesde;
+        return hueco > 0 && hueco < duracion && inicioFija < new Date(tramo.inicio).getTime();
+    }) || null;
+}
+
+// Una actividad de horario flexible: su horario, su nombre, sus datos como frase y las flechas.
+function crearFilaOrden(actividad, indice, total, mover, tramo, choque) {
     const fila = crearElemento("li", "orden-fila");
-    const textos = crearElemento("span", "orden-textos");
-    const datos = [NOMBRE_PRIORIDAD[actividad.prioridad], duracionTexto(actividad.tiempo_estimado_min)].join(", ");
-    textos.append(crearElemento("strong", "", actividad.titulo), crearElemento("span", "orden-datos cifra", datos));
+    const textos = crearElemento("div", "orden-textos");
     if (tramo) {
-        const horario = crearElemento("span", "orden-horario cifra", `~${horaLocal(tramo.inicio)} a ${horaLocal(tramo.fin)}`);
+        const horario = crearElemento("span", "orden-horario cifra", textoHorario(tramo));
         if (tramo.fuera_del_turno_min > 0) {
             horario.append(crearConIcono("span", "etiqueta etiqueta-fuera-turno", "clock",
                 `${duracionTexto(tramo.fuera_del_turno_min)} después de tu turno`));
         }
         textos.append(horario);
     }
+    textos.append(crearElemento("strong", "orden-nombre", actividad.titulo),
+        crearDatosDeFila({ actividad, tramo, tipo: "pendiente" }, Date.now()));
+    if (choque) {
+        textos.append(crearConIcono("p", "linea-advertencia", "lock",
+            `No alcanza a terminar antes de ${choque.actividad.titulo} (${horaLocal(choque.tramo.inicio)}): queda después.`));
+    }
+    const flechas = crearElemento("div", "orden-flechas");
     const subir = crearConIcono("button", "boton-icono", "arrow-up", "");
     subir.type = "button";
     subir.disabled = indice === 0;
@@ -340,7 +362,21 @@ function crearFilaOrden(actividad, indice, total, mover, tramo) {
     bajar.disabled = indice === total - 1;
     bajar.setAttribute("aria-label", `Bajar ${actividad.titulo}`);
     bajar.addEventListener("click", () => mover(indice, 1));
-    fila.append(crearElemento("span", "orden-posicion cifra", String(indice + 1)), textos, subir, bajar);
+    flechas.append(subir, bajar);
+    fila.append(textos, flechas);
+    return fila;
+}
+
+// Una de hora fija, en su lugar: no se mueve, así que no tiene flechas.
+function crearFilaFija(actividad, tramo) {
+    const fila = crearElemento("li", "orden-fila orden-fija");
+    const textos = crearElemento("div", "orden-textos");
+    textos.append(
+        crearElemento("span", "orden-horario orden-horario-exacto cifra", horaLocal(tramo.inicio)),
+        crearElemento("strong", "orden-nombre", actividad.titulo),
+        crearConIcono("span", "fila-datos", "lock", "Hora fija: no se mueve"),
+    );
+    fila.append(textos);
     return fila;
 }
 
@@ -364,23 +400,46 @@ function cerrarOrdenador() {
 }
 
 // Mientras se ordena, la pantalla muestra solo la lista y sus acciones (alcance, Sección 6.1). El
-// servidor calcula la hora de cada actividad con el orden nuevo, sin guardarlo (vista previa).
+// servidor calcula la hora de cada actividad con el orden nuevo, sin guardarlo (vista previa). Las de
+// hora fija aparecen en su lugar, para ver contra qué choca el orden.
 function abrirOrdenador() {
     ordenando = true;
     const ordenador = document.getElementById("ordenador");
     let orden = actividadesQueSeOrdenan();
-    let tramos = new Map();
+    let tramos = new Map(programacion.tramos.map((tramo) => [tramo.actividad_id, tramo]));
     const lista = crearElemento("ol", "orden-lista");
     lista.setAttribute("aria-live", "polite");
-    const pintar = () => lista.replaceChildren(...orden.map((actividad, indice) =>
-        crearFilaOrden(actividad, indice, orden.length, mover, tramos.get(actividad.id))));
+
+    function pintar() {
+        const porId = new Map(programacion.actividades.map((actividad) => [actividad.id, actividad]));
+        const fijas = [...tramos.values()]
+            .filter((tramo) => tramo.tipo === "PENDIENTE" && tramo.hora_fija && !tramo.vencida && porId.has(tramo.actividad_id))
+            .map((tramo) => ({ tramo, actividad: porId.get(tramo.actividad_id) }));
+        // Desde cuándo queda libre: el fin de lo que está en curso, o ahora.
+        const enCurso = [...tramos.values()].find((tramo) => tramo.tipo === "EN_CURSO");
+        let libreDesde = enCurso ? new Date(enCurso.fin).getTime() : Date.now();
+        const filas = orden.map((actividad, indice) => {
+            const tramo = tramos.get(actividad.id);
+            const choque = tramo ? horaFijaQueLaCorre(tramo, libreDesde, fijas) : null;
+            if (tramo) {
+                libreDesde = new Date(tramo.fin).getTime();
+            }
+            return { momento: tramo ? new Date(tramo.inicio).getTime() : Infinity,
+                elemento: crearFilaOrden(actividad, indice, orden.length, mover, tramo, choque) };
+        });
+        // Cada fila en su hora: las fijas entre las flexibles, en orden cronológico.
+        const todas = [...filas, ...fijas.map(({ tramo, actividad }) => ({
+            momento: new Date(tramo.inicio).getTime(), elemento: crearFilaFija(actividad, tramo) }))];
+        todas.sort((a, b) => a.momento - b.momento);
+        lista.replaceChildren(...todas.map((fila) => fila.elemento));
+    }
 
     async function calcularHoras() {
         try {
             const previa = await enviarJson("/orden-del-dia/vista-previa", "POST", { actividad_ids: orden.map((a) => a.id) });
             tramos = new Map(previa.tramos.map((tramo) => [tramo.actividad_id, tramo]));
         } catch {
-            tramos = new Map();     // Sin las horas, el orden se puede seguir armando.
+            // Sin las horas nuevas, el orden se puede seguir armando con las anteriores.
         }
         pintar();
     }
@@ -389,33 +448,35 @@ function abrirOrdenador() {
         const copia = [...orden];
         [copia[indice], copia[indice + paso]] = [copia[indice + paso], copia[indice]];
         orden = copia;
+        const movida = orden[indice + paso];
         pintar();
-        lista.querySelectorAll("button")[Math.max(0, (indice + paso) * 2 + (paso > 0 ? 1 : 0))]?.focus();
+        // El foco sigue a la actividad que se movió, en la flecha que se usó (o en la otra si esa quedó desactivada).
+        const etiqueta = `${paso < 0 ? "Subir" : "Bajar"} ${movida.titulo}`;
+        const otra = `${paso < 0 ? "Bajar" : "Subir"} ${movida.titulo}`;
+        const destino = [...lista.querySelectorAll("button")].find((b) => b.getAttribute("aria-label") === etiqueta && !b.disabled)
+            || [...lista.querySelectorAll("button")].find((b) => b.getAttribute("aria-label") === otra);
+        destino?.focus();
         calcularHoras();
     }
-    tramos = new Map(programacion.tramos.map((tramo) => [tramo.actividad_id, tramo]));
     pintar();
 
-    const listo = crearElemento("button", "boton", "Listo");
+    const listo = crearElemento("button", "boton boton-principal-grande", "Guardar este orden");
     listo.type = "button";
     listo.addEventListener("click", () => guardarOrden(listo, enviarCuerpo(orden), "Orden del día guardado."));
-    const sugerido = crearConIcono("button", "boton-secundario", "rotate-ccw", "Volver al orden sugerido");
+    const sugerido = crearConIcono("button", "boton-secundario boton-principal-grande", "rotate-ccw", "Volver al orden sugerido");
     sugerido.type = "button";
     sugerido.addEventListener("click", () => guardarOrden(sugerido, { method: "DELETE" }, "Se restableció el orden sugerido."));
-    const cancelar = crearElemento("button", "boton-texto", "Cancelar");
+    const cancelar = crearElemento("button", "boton-terciario", "Cancelar");
     cancelar.type = "button";
     cancelar.addEventListener("click", cerrarOrdenador);
     const acciones = crearElemento("div", "orden-acciones");
     acciones.append(listo, sugerido, cancelar);
 
-    const encabezado = crearElemento("div", "panel-encabezado");
-    encabezado.append(crearElemento("h2", "", "Ordenar mi día"));
-    encabezado.id = "titulo-ordenador";
-    const nota = crearElemento("p", "orden-nota",
-        "Mueve las actividades de horario flexible. Cada una dice a qué hora quedaría. Las de hora fija y las urgentes no se mueven.");
-    const cuerpo = crearElemento("div", "panel-cuerpo");
-    cuerpo.append(nota, lista, acciones);
-    ordenador.replaceChildren(encabezado, cuerpo);
+    const titulo = crearElemento("h2", "", "Ordenar mi día");
+    titulo.id = "titulo-ordenador";
+    const nota = crearElemento("p", "texto-secundario",
+        "Mueve con las flechas las actividades de horario flexible. Cada una dice a qué hora quedaría. Las de hora fija y las urgentes no se mueven.");
+    ordenador.replaceChildren(titulo, nota, lista, acciones);
 
     document.getElementById("linea-tiempo").hidden = true;
     ordenador.hidden = false;
