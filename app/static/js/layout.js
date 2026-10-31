@@ -136,6 +136,63 @@ function construirBloqueUsuario(usuario) {
     return bloque;
 }
 
+// ---------- Estado del turno en la barra superior (Operario; observación 13 del usuario) ----------
+// El Operario ve en cualquier pantalla si está en turno y la hora, sin volver a Inicio. Los textos
+// son los de Inicio (alcance, Sección 6.1). El Administrador y el Superadmin no tienen turno propio.
+
+function horaDeLaBarra(momento) {
+    const fecha = new Date(momento);
+    return `${String(fecha.getHours()).padStart(2, "0")}:${String(fecha.getMinutes()).padStart(2, "0")}`;
+}
+
+// Devuelve [clase, ícono o null, texto] según el turno y la asistencia de la jornada vigente.
+function estadoDelTurnoEnLaBarra(programacion) {
+    const { turno, asistencia, fecha } = programacion;
+    const marcada = asistencia && asistencia.jornada === fecha;
+    if (marcada && asistencia.salida) {
+        return ["barra-turno-neutro", null, "Jornada terminada"];
+    }
+    if (!turno) {
+        return null;
+    }
+    const ahora = Date.now();
+    if (ahora < new Date(turno.inicio).getTime()) {
+        return ["barra-turno-neutro", null, `Tu turno empieza a las ${turno.hora_inicio}`];
+    }
+    if (ahora >= new Date(turno.fin).getTime()) {
+        return ["barra-turno-neutro", null, "Fuera de turno"];
+    }
+    if (!marcada) {
+        return programacion.retraso_entrada_min > 0
+            ? ["barra-turno-tarde", "clock", "Llegada tarde"]
+            : ["barra-turno-neutro", null, `Tu turno empezó a las ${turno.hora_inicio}`];
+    }
+    return ["barra-turno-en-turno", null, `En turno hasta las ${turno.hora_fin}`];
+}
+
+function pintarEstadoDelTurno(contenedor, programacion) {
+    const estado = estadoDelTurnoEnLaBarra(programacion);
+    const hora = crearElemento("span", "barra-turno-hora cifra", horaDeLaBarra(Date.now()));
+    if (!estado) {
+        contenedor.replaceChildren(hora);
+        return;
+    }
+    const [clase, nombreIcono, texto] = estado;
+    const etiqueta = nombreIcono ? crearConIcono("span", clase, nombreIcono, texto) : crearElemento("span", clase, texto);
+    contenedor.replaceChildren(etiqueta, hora);
+}
+
+async function construirEstadoDelTurno(contenedor) {
+    try {
+        const programacion = await pedirApi("/programacion-del-dia");
+        pintarEstadoDelTurno(contenedor, programacion);
+        // La hora y el estado cambian con el reloj: se repintan cada medio minuto (sin segundos).
+        setInterval(() => pintarEstadoDelTurno(contenedor, programacion), 30000);
+    } catch {
+        contenedor.hidden = true;     // Sin la programación, la barra sigue funcionando sin el estado.
+    }
+}
+
 // Protege una página: comprueba la sesión y el rol, arma el marco y devuelve el usuario.
 async function iniciarPaginaProtegida(rolesPermitidos) {
     const usuario = await pedirApi("/auth/sesion");
@@ -146,7 +203,15 @@ async function iniciarPaginaProtegida(rolesPermitidos) {
     }
 
     const barra = crearElemento("header", "barra-superior");
-    barra.append(crearMarca(usuario), construirNavegacion(usuario), construirBloqueUsuario(usuario));
+    barra.append(crearMarca(usuario), construirNavegacion(usuario));
+    if (usuario.rol === "OPERARIO") {
+        const estado = crearElemento("div", "barra-turno");
+        estado.setAttribute("aria-live", "polite");
+        estado.setAttribute("aria-label", "Tu turno");
+        barra.append(estado);
+        construirEstadoDelTurno(estado);
+    }
+    barra.append(construirBloqueUsuario(usuario));
     document.body.prepend(barra);
     document.body.classList.remove("cargando");
     return usuario;

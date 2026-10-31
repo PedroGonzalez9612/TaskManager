@@ -4043,3 +4043,68 @@ fieldset.grupo-botones {
         padding-bottom: calc(3.8rem + var(--e5));
     }
 }
+
+/* ================= Barra superior: estado del turno del Operario (observación 13) ================= */
+/* El estado con su señal (punto verde, reloj ámbar o gris) y la hora. En celular va en una segunda
+   línea, bajo la marca: a lo ancho no cabe. */
+
+.barra-turno {
+    display: flex;
+    align-items: center;
+    gap: var(--e3);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    white-space: nowrap;
+}
+
+.barra-turno:empty {
+    display: none;
+}
+
+.barra-turno-hora {
+    color: var(--texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.barra-turno-en-turno {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    color: var(--exito-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.barra-turno-en-turno::before {
+    content: "";
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--exito);
+}
+
+.barra-turno-tarde {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--advertencia-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.barra-turno-tarde .icono {
+    width: 1rem;
+    height: 1rem;
+}
+
+@media (max-width: 50em) {
+    .barra-superior:has(.barra-turno) {
+        flex-wrap: wrap;
+        row-gap: 0;
+    }
+
+    .barra-turno {
+        order: 3;
+        flex-basis: 100%;
+        padding-bottom: var(--e2);
+        font-size: var(--tamano-etiqueta);
+    }
+}

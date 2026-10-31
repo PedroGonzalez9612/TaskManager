@@ -510,8 +510,10 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   celular, los días como pestañas y el día elegido como la línea de tiempo de Hoy. Lo de horario flexible
   va en su hora estimada ("~"). El servidor calcula cada día con `GET /programacion-de-la-semana` (6 pruebas).
   El detalle solo ofrece acciones en la jornada vigente con la entrada marcada. Sale EventCalendar.
-- **Pendiente:** Mi perfil (observación 10), la barra superior (13) y la Etapa 7 (validación y evidencias
-  para el informe).
+- **Mi perfil (observación 10):** datos del usuario y cambio de contraseña (`PUT /auth/contrasena`), para
+  los tres roles; el avatar de la barra lleva a `perfil.html`.
+- **Barra superior (observación 13):** el Operario ve el estado de su turno y la hora en todas sus pantallas.
+- **Pendiente:** Etapa 7 (validación y evidencias para el informe).
 
 ## Depuración del proyecto (2026-10-24) ✅
 
