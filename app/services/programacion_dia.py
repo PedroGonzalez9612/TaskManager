@@ -3,7 +3,8 @@
 La estimación y la ejecución son cosas distintas. Lo terminado ocupa el tiempo que realmente tomó
 (de su inicio a su fin); lo que está en curso va de su inicio real a un fin proyectado (lo que le
 falta del estimado); y lo pendiente se reacomoda desde que el operario queda libre. Si algo termina
-antes, lo siguiente se adelanta; si se demora, se corre. Las de hora fija no se mueven.
+antes, lo siguiente se adelanta; si se demora, se corre. Las de hora fija no se mueven: si lo que está
+en curso no alcanza a terminar antes de una, queda en dos partes, antes y después de ella.
 
 El tiempo trabajado se atribuye a la jornada en que se trabajó: solo cuenta lo que cae dentro de la
 ventana de la jornada, de su medianoche a su cierre (el mayor entre la medianoche siguiente y el fin
@@ -44,7 +45,10 @@ def _trabajado_en(actividad: dict, ventana: tuple, ahora) -> int:
 
 
 def _restante(actividad: dict) -> int:
-    """Minutos que le faltan según el estimado. Lo que ya se pasó del estimado no resta: queda en 0."""
+    """Minutos que le faltan según el estimado. Lo que ya se pasó del estimado no resta: queda en 0.
+    La segunda parte de una actividad partida trae lo que le falta ya calculado."""
+    if "_restante_min" in actividad:
+        return actividad["_restante_min"]
     return max(0, actividad["tiempo_estimado_min"] - _trabajado(actividad))
 
 
@@ -89,6 +93,22 @@ def _ubicar_urgentes(urgentes: list, en_curso, tramo_en_curso, desde) -> tuple:
     if tramo_en_curso:
         cursor = max(cursor, tramo_en_curso["fin"])
     return tramos, cursor
+
+
+def _partir_por_hora_fija(en_curso, tramo_en_curso, fijas: list, ahora):
+    """Si lo que está en curso es de horario flexible y no alcanza a terminar antes de la próxima de
+    hora fija, el operario lo pausa a esa hora y lo retoma después (alcance, Sección 5.1). El tramo en
+    curso queda como la parte 1, hasta la hora fija, y se devuelve lo que falta como una actividad más
+    para ubicar (la parte 2). Sin hora fija en el camino, devuelve None."""
+    if not tramo_en_curso or en_curso.get("hora_programada"):
+        return None
+    fija = next((fija for fija in fijas if ahora <= fija["_inicio"] < tramo_en_curso["fin"]), None)
+    if fija is None:
+        return None
+    falta = (tramo_en_curso["fin"] - fija["_inicio"]).total_seconds() / 60
+    tramo_en_curso["fin"] = fija["_inicio"]
+    tramo_en_curso["parte"] = 1
+    return {**en_curso, "_restante_min": falta}
 
 
 def _ubicar_pendientes(fijas: list, flexibles: list, libre_desde, ahora) -> list:
@@ -144,6 +164,8 @@ def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_m
     proyectados, en UTC) y estas marcas: hora_fija, aproximada (hora calculada, no fija), vencida
     (hora fija que ya pasó sin iniciarse), interrumpe (urgente que interrumpe lo que está en curso),
     siguiente (la próxima por hacer) y fuera_de_jornada (empezaría después de terminar la jornada).
+    Una actividad en curso partida por una hora fija tiene dos tramos con "parte": 1 (EN_CURSO, hasta
+    la hora fija) y 2 (PENDIENTE, después de ella).
     El resumen cuenta como trabajado solo lo que cae entre la medianoche de "fecha" y el cierre."""
     ahora = en_utc(ahora)
     ventana = (momento_local(fecha, "00:00", zona), cierre or fin_del_dia(fecha, zona))
@@ -171,7 +193,15 @@ def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_m
     if inicio_turno is not None and not en_curso:
         desde = max(ahora, en_utc(inicio_turno))
     tramos_urgentes, libre_desde = _ubicar_urgentes(urgentes, en_curso, tramo_en_curso, desde)
+    # Con urgentes por atender, lo que está en curso ya se retoma después de ellas: no se parte.
+    segunda_parte = None if tramos_urgentes else _partir_por_hora_fija(en_curso, tramo_en_curso, fijas, ahora)
+    if segunda_parte:
+        flexibles = [segunda_parte, *flexibles]
+        libre_desde = tramo_en_curso["fin"]
     por_hacer = tramos_urgentes + _ubicar_pendientes(fijas, flexibles, libre_desde, ahora)
+    for tramo in por_hacer:
+        if segunda_parte and tramo["actividad_id"] == en_curso["id"]:
+            tramo["parte"] = 2
 
     # La siguiente por hacer: la primera pendiente que no esté vencida, en orden de hora.
     vigentes = sorted((tramo for tramo in por_hacer if not tramo["vencida"]), key=lambda tramo: tramo["inicio"])

@@ -78,7 +78,10 @@ function estadoDelBloque(tramo, actividad) {
         return { clase: "semana-estado-urgente", icono: "triangle-alert", texto: "Urgente" };
     }
     if (tramo.tipo === "EN_CURSO") {
-        return { clase: "semana-estado-en-curso", icono: "circle", texto: "En curso" };
+        return { clase: "semana-estado-en-curso", icono: "circle", texto: tramo.parte ? "Parte 1, en curso" : "En curso" };
+    }
+    if (tramo.parte === 2) {
+        return { clase: "semana-estado-en-curso", icono: "circle", texto: "Parte 2" };
     }
     if (actividad.estado === "PAUSADA") {
         return { clase: "semana-estado-pausada", icono: "pause", texto: "Pausada" };

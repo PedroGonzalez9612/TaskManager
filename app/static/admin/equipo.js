@@ -104,7 +104,11 @@ function bloquePorHacer(actividad, ejecucion, tramo) {
 function bloquesDe(operario) {
     const bloques = [];
     const sinHora = [];
-    const tramos = new Map((operario.programacion?.tramos || []).map((tramo) => [tramo.actividad_id, tramo]));
+    // Una actividad en curso partida por una hora fija tiene dos tramos: la parte 1 se proyecta como
+    // siempre (hasta la hora fija) y la parte 2 va después, como por hacer.
+    const tramosDelDia = operario.programacion?.tramos || [];
+    const tramos = new Map(tramosDelDia.filter((tramo) => tramo.parte !== 2).map((tramo) => [tramo.actividad_id, tramo]));
+    const segundasPartes = new Map(tramosDelDia.filter((tramo) => tramo.parte === 2).map((tramo) => [tramo.actividad_id, tramo]));
     const delOperario = actividades.filter((a) => a.operarios.some((asignado) => asignado.id === operario.id));
 
     for (const actividad of delOperario) {
@@ -118,6 +122,10 @@ function bloquesDe(operario) {
             sinHora.push(actividad);
         } else if (porHacer) {
             bloques.push(porHacer);
+        }
+        const segunda = segundasPartes.get(actividad.id);
+        if (segunda) {
+            bloques.push({ actividad, inicio: new Date(segunda.inicio), fin: new Date(segunda.fin), tipo: "pendiente", aproximada: true });
         }
     }
     return { bloques, sinHora };

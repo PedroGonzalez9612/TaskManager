@@ -311,7 +311,7 @@ function pintarEncabezado(periodico = false) {
 function actividadesQueSeOrdenan() {
     const porId = new Map(programacion.actividades.map((actividad) => [actividad.id, actividad]));
     return programacion.tramos
-        .filter((tramo) => tramo.tipo === "PENDIENTE" && !tramo.hora_fija && !tramo.vencida)
+        .filter((tramo) => tramo.tipo === "PENDIENTE" && !tramo.hora_fija && !tramo.vencida && !tramo.parte)
         .map((tramo) => porId.get(tramo.actividad_id))
         .filter((actividad) => actividad && actividad.prioridad !== "URGENTE");
 }
@@ -407,7 +407,9 @@ function abrirOrdenador() {
     ordenando = true;
     const ordenador = document.getElementById("ordenador");
     let orden = actividadesQueSeOrdenan();
-    let tramos = new Map(programacion.tramos.map((tramo) => [tramo.actividad_id, tramo]));
+    // Un tramo por actividad: la parte 2 de lo que está en curso no se ordena ni reemplaza a la parte 1.
+    const porActividad = (lista) => new Map(lista.filter((tramo) => tramo.parte !== 2).map((tramo) => [tramo.actividad_id, tramo]));
+    let tramos = porActividad(programacion.tramos);
     const lista = crearElemento("ol", "orden-lista");
     lista.setAttribute("aria-live", "polite");
 
@@ -438,7 +440,7 @@ function abrirOrdenador() {
     async function calcularHoras() {
         try {
             const previa = await enviarJson("/orden-del-dia/vista-previa", "POST", { actividad_ids: orden.map((a) => a.id) });
-            tramos = new Map(previa.tramos.map((tramo) => [tramo.actividad_id, tramo]));
+            tramos = porActividad(previa.tramos);
         } catch {
             // Sin las horas nuevas, el orden se puede seguir armando con las anteriores.
         }

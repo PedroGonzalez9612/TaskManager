@@ -672,7 +672,14 @@ function crearDatosDeFila(nodo, cargadaEn) {
     if (nodo.tipo === "en-curso") {
         const minutos = (actividad.ejecucion?.tiempo_real_min || 0) + Math.floor((Date.now() - cargadaEn) / 60000);
         datos.classList.add("fila-datos-en-curso");
-        datos.textContent = `En curso, ${duracionTexto(minutos)} de ${estimadoCorto(actividad.tiempo_estimado_min)}`;
+        // Partida por una hora fija (alcance, Sección 6.2): las dos filas se leen como una sola actividad.
+        const parte = tramo?.parte ? "Parte 1, en curso" : "En curso";
+        datos.textContent = `${parte}, ${duracionTexto(minutos)} de ${estimadoCorto(actividad.tiempo_estimado_min)}`;
+        return datos;
+    }
+    if (tramo?.parte === 2) {
+        const falta = Math.round((new Date(tramo.fin) - new Date(tramo.inicio)) / 60000);
+        datos.textContent = `Parte 2: lo que falta, ${duracionTexto(falta)}`;
         return datos;
     }
     if (nodo.tipo === "hecha") {
@@ -703,7 +710,7 @@ function crearFilaDeActividad(nodo, cargadaEn, alAbrir) {
     const { actividad } = nodo;
     const fila = crearElemento("button", `fila fila-${nodo.tipo}`);
     fila.type = "button";
-    fila.dataset.foco = `fila-${actividad.id}`;
+    fila.dataset.foco = `fila-${actividad.id}${nodo.tramo?.parte ? `-${nodo.tramo.parte}` : ""}`;
     const textos = crearElemento("span", "fila-textos");
     const excepciones = crearExcepciones(nodo);
     if (excepciones) {

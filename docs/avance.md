@@ -527,6 +527,9 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   convierte en actividad (formulario ya lleno) o lo descarta con motivo. Servidor: clase `Reporte`, colección
   `reportes`, `ReporteService` y rutas `/reportes` (25 pruebas). Mientras está por revisar no entra en el
   día ni en la carga. Cierra el pendiente de la Etapa 2.
+- **Parte 1 / Parte 2 (2026-10-31):** la programación del día parte la actividad en curso de horario
+  flexible que no alcanza a terminar antes de una de hora fija (5 pruebas); Hoy, Semana y Equipo muestran
+  las dos partes.
 - **Pendiente:** la evidencia de la evolución del diseño para el informe de Diseño de Interfaces. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
 

@@ -145,6 +145,53 @@ def test_la_urgente_no_interrumpe_una_de_hora_fija():
     assert tramo(resultado, "u")["interrumpe"] is False
 
 
+# ---------- Una hora fija parte lo que está en curso (alcance, Secciones 5.1 y 6.2) ----------
+
+def partes(resultado, ident):
+    local = lambda momento: (momento - timedelta(hours=5)).strftime("%H:%M")
+    return [(t["parte"], t["tipo"], local(t["inicio"]), local(t["fin"]))
+            for t in resultado["tramos"] if t["actividad_id"] == ident]
+
+
+def test_si_lo_en_curso_no_alcanza_antes_de_la_fija_queda_en_dos_partes():
+    # Le falta una hora (10:00 a 11:00), pero a las 10:30 hay una fija de 30 minutos.
+    en_curso = actividad("a", "EN_EJECUCION", estimado=90, inicio="09:30", real=30)
+    fija = actividad("fija", estimado=30, fija="10:30")
+    resultado = programar([en_curso, fija, actividad("b", estimado=60)])
+
+    assert partes(resultado, "a") == [(1, "EN_CURSO", "09:30", "10:30"), (2, "PENDIENTE", "11:00", "11:30")]
+    assert tramos(resultado)["fija"] == ("10:30", "11:00")
+    assert tramos(resultado)["b"] == ("11:30", "12:30")     # Lo que sigue va después de la parte 2.
+    assert tramo(resultado, "fija")["siguiente"] is True
+    assert resultado["resumen"]["pendiente_min"] == 60 + 30 + 60
+
+
+def test_la_segunda_parte_salta_las_fijas_seguidas():
+    en_curso = actividad("a", "EN_EJECUCION", estimado=90, inicio="09:30", real=30)
+    fijas = [actividad("f1", estimado=30, fija="10:30"), actividad("f2", estimado=30, fija="11:00")]
+    resultado = programar([en_curso, *fijas])
+    assert partes(resultado, "a")[1] == (2, "PENDIENTE", "11:30", "12:00")
+
+
+def test_si_alcanza_a_terminar_antes_de_la_fija_no_se_parte():
+    en_curso = actividad("a", "EN_EJECUCION", estimado=60, inicio="09:30", real=30)
+    resultado = programar([en_curso, actividad("fija", estimado=30, fija="10:30")])
+    assert [t.get("parte") for t in resultado["tramos"] if t["actividad_id"] == "a"] == [None]
+
+
+def test_una_fija_en_curso_no_se_parte():
+    en_curso = actividad("a", "EN_EJECUCION", estimado=90, fija="09:30", inicio="09:30", real=30)
+    resultado = programar([en_curso, actividad("b", estimado=30, fija="10:30")])
+    assert [t.get("parte") for t in resultado["tramos"] if t["actividad_id"] == "a"] == [None]
+
+
+def test_con_una_urgente_por_atender_no_se_parte():
+    en_curso = actividad("a", "EN_EJECUCION", estimado=90, inicio="09:30", real=30)
+    urgente = actividad("u", estimado=15, prioridad="URGENTE")
+    resultado = programar([en_curso, urgente, actividad("fija", estimado=30, fija="10:30")])
+    assert [t.get("parte") for t in resultado["tramos"] if t["actividad_id"] == "a"] == [None]
+
+
 # ---------- Orden del día ----------
 
 def test_el_orden_sugerido_es_prioridad_luego_hora_luego_retraso():

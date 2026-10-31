@@ -142,7 +142,7 @@ La evidencia es de cada operario: cada uno deja la suya en su propia ejecución.
 ### Urgentes y horas fijas
 
 - Una actividad **urgente** interrumpe lo que el operario lleva: el operario pausa lo que hace y atiende la urgente. La excepción es una actividad de **hora fija** en curso, que no se interrumpe: el operario atiende la urgente al terminar, y mientras tanto el Administrador puede pasársela a otra persona.
-- Cuando llega la hora de una actividad de hora fija, el operario pausa lo que lleva (motivo "Actividad de hora fija"), hace la fija y después retoma lo otro. El sistema avisa diez minutos antes, en Inicio y en Hoy, y en el detalle de la fija ofrece "Pausar e iniciar", que hace las dos cosas en un paso. También avisa, mientras el operario ordena su día, si el orden elegido deja una actividad donde no alcanza a terminar antes de una hora fija (queda después de ella); lo permite igual.
+- Cuando llega la hora de una actividad de hora fija, el operario pausa lo que lleva (motivo "Actividad de hora fija"), hace la fija y después retoma lo otro. El sistema avisa diez minutos antes, en Inicio y en Hoy, y en el detalle de la fija ofrece "Pausar e iniciar", que hace las dos cosas en un paso. Si lo que lleva no alcanza a terminar antes de la fija, la línea de tiempo lo muestra en dos partes: "Parte 1" hasta la hora fija y "Parte 2" (lo que falta) después de ella. También avisa, mientras el operario ordena su día, si el orden elegido deja una actividad donde no alcanza a terminar antes de una hora fija (queda después de ella); lo permite igual.
 
 ### Devolver y cancelar
 
