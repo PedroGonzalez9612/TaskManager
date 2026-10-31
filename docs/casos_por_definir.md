@@ -8,11 +8,8 @@ Fecha de la revisión: 2026-10-10.
 
 | # | Caso | Qué pasa hoy | Propuesta |
 |---|---|---|---|
-| F1 | El operario intenta **iniciar una de hora fija antes de su hora** | Se puede iniciar en cualquier momento | Solo desde 15 minutos antes de su hora. Antes, el botón se desactiva y dice "Podrás iniciarla desde las 09:45". Los 15 minutos serían un dato configurable por empresa |
-| F2 | La **inicia tarde** (por ejemplo, a las 10:40 si era a las 10:00) | Se permite y no queda registro del retraso | Se permite, y se guarda el retraso de inicio (40 min) como dato para un indicador de puntualidad |
 | F3 | El Administrador programa **dos de hora fija que se cruzan** para el mismo operario | Se permite sin aviso | No se permite: "Carlos ya tiene una actividad de hora fija de 10:00 a 11:00" |
 | F4 | Una de hora fija **termina después del fin del turno** del operario | Se permite sin aviso | Se permite (el turno no limita), con un aviso al asignar |
-| F5 | Pasa algo grave **durante una de hora fija** (falla del equipo, accidente) y el operario necesita detenerla | No se puede pausar; solo finalizar | Permitir detenerla solo con un motivo de una lista corta (por ejemplo, "Emergencia" o "Falla del equipo"), y que quede marcada para el Administrador |
 
 ## Ejecución
 
@@ -20,7 +17,6 @@ Fecha de la revisión: 2026-10-10.
 |---|---|---|---|
 | E3 | **Inicia una actividad de un día futuro** | Se permite si la tiene asignada | Solo se ejecuta lo de la jornada vigente. Para adelantar trabajo, el Administrador le cambia la fecha |
 | E4 | **Finaliza en segundos** una actividad estimada en horas (lo que pasó en la base de prueba: "Tomó 0 min") | Se acepta y daña la precisión de la estimación | Si el tiempo real es menor que el 10 % del estimado, pedir confirmación con una observación obligatoria |
-| E5 | **Dos urgentes** llegan al mismo tiempo | Las dos se muestran; la primera queda arriba | Ordenarlas por hora de creación y avisar al Administrador cuando un operario tiene más de una urgente |
 
 ## Asignación y planeación
 
@@ -43,5 +39,4 @@ Fecha de la revisión: 2026-10-10.
 |---|---|---|---|
 | S1 | El operario **no marca entrada** pasado el tiempo de tolerancia | No hay aviso | Aviso al Administrador con las actividades del día de ese operario, para reasignarlas (ya está en el alcance; falta construirlo) |
 | S2 | El operario **vino pero no pudo marcar** (olvido, celular sin batería) | El Administrador no puede registrarle la asistencia; solo corregir una que ya existe | El Administrador puede registrar la asistencia de un operario "Sin marca", con hora de entrada, hora de salida y motivo; queda como Corregida |
-| S3 | **Sale antes del fin del turno** | Se permite y no queda marcado | Se permite y se muestra como "Salida anticipada" para el Administrador y para los indicadores |
 | S4 | Se **cambia el turno de un operario con la asistencia abierta** | Se permite; el turno nuevo rige desde la fecha indicada | Se mantiene así: la jornada abierta conserva su turno; el nuevo rige desde la fecha elegida, que ya no puede ser pasada |

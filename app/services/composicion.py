@@ -73,7 +73,7 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
     )
     ejecucion = EjecucionService(
         ejecucion_repository, actividad_repository, asignacion_repository, actividades, catalogos,
-        cierre_jornada, asistencia, reloj=reloj,
+        cierre_jornada, asistencia, empresa_repository, reloj=reloj,
     )
     proyectos = ProyectoService(proyecto_repository, actividad_repository, actividades, cierre_jornada, reloj=reloj)
     programacion = ProgramacionService(

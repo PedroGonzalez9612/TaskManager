@@ -12,7 +12,7 @@ del turno). Así una actividad que empezó en una jornada y terminó en otra rep
 
 Es una función pura: recibe las actividades ya presentadas para el operario y la hora, y devuelve
 la programación. No lee la base de datos ni el reloj."""
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.models.ejecucion import minutos_trabajados_en
 from app.models.enums import EstadoActividad, Prioridad
@@ -23,6 +23,8 @@ FINALIZADA = "FINALIZADA"
 EN_CURSO = "EN_CURSO"
 PENDIENTE = "PENDIENTE"
 ESTADOS_PENDIENTES = (EstadoActividad.ASIGNADA.value, EstadoActividad.PAUSADA.value)
+# Las actividades creadas antes de guardar su fecha de creación son las más antiguas.
+CREADA_ANTES_DEL_REGISTRO = datetime.min.replace(tzinfo=timezone.utc)
 
 
 def _minutos(cantidad) -> timedelta:
@@ -183,7 +185,9 @@ def programar_dia(actividades: list, orden, ahora, fecha: str, zona, capacidad_m
         tramos.append(tramo_en_curso)
 
     pendientes = [a for a in de_la_jornada if a["estado"] in ESTADOS_PENDIENTES]
-    urgentes = [a for a in pendientes if a["prioridad"] == Prioridad.URGENTE.value]
+    # Entre varias urgentes, primero la que se creó antes (alcance, Sección 5.1).
+    urgentes = sorted((a for a in pendientes if a["prioridad"] == Prioridad.URGENTE.value),
+                      key=lambda a: en_utc(a.get("fecha_creacion")) or CREADA_ANTES_DEL_REGISTRO)
     resto = [a for a in pendientes if a["prioridad"] != Prioridad.URGENTE.value]
     fijas = sorted(({**a, "_inicio": momento_local(fecha, a["hora_programada"], zona)}
                     for a in resto if a.get("hora_programada")), key=lambda a: a["_inicio"])

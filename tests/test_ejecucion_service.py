@@ -91,8 +91,10 @@ def test_pausar_exige_motivo(servicios, empresa, crear_actividad):
     assert ver(servicios, actividad, empresa.ana)["estado"] == "EN_EJECUCION"
 
 
+# ---------- Hora fija (alcance, Sección 5.1). El reloj de las pruebas marca las 03:00 de Bogotá ----------
+
 def test_una_actividad_de_hora_fija_no_se_pausa(servicios, empresa, crear_actividad):
-    actividad = crear_actividad([empresa.ana], hora_programada="10:00")
+    actividad = crear_actividad([empresa.ana], hora_programada="03:00")
     servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
 
     with pytest.raises(ValidationError, match="hora fija"):
@@ -101,6 +103,46 @@ def test_una_actividad_de_hora_fija_no_se_pausa(servicios, empresa, crear_activi
     vista = ver(servicios, actividad, empresa.ana)
     assert vista["estado"] == "EN_EJECUCION"
     assert vista["ejecucion"]["pausas"] == []
+
+
+@pytest.mark.parametrize("motivo", ["Emergencia", "Falla del equipo"])
+def test_una_de_hora_fija_se_detiene_por_emergencia_y_se_reanuda(servicios, empresa, crear_actividad, reloj, motivo):
+    actividad = crear_actividad([empresa.ana], hora_programada="03:00")
+    servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+    reloj.avanzar(10)
+
+    pausada = servicios.ejecucion.pausar(actividad["id"], empresa.ana, motivo)
+    assert pausada["estado"] == "PAUSADA"
+    assert pausada["ejecucion"]["pausas"][0]["motivo"] == motivo
+
+    reloj.avanzar(15)
+    assert servicios.ejecucion.reanudar(actividad["id"], empresa.ana)["estado"] == "EN_EJECUCION"
+
+
+def test_una_de_hora_fija_no_se_inicia_antes_de_diez_minutos_antes_de_su_hora(servicios, empresa, crear_actividad, reloj):
+    actividad = crear_actividad([empresa.ana], hora_programada="03:15")
+
+    with pytest.raises(ValidationError, match="desde las 03:05"):
+        servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+
+    reloj.avanzar(5)    # 03:05: ya se puede.
+    vista = servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+    assert vista["estado"] == "EN_EJECUCION"
+    assert vista["ejecucion"]["retraso_inicio_min"] is None
+
+
+def test_si_se_inicia_tarde_queda_el_retraso_de_inicio(servicios, empresa, crear_actividad, reloj):
+    actividad = crear_actividad([empresa.ana], hora_programada="03:00")
+    reloj.avanzar(40)
+
+    vista = servicios.ejecucion.iniciar(actividad["id"], empresa.ana)
+
+    assert vista["ejecucion"]["retraso_inicio_min"] == 40
+
+
+def test_la_de_horario_flexible_se_inicia_cuando_sea_y_sin_retraso(servicios, empresa, crear_actividad):
+    vista = servicios.ejecucion.iniciar(crear_actividad([empresa.ana])["id"], empresa.ana)
+    assert vista["ejecucion"]["retraso_inicio_min"] is None
 
 
 def test_pausar_y_reanudar_deja_la_pausa_cerrada_y_el_tiempo_la_descuenta(

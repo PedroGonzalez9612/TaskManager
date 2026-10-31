@@ -150,3 +150,11 @@ def test_el_codigo_de_una_actividad_nueva_usa_el_prefijo_act(empresa, crear_acti
 
     assert primera["codigo"] == "ACT-0001"
     assert segunda["codigo"] == "ACT-0002"
+
+
+def test_la_actividad_guarda_cuando_se_creo_y_editarla_no_la_cambia(servicios, empresa, crear_actividad, repos, reloj):
+    actividad = crear_actividad([empresa.ana])
+    creada = reloj.ahora.replace(tzinfo=None)    # Mongo guarda las fechas sin zona.
+    reloj.avanzar(30)
+    servicios.actividades.actualizar_actividad(actividad["id"], {"titulo": "Otro título"}, empresa.admin)
+    assert repos.actividades.find_by_id(actividad["id"])["fecha_creacion"] == creada

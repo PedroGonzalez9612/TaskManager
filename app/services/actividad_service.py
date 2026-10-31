@@ -100,6 +100,7 @@ class ActividadService:
             empresa_id=empresa_id,
             estado=EstadoActividad.ASIGNADA if operario_ids else EstadoActividad.PENDIENTE,
             informacion=informacion,
+            fecha_creacion=self.reloj(),
             **campos,
         )
         actividad_id = self.actividad_repository.insert(actividad.to_dict())

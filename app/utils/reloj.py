@@ -37,6 +37,11 @@ def fecha_local(momento: datetime, zona=None) -> str:
     return momento.astimezone(_zona(zona)).strftime(FORMATO_FECHA)
 
 
+def hora_local(momento: datetime, zona=None) -> str:
+    """La hora ("HH:MM") de ese momento en esa zona."""
+    return momento.astimezone(_zona(zona)).strftime("%H:%M")
+
+
 def momento_local(fecha: str, hora: str, zona=None) -> datetime:
     """El momento (en UTC) que corresponde a esa fecha ("AAAA-MM-DD") y esa hora ("HH:MM") en esa zona."""
     local = datetime.strptime(f"{fecha} {hora}", f"{FORMATO_FECHA} %H:%M").replace(tzinfo=_zona(zona))

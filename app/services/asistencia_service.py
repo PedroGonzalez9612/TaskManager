@@ -76,7 +76,9 @@ class AsistenciaService:
         if not self.asistencia_repository.guardar(asistencia.id, asistencia.to_dict(), asistencia.estado.value,
                                                   solo_si_abierta=True):
             raise ValidationError(CAMBIO_SIMULTANEO)
-        return self.presentar(asistencia, ahora)
+        turno = self.turno_service.turno_de(solicitante["id"], asistencia.jornada)
+        fin_turno = turno.fin_en(asistencia.jornada, self._zona_de(solicitante["empresa_id"])) if turno else None
+        return self.presentar(asistencia, ahora, fin_turno)
 
     def consultar_hoy(self, solicitante: dict):
         """La asistencia de la jornada vigente o, si no la hay, la abierta de la jornada anterior.
@@ -128,7 +130,8 @@ class AsistenciaService:
             if asistencia is None:
                 fila = self._sin_marca(usuario_id, jornada)
             else:
-                fila = self._fila(asistencia, turnos.jornada_vigente(usuario_id, ahora, zona), ahora)
+                fin_turno = turno.fin_en(jornada, zona) if turno else None
+                fila = self._fila(asistencia, turnos.jornada_vigente(usuario_id, ahora, zona), ahora, fin_turno)
             filas.append({**fila, "operario": operario["nombre"], "turno": resumen_turno(turno)})
         return filas
 
@@ -158,20 +161,22 @@ class AsistenciaService:
     # ---------- Presentación ----------
 
     @staticmethod
-    def presentar(asistencia: Asistencia, ahora) -> dict:
-        """Las marcas van en UTC (MongoDB las devuelve sin zona)."""
+    def presentar(asistencia: Asistencia, ahora, fin_turno=None) -> dict:
+        """Las marcas van en UTC (MongoDB las devuelve sin zona). Con "fin_turno" (el fin del turno de
+        esa jornada) se dice si fue una salida anticipada."""
         return {
             "id": asistencia.id, "usuario_id": asistencia.usuario_id, "jornada": asistencia.jornada,
             "entrada": en_utc(asistencia.entrada), "salida": en_utc(asistencia.salida),
             "estado": asistencia.estado.value,
             "minutos_presente": asistencia.minutos_presente(ahora), "revision": asistencia.revision,
+            "salida_anticipada_min": asistencia.minutos_de_salida_anticipada(fin_turno),
         }
 
     @classmethod
-    def _fila(cls, asistencia: Asistencia, jornada_vigente: str, ahora) -> dict:
+    def _fila(cls, asistencia: Asistencia, jornada_vigente: str, ahora, fin_turno=None) -> dict:
         """La asistencia para la lista del Administrador. Si es de una jornada que ya pasó para el
         operario y sigue sin salida, se muestra como SIN_SALIDA (el estado guardado no cambia)."""
-        fila = cls.presentar(asistencia, ahora)
+        fila = cls.presentar(asistencia, ahora, fin_turno)
         if asistencia.esta_abierta and asistencia.jornada < jornada_vigente:
             fila["estado"] = SIN_SALIDA
         return fila
@@ -180,7 +185,7 @@ class AsistenciaService:
     def _sin_marca(usuario_id: str, jornada: str) -> dict:
         return {
             "id": None, "usuario_id": usuario_id, "jornada": jornada, "entrada": None, "salida": None,
-            "estado": SIN_MARCA, "minutos_presente": 0, "revision": None,
+            "estado": SIN_MARCA, "minutos_presente": 0, "revision": None, "salida_anticipada_min": 0,
         }
 
     # ---------- Apoyo ----------

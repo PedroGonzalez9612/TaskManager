@@ -1,10 +1,16 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from app.models.asignacion import Asignacion
 from app.models.ejecucion import Ejecucion
-from app.models.enums import EstadoActividad, EstadoAsignacion, EstadoEjecucion
+from app.models.enums import MOTIVOS_DETENER_HORA_FIJA, EstadoActividad, EstadoAsignacion, EstadoEjecucion
+from app.models.pausa import en_utc
 from app.services.catalogo_service import MOTIVO_PAUSA, resolver_motivo
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
+from app.utils.reloj import ZONA_POR_DEFECTO, hora_local, momento_local
+
+# Una de hora fija se puede iniciar desde estos minutos antes de su hora: el mismo momento del aviso
+# que ve el Operario (AVISO_HORA_FIJA_MIN en operario-comun.js).
+INICIO_ANTICIPADO_HORA_FIJA_MIN = 10
 
 
 class EjecucionService:
@@ -22,8 +28,11 @@ class EjecucionService:
     devuelve la actividad tal como la ve ese operario."""
 
     def __init__(self, ejecucion_repository, actividad_repository, asignacion_repository,
-                 actividad_service, catalogo_service, cierre_jornada, asistencia_service, reloj=None):
+                 actividad_service, catalogo_service, cierre_jornada, asistencia_service, empresa_repository,
+                 reloj=None):
         self.ejecucion_repository = ejecucion_repository
+        # La zona horaria de la empresa dice a qué momento corresponde la hora de una de hora fija.
+        self.empresa_repository = empresa_repository
         self.actividad_repository = actividad_repository
         self.asignacion_repository = asignacion_repository
         self.actividad_service = actividad_service
@@ -43,9 +52,10 @@ class EjecucionService:
         self._exigir_sin_ejecucion(asignacion_id)
         self.asistencia_service.exigir_entrada_abierta(solicitante, ahora)
         self._exigir_sin_otra_en_curso(solicitante, "iniciar")
+        retraso = self._retraso_de_inicio(actividad, ahora)    # Valida que ya se pueda iniciar.
 
         ejecucion = Ejecucion(actividad_id=actividad_id, asignacion_id=asignacion_id,
-                              usuario_id=solicitante["id"], fecha_inicio=ahora)
+                              usuario_id=solicitante["id"], fecha_inicio=ahora, retraso_inicio_min=retraso)
         if self.ejecucion_repository.insertar_en_progreso(ejecucion.to_dict()) is None:
             # Dos peticiones al tiempo pasaron las comprobaciones: la base de datos rechazó esta.
             self._exigir_sin_otra_en_curso(solicitante, "iniciar")
@@ -56,10 +66,11 @@ class EjecucionService:
         ahora = self._ahora_con_la_jornada_cerrada(solicitante)
         actividad, asignacion_id = self._actividad_y_asignacion(actividad_id, solicitante)
         ejecucion = self._ejecucion_iniciada(asignacion_id)
-        if actividad.get("hora_programada"):
-            raise ValidationError("Una actividad de hora fija no se puede pausar")
-
         elegido = resolver_motivo(motivo, detalle)
+        # Una de hora fija solo se detiene por una emergencia (alcance, Sección 5.1).
+        if actividad.get("hora_programada") and elegido.texto not in MOTIVOS_DETENER_HORA_FIJA:
+            raise ValidationError('Una actividad de hora fija solo se detiene por "Emergencia" o "Falla del equipo"')
+
         ejecucion.pausar(elegido.texto, ahora)    # Valida que esté en curso y que haya motivo.
         self._guardar(ejecucion, EstadoEjecucion.EN_PROGRESO)
         # Lo que se escribió en "Otro" queda en la lista de motivos de la empresa.
@@ -120,6 +131,20 @@ class EjecucionService:
         }
 
     # ---------- Comprobaciones ----------
+
+    def _retraso_de_inicio(self, actividad: dict, ahora):
+        """Para una de hora fija: no se inicia antes de diez minutos antes de su hora, y si se inicia
+        después de su hora devuelve cuántos minutos tarde. Para las demás, o si no va tarde, None."""
+        if not actividad.get("hora_programada"):
+            return None
+        empresa = self.empresa_repository.find_by_id(actividad["empresa_id"]) or {}
+        zona = empresa.get("zona_horaria") or ZONA_POR_DEFECTO
+        su_hora = momento_local(actividad["fecha_programada"], actividad["hora_programada"], zona)
+        desde = su_hora - timedelta(minutes=INICIO_ANTICIPADO_HORA_FIJA_MIN)
+        if en_utc(ahora) < desde:
+            raise ValidationError(f"Es de hora fija: podrás iniciarla desde las {hora_local(desde, zona)}")
+        retraso = round((en_utc(ahora) - su_hora).total_seconds() / 60)
+        return retraso if retraso > 0 else None
 
     def _actividad_y_asignacion(self, actividad_id: str, solicitante: dict) -> tuple:
         """La actividad (de la empresa del operario) y el id de su asignación activa a ella."""

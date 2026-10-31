@@ -14,7 +14,7 @@ class Actividad:
     def __init__(self, codigo, titulo, descripcion, empresa_id, categoria, ubicacion,
                  tiempo_estimado_min, fecha_programada, hora_programada=None,
                  prioridad=Prioridad.MEDIA, estado=EstadoActividad.PENDIENTE,
-                 proyecto_id=None, informacion=None):
+                 proyecto_id=None, informacion=None, fecha_creacion=None):
         # Una actividad nueva no tiene id ni historial: eso lo pone desde_documento al leerla.
         self.id = None
         self.codigo = codigo                    # Consecutivo por empresa, por ejemplo "ACT-0042" (las anteriores al 2026-10-23, "OT-").
@@ -36,6 +36,8 @@ class Actividad:
         self.reprogramaciones = []
         self.cancelacion = None
         self.fecha_no_realizada = None
+        # Cuándo se creó, con la hora del servidor: entre varias urgentes va primero la más antigua.
+        self.fecha_creacion = fecha_creacion
 
     # ---------- Consultas ----------
 
@@ -104,6 +106,7 @@ class Actividad:
             "reprogramaciones": [reprogramacion.to_dict() for reprogramacion in self.reprogramaciones],
             "cancelacion": self.cancelacion.to_dict() if self.cancelacion else None,
             "fecha_no_realizada": self.fecha_no_realizada,
+            "fecha_creacion": self.fecha_creacion,
         }
 
     @classmethod
@@ -122,6 +125,7 @@ class Actividad:
             prioridad=doc.get("prioridad", Prioridad.MEDIA.value),
             estado=doc.get("estado", EstadoActividad.PENDIENTE.value),
             informacion=InformacionActividad.desde_documento(doc.get("informacion")),
+            fecha_creacion=doc.get("fecha_creacion"),    # Las anteriores al 2026-10-31 no la tienen.
         )
         actividad.id = str(doc["_id"])
         cancelacion = doc.get("cancelacion")
@@ -158,4 +162,5 @@ class Actividad:
             "reprogramaciones": reprogramaciones,
             "cancelacion": doc.get("cancelacion"),
             "fecha_no_realizada": doc.get("fecha_no_realizada"),
+            "fecha_creacion": doc.get("fecha_creacion"),
         }

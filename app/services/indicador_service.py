@@ -19,7 +19,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from app.models.ejecucion import minutos_trabajados_en
 from app.models.enums import EstadoActividad, EstadoAsignacion, EstadoEjecucion, Rol
-from app.models.asistencia import EstadoAsistencia
+from app.models.asistencia import Asistencia, EstadoAsistencia
 from app.models.pausa import en_utc
 from app.utils.errors import ProhibidoError, ValidationError
 from app.utils.fechas import validar_fecha
@@ -230,7 +230,7 @@ class IndicadorService:
         jornada = self._jornadas(ids, desde, hasta, turnos, zona, asignaciones, actividades, ahora,
                                  asistencias, ejecuciones)
         detalle = self._detalle(ids, asignaciones, actividades, ejecucion_de, asistencias, ejecuciones,
-                                (inicio_rango, fin_rango), ahora)
+                                (inicio_rango, fin_rango), ahora, turnos, zona)
         actividades_por = self._actividades(asignaciones, actividades, ejecucion_de, turnos, zona, ahora)
         pendientes = self._pendientes(asignaciones, actividades)
 
@@ -297,15 +297,21 @@ class IndicadorService:
     # ---------- Detalle de cada operario: lo que ve en su Resumen ----------
 
     @staticmethod
-    def _detalle(ids, asignaciones, actividades, ejecucion_de, asistencias, ejecuciones, rango, ahora) -> dict:
-        """Por operario: su asistencia día por día, cada actividad finalizada con lo real frente a lo
-        estimado, y sus pausas agrupadas por motivo (las que empezaron dentro del rango)."""
+    def _detalle(ids, asignaciones, actividades, ejecucion_de, asistencias, ejecuciones, rango, ahora,
+                 turnos, zona) -> dict:
+        """Por operario: su asistencia día por día (con la salida anticipada), cada actividad finalizada
+        con lo real frente a lo estimado, y sus pausas agrupadas por motivo (las que empezaron dentro
+        del rango)."""
         detalle = {usuario_id: {"asistencias": [], "finalizadas": [], "pausas_por_motivo": []} for usuario_id in ids}
-        for (usuario_id, _), asistencia in sorted(asistencias.items(), key=lambda par: par[0][1]):
+        for (usuario_id, jornada), documento in sorted(asistencias.items(), key=lambda par: par[0][1]):
             if usuario_id in detalle:
+                turno = turnos.turno_de(usuario_id, jornada)
+                asistencia = Asistencia.desde_documento(documento)
                 detalle[usuario_id]["asistencias"].append({
-                    "jornada": asistencia["jornada"], "entrada": asistencia.get("entrada"),
-                    "salida": asistencia.get("salida"), "estado": asistencia.get("estado")})
+                    "jornada": jornada, "entrada": asistencia.entrada, "salida": asistencia.salida,
+                    "estado": asistencia.estado.value,
+                    "salida_anticipada_min": asistencia.minutos_de_salida_anticipada(
+                        turno.fin_en(jornada, zona) if turno else None)})
         for asignacion in asignaciones:
             ejecucion = ejecucion_de.get(str(asignacion["_id"]))
             if not ejecucion or ejecucion.get("estado") != EstadoEjecucion.FINALIZADA.value:

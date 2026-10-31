@@ -88,7 +88,7 @@ def test_un_motivo_elegido_de_la_lista_no_se_registra(servicios, repos, empresa,
 
 
 def test_una_pausa_que_falla_no_agrega_el_motivo(servicios, empresa, crear_actividad):
-    de_hora_fija = en_curso(servicios, empresa, crear_actividad, hora_programada="09:00")
+    de_hora_fija = en_curso(servicios, empresa, crear_actividad, hora_programada="03:00")    # La hora del reloj.
 
     with pytest.raises(ValidationError):
         servicios.ejecucion.pausar(de_hora_fija["id"], empresa.ana, "Otro", "Se fue la luz")

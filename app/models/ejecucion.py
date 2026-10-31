@@ -26,7 +26,8 @@ class Ejecucion:
     servidor y llega como parámetro ("ahora")."""
 
     def __init__(self, actividad_id, asignacion_id=None, usuario_id=None, fecha_inicio=None,
-                 estado=EstadoEjecucion.EN_PROGRESO, fecha_fin=None, pausas=None, observacion=None, id=None):
+                 estado=EstadoEjecucion.EN_PROGRESO, fecha_fin=None, pausas=None, observacion=None,
+                 retraso_inicio_min=None, id=None):
         self.id = id
         self.asignacion_id = asignacion_id
         self.actividad_id = actividad_id    # Se repite aquí para consultar sin pasar por la asignación.
@@ -36,6 +37,8 @@ class Ejecucion:
         self.fecha_fin = fecha_fin
         self.pausas = list(pausas or [])
         self.observacion = observacion
+        # Si era de hora fija y se inició tarde: cuántos minutos después de su hora (alcance, Sección 5.1).
+        self.retraso_inicio_min = retraso_inicio_min
 
     # ---------- Consultas ----------
 
@@ -100,6 +103,7 @@ class Ejecucion:
             "fecha_fin": self.fecha_fin,
             "pausas": [pausa.to_dict() for pausa in self.pausas],
             "observacion": self.observacion,
+            "retraso_inicio_min": self.retraso_inicio_min,
         }
 
     @classmethod
@@ -114,6 +118,7 @@ class Ejecucion:
             fecha_fin=doc.get("fecha_fin"),
             pausas=[Pausa.desde_documento(pausa) for pausa in doc.get("pausas", [])],
             observacion=doc.get("observacion"),
+            retraso_inicio_min=doc.get("retraso_inicio_min"),
         )
 
     def presentar(self, ahora) -> dict:

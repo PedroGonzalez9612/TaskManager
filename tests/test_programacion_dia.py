@@ -137,6 +137,14 @@ def test_la_urgente_interrumpe_lo_que_esta_en_curso():
     assert tramo(resultado, "u")["siguiente"] is True
 
 
+def test_entre_varias_urgentes_va_primero_la_que_se_creo_antes():
+    nueva = {**actividad("nueva", estimado=30, prioridad="URGENTE"), "fecha_creacion": hora("09:50")}
+    vieja = {**actividad("vieja", estimado=15, prioridad="URGENTE"), "fecha_creacion": hora("09:40")}
+    sin_fecha = actividad("anterior", estimado=10, prioridad="URGENTE")    # Creada antes de guardar la fecha.
+    resultado = programar([nueva, vieja, sin_fecha])
+    assert tramos(resultado) == {"anterior": ("10:00", "10:10"), "vieja": ("10:10", "10:25"), "nueva": ("10:25", "10:55")}
+
+
 def test_la_urgente_no_interrumpe_una_de_hora_fija():
     fija = actividad("fija", "EN_EJECUCION", estimado=60, fija="09:30", inicio="09:30", real=30)
     urgente = actividad("u", estimado=30, prioridad="URGENTE")

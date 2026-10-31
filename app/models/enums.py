@@ -79,6 +79,8 @@ MOTIVO_PAUSA_URGENTE = "Actividad urgente"
 MOTIVO_PAUSA_HORA_FIJA = "Actividad de hora fija"
 MOTIVO_PAUSA_FIN_JORNADA = "Fin de jornada"
 MOTIVOS_PAUSA_FIJOS = (MOTIVO_PAUSA_URGENTE, MOTIVO_PAUSA_HORA_FIJA, MOTIVO_PAUSA_FIN_JORNADA)
+# Una de hora fija no se pausa, salvo para detenerla por una emergencia, con uno de estos motivos.
+MOTIVOS_DETENER_HORA_FIJA = ("Emergencia", "Falla del equipo")
 
 # Motivos para devolver una actividad. Esta lista es fija; con "Otro" el operario escribe el suyo.
 MOTIVOS_DEVOLUCION = (

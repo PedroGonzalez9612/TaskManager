@@ -35,6 +35,14 @@ class Asistencia:
         """Tiempo presente: de la entrada a la salida (o hasta "ahora" si sigue abierta)."""
         return round(minutos_entre(self.entrada, self.salida or ahora))
 
+    def minutos_de_salida_anticipada(self, fin_turno) -> int:
+        """Salida anticipada (alcance, Sección 5.1): cuántos minutos antes del fin de su turno salió.
+        0 si no ha salido, si salió a tiempo o si no tenía turno ("fin_turno" None). Se calcula con
+        la salida vigente, así que una corrección del Administrador la actualiza."""
+        if self.salida is None or fin_turno is None:
+            return 0
+        return max(0, round(minutos_entre(self.salida, fin_turno)))
+
     def marcar_salida(self, ahora) -> None:
         if not self.esta_abierta:
             raise ValidationError("Ya marcaste la salida de esta jornada")
