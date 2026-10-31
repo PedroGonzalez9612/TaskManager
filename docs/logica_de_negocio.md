@@ -149,6 +149,17 @@ La evidencia es de cada operario: cada uno deja la suya en su propia ejecución.
 - **Devolver:** el Operario puede devolver una actividad solo antes de iniciarla, con su motivo. Si tenía compañeros, sale solo él; si era el único, la actividad queda "Devuelta" y el Administrador ve quién la devolvió y por qué.
 - **Cancelar:** solo el Administrador, solo si nadie la tiene en curso, y con motivo. La cancelada sale de la carga pero sigue consultable.
 
+### Reportar una actividad
+
+A veces otra área le pide un trabajo directamente al Operario. Para que no quede en el aire, él lo reporta desde Hoy: qué le pidieron y quién lo pidió (obligatorios), y si quiere un detalle y cuánto cree que tarda. El reporte queda **Por revisar** y todavía no es trabajo: no aparece en su día ni suma a su carga.
+
+El Administrador ve los reportes por revisar en Equipo, en "Por atender", y decide:
+
+- **Convertirlo en actividad:** se abre el formulario de actividad ya lleno con lo reportado y asignado a quien lo reportó. El Administrador lo programa (fecha, hora, prioridad, operarios) como cualquier actividad. Desde ahí es una actividad normal.
+- **Descartarlo,** con un motivo.
+
+Un reporte revisado no cambia más y nada se borra. El Operario ve en Hoy sus reportes recientes con lo que pasó: por revisar, convertido (con el código de la actividad) o descartado (con el motivo).
+
 ---
 
 ### Qué se puede hacer en cada estado

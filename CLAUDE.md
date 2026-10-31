@@ -123,6 +123,9 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   `editable` y `cancelable` para que la interfaz muestre solo lo permitido.
 - Las horas de un turno asignado no se cambian: se crea otro y se asigna desde una fecha.
 - Una actividad de hora fija no se pausa ni se reprograma; la urgente no la interrumpe.
+- Reporte de actividad: el Operario reporta lo que otra área le pidió (Hoy); queda Por revisar, sin entrar
+  en su día ni en su carga, hasta que el Administrador lo convierte en actividad o lo descarta con motivo
+  (Equipo, "Por atender"). Clase `Reporte`, `ReporteService`, rutas `/reportes`.
 - Motivos de pausa y de cancelación: listas por empresa que se llenan con lo escrito en "Otro".
 - Capacidad de la jornada: la del turno vigente del operario (duración menos descanso). Sin turno, 7 h
   (`CAPACIDAD_JORNADA_MIN` en `carga_service.py`).

@@ -10,13 +10,14 @@ def crear_indices(db) -> None:
     from app.repositories.evidencia_repository import EvidenciaRepository
     from app.repositories.orden_jornada_repository import OrdenJornadaRepository
     from app.repositories.proyecto_repository import ProyectoRepository
+    from app.repositories.reporte_repository import ReporteRepository
     from app.repositories.turno_repository import AsignacionTurnoRepository, TurnoRepository
 
     repositorios = (
         ActividadRepository(db), AsignacionRepository(db), EjecucionRepository(db),
         ProyectoRepository(db), CatalogoRepository(db), OrdenJornadaRepository(db),
         TurnoRepository(db), AsignacionTurnoRepository(db), AsistenciaRepository(db), EvidenciaRepository(db),
-        AdjuntoRepository(db),
+        AdjuntoRepository(db), ReporteRepository(db),
     )
     for repositorio in repositorios:
         repositorio.crear_indices()

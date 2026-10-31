@@ -24,6 +24,14 @@
         <ol id="linea-tiempo" class="dia-linea" aria-label="Programación del día" hidden></ol>
         <!-- Modo para ordenar el día: solo las actividades de horario flexible. -->
         <section id="ordenador" class="ordenador" aria-labelledby="titulo-ordenador" hidden></section>
+        <!-- Reportar actividad (alcance, Sección 5.1): un trabajo que otra área le pidió directamente.
+             Queda por revisar hasta que el Administrador lo convierte en actividad o lo descarta. -->
+        <section id="reportes" class="seccion-apoyo dia-reportes" aria-labelledby="titulo-reportes" hidden>
+            <h2 id="titulo-reportes">Tus reportes de actividad</h2>
+            <p class="texto-secundario">¿Otra área te pidió un trabajo? Repórtalo y tu Administrador decide cómo programarlo.</p>
+            <div id="reportar"></div>
+            <ul id="lista-reportes" class="dia-reportes-lista" aria-live="polite"></ul>
+        </section>
     </main>
 
     <script src="/static/js/api.js"></script>

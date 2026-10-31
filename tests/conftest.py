@@ -128,7 +128,7 @@ def crear_actividad(servicios, empresa):
 def cliente_de(db, reloj):
     """Devuelve un cliente HTTP con la sesión de ese usuario ya iniciada (o sin sesión, con None).
     Monta las rutas de actividades, proyectos, carga, programación del día, catálogos, usuarios, turnos
-    y asistencia sobre la base en memoria, con el mismo
+    asistencia y reportes sobre la base en memoria, con el mismo
     manejador de errores de app/__init__.py (create_app se conectaría a MongoDB)."""
     from flask import Flask, jsonify
 
@@ -138,6 +138,7 @@ def cliente_de(db, reloj):
     from app.routes.catalogo_routes import create_blueprint as catalogo_bp
     from app.routes.programacion_routes import create_blueprint as programacion_bp
     from app.routes.proyecto_routes import create_blueprint as proyecto_bp
+    from app.routes.reporte_routes import create_blueprint as reporte_bp
     from app.routes.turno_routes import create_blueprint as turno_bp
     from app.routes.usuario_routes import create_blueprint as usuario_bp
     from app.utils.errors import ErrorApi
@@ -146,7 +147,8 @@ def cliente_de(db, reloj):
     app.config.update(SECRET_KEY="pruebas", TESTING=True)
     # Con el reloj de la prueba: con la hora real, el cierre de jornada reprogramaría las actividades
     # de HOY en cuanto pasara esa fecha.
-    for blueprint in (actividad_bp, proyecto_bp, analisis_bp, programacion_bp, usuario_bp, turno_bp, asistencia_bp):
+    for blueprint in (actividad_bp, proyecto_bp, analisis_bp, programacion_bp, usuario_bp, turno_bp, asistencia_bp,
+                      reporte_bp):
         app.register_blueprint(blueprint(db, reloj=reloj))
     app.register_blueprint(catalogo_bp(db))
 

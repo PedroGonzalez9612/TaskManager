@@ -877,7 +877,8 @@ fieldset.grupo-botones {
 }
 
 .formulario input,
-.formulario select {
+.formulario select,
+.hoja-formulario input:not([type="radio"], [type="checkbox"], [type="file"]) {
     min-height: var(--alto-control);
     padding: var(--e2) var(--e3);
     border: 1px solid var(--borde-control);
@@ -888,12 +889,15 @@ fieldset.grupo-botones {
     background: var(--superficie);
 }
 
-.formulario input[type="number"] {
+.formulario input[type="number"],
+.hoja-formulario input[type="number"] {
     font-variant-numeric: tabular-nums;
 }
 
 .formulario input:focus,
-.formulario select:focus {
+.formulario select:focus,
+.hoja-formulario input:focus,
+.hoja-formulario textarea:focus {
     outline: 3px solid var(--principal-suave);
     border-color: var(--principal);
 }
@@ -1109,7 +1113,8 @@ fieldset.grupo-botones {
     margin-top: 0;
 }
 
-.formulario textarea {
+.formulario textarea,
+.hoja-formulario textarea {
     padding: var(--e2) var(--e3);
     border: 1px solid var(--borde-control);
     border-radius: var(--radio-control);
@@ -2321,6 +2326,13 @@ fieldset.grupo-botones {
     margin: var(--e1) 0 0;
 }
 
+.fila-por-atender-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e3);
+}
+
 .seccion-apoyo .fila-por-atender {
     padding-inline: 0;
 }
@@ -3012,6 +3024,39 @@ fieldset.grupo-botones {
 .dia-intervalo {
     margin: 0;
     color: var(--texto-secundario);
+}
+
+/* Reportes de actividad: al final de Hoy, separados de la línea de tiempo por una línea fina. Sin
+   panel, porque acompañan a la superficie principal (alcance, Sección 6.2). */
+.dia-reportes {
+    display: grid;
+    gap: var(--e3);
+    padding-top: var(--e5);
+    border-top: 1px solid var(--borde);
+}
+
+.dia-reportes > * {
+    margin: 0;
+}
+
+.dia-reportes-lista {
+    padding: 0;
+    list-style: none;
+}
+
+.dia-reportes-lista:empty {
+    display: none;
+}
+
+.reporte-fila {
+    display: grid;
+    gap: var(--e1);
+    padding-block: var(--e3);
+    border-bottom: 1px solid var(--borde);
+}
+
+.reporte-fila > p {
+    margin: 0;
 }
 
 /* ---------- Filas: una actividad, separadas por una línea fina ---------- */

@@ -59,6 +59,13 @@ class EstadoEjecucion(str, Enum):
         return self in (EstadoEjecucion.EN_PROGRESO, EstadoEjecucion.PAUSADA)
 
 
+class EstadoReporte(str, Enum):
+    """Un reporte de actividad espera la revisión del Administrador (alcance, Sección 5.1)."""
+    PENDIENTE = "PENDIENTE"            # Por revisar: todavía no es trabajo del día.
+    CONVERTIDO = "CONVERTIDO"          # Final: el Administrador creó una actividad con él.
+    DESCARTADO = "DESCARTADO"          # Final: el Administrador lo descartó, con motivo.
+
+
 class EstadoAsignacion(str, Enum):
     """Una asignación no se borra: se cierra, y queda como historial."""
     ACTIVA = "ACTIVA"

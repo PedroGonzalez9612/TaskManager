@@ -112,7 +112,7 @@ Rama: `feature/actividades-y-vistas`.
 - **Pausar y reanudar** una actividad, con motivo e historial de pausas (criterio 4). Depende de la decisión abierta sobre a quién pertenece la ejecución.
 - La **capacidad de la jornada** es un valor fijo de 7 horas; pasará a calcularse desde el turno de cada operario (criterio 7).
 - Las **categorías** son una lista fija; no se administran por empresa.
-- El Operario todavía no puede **reportar una actividad de otra área**.
+- El Operario todavía no puede **reportar una actividad de otra área**. (Hecho el 2026-10-31, ver el rediseño v3.)
 - No hay pruebas automatizadas en el repositorio.
 
 ## Fase 2 de Diseño de Interfaces — Identidad visual (2026-10-02 y 2026-10-03) 🟡
@@ -522,6 +522,11 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   2026-10-31).
 - **Aviso de hora fija (2026-10-31):** 10 minutos antes, en Inicio y en Hoy, con "Pausar e iniciar" en el
   detalle de la fija (pausa la otra con el motivo "Actividad de hora fija").
+- **Reportar actividad (2026-10-31):** el Operario reporta desde Hoy un trabajo que otra área le pidió
+  (hoja inferior; debajo, sus reportes con su estado). El Administrador lo ve en "Por atender" de Equipo y lo
+  convierte en actividad (formulario ya lleno) o lo descarta con motivo. Servidor: clase `Reporte`, colección
+  `reportes`, `ReporteService` y rutas `/reportes` (25 pruebas). Mientras está por revisar no entra en el
+  día ni en la carga. Cierra el pendiente de la Etapa 2.
 - **Pendiente:** la evidencia de la evolución del diseño para el informe de Diseño de Interfaces. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
 

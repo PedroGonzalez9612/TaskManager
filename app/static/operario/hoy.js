@@ -397,6 +397,7 @@ function cerrarOrdenador() {
     ordenando = false;
     document.getElementById("ordenador").hidden = true;
     document.getElementById("linea-tiempo").hidden = false;
+    document.getElementById("reportes").hidden = false;
 }
 
 // Mientras se ordena, la pantalla muestra solo la lista y sus acciones (alcance, Sección 6.1). El
@@ -479,6 +480,7 @@ function abrirOrdenador() {
     ordenador.replaceChildren(titulo, nota, lista, acciones);
 
     document.getElementById("linea-tiempo").hidden = true;
+    document.getElementById("reportes").hidden = true;
     ordenador.hidden = false;
     ordenador.scrollIntoView({ block: "start" });
     listo.focus();
@@ -492,6 +494,109 @@ function enviarCuerpo(orden) {
 
 // La pantalla se ubica en "Ahora" solo la primera vez que muestra el día; después el operario se
 // desplaza por su cuenta.
+// ---------- Reportes de actividad (alcance, Sección 5.1) ----------
+
+// "31 oct 10:15": cuándo lo reportó.
+function momentoCorto(momento) {
+    const fecha = new Date(momento);
+    return `${fecha.toLocaleDateString("es-CO", { day: "numeric", month: "short" })} ${horaLocal(momento)}`;
+}
+
+// Qué pasó con el reporte, en gris con su ícono (no es una etiqueta: alcance, Sección 6.3).
+function crearEstadoDeReporte(reporte) {
+    if (reporte.estado === "CONVERTIDO") {
+        const estado = crearConIcono("p", "linea-info", "check", "Convertido en la actividad ");
+        estado.append(crearElemento("span", "codigo", reporte.revision.actividad_codigo || ""));
+        return estado;
+    }
+    if (reporte.estado === "DESCARTADO") {
+        return crearConIcono("p", "linea-info", "minus", `Descartado: ${reporte.revision.motivo}`);
+    }
+    return crearConIcono("p", "linea-info", "clock", "Por revisar");
+}
+
+function crearFilaDeReporte(reporte) {
+    const fila = crearElemento("li", "reporte-fila");
+    const datos = crearElemento("p", "datos-linea texto-secundario");
+    datos.append(crearElemento("span", "", `Pedido por ${reporte.pedido_por}`),
+        crearElemento("span", "cifra", momentoCorto(reporte.fecha)));
+    fila.append(crearElemento("strong", "reporte-titulo", reporte.titulo), datos, crearEstadoDeReporte(reporte));
+    return fila;
+}
+
+// Un campo de la hoja con su etiqueta; "opcional" se escribe al lado, en gris.
+function crearCampoDeReporte(id, texto, control, opcional = false) {
+    const etiqueta = crearElemento("label", "hoja-etiqueta");
+    etiqueta.htmlFor = id;
+    etiqueta.append(crearElemento("strong", "", texto));
+    if (opcional) {
+        etiqueta.append(crearElemento("span", "texto-secundario", " (opcional)"));
+    }
+    control.id = id;
+    return [etiqueta, control];
+}
+
+async function abrirReporte() {
+    const titulo = crearElemento("input");
+    titulo.type = "text";
+    titulo.maxLength = 120;
+    titulo.required = true;
+    const pedidoPor = crearElemento("input");
+    pedidoPor.type = "text";
+    pedidoPor.maxLength = 120;
+    pedidoPor.required = true;
+    pedidoPor.placeholder = "Persona o área";
+    const detalle = crearElemento("textarea");
+    detalle.rows = 3;
+    detalle.maxLength = 1000;
+    const tiempo = crearElemento("input", "cifra");
+    tiempo.type = "number";
+    tiempo.inputMode = "numeric";
+    tiempo.min = "1";
+    tiempo.max = "1440";
+    tiempo.step = "5";
+
+    const enviado = await abrirHoja({
+        titulo: "Reportar actividad",
+        subtitulo: "No entra en tu día hasta que tu Administrador la programe.",
+        contenido: [
+            ...crearCampoDeReporte("reporte-titulo", "Qué te pidieron", titulo),
+            ...crearCampoDeReporte("reporte-pedido-por", "Quién te lo pidió", pedidoPor),
+            ...crearCampoDeReporte("reporte-detalle", "Detalle", detalle, true),
+            ...crearCampoDeReporte("reporte-tiempo", "Tiempo estimado, en minutos", tiempo, true),
+        ],
+        textoConfirmar: "Enviar reporte",
+        alConfirmar: () => enviarJson("/reportes", "POST", {
+            titulo: titulo.value,
+            pedido_por: pedidoPor.value,
+            detalle: detalle.value,
+            tiempo_estimado_min: tiempo.value ? Number(tiempo.value) : null,
+        }),
+    });
+    if (enviado) {
+        mostrarAviso("Reporte enviado a tu Administrador.");
+        await cargarReportes();
+    }
+    document.querySelector("#reportar button")?.focus();
+}
+
+async function cargarReportes() {
+    const seccion = document.getElementById("reportes");
+    try {
+        const reportes = await pedirApi("/reportes");
+        document.getElementById("lista-reportes").replaceChildren(...reportes.map(crearFilaDeReporte));
+    } catch {
+        // Sin la lista, el Operario todavía puede reportar.
+    }
+    if (!document.querySelector("#reportar button")) {
+        const boton = crearConIcono("button", "boton-secundario", "plus", "Reportar actividad");
+        boton.type = "button";
+        boton.addEventListener("click", abrirReporte);
+        document.getElementById("reportar").replaceChildren(boton);
+    }
+    seccion.hidden = ordenando;
+}
+
 let vistaUbicada = false;
 
 // "periodico": el repintado de cada medio minuto, que no toca lo que no cambió (y conserva el foco).
@@ -524,4 +629,5 @@ iniciarPaginaProtegida(["OPERARIO"]).then(() => {
     // El tiempo va en minutos: basta con repintar cada medio minuto (sin segundos corriendo).
     setInterval(() => programacion && !ordenando && !document.querySelector("dialog[open]") && pintar(true), 30000);
     cargar();
+    cargarReportes();
 });

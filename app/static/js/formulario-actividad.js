@@ -239,6 +239,8 @@ function validarDatosActividad(datos) {
 function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuardar }) {
     const dialogo = crearElemento("dialog", "dialogo dialogo-ancho");
     let actividadEnEdicion = null;
+    // A dónde va una actividad nueva: /actividades, o la conversión de un reporte de actividad.
+    let rutaNueva = "/actividades";
 
     const encabezado = crearElemento("div", "dialogo-encabezado");
     const titulo = crearElemento("h2", "", "Nueva actividad");
@@ -352,9 +354,11 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
 
     fecha.addEventListener("change", () => pintarOperarios(operariosMarcados()));
 
-    function abrir(actividad, valores = {}) {
+    // "opciones" (solo para una nueva): { ruta, titulo }, por ejemplo al convertir un reporte.
+    function abrir(actividad, valores = {}, opciones = {}) {
         actividadEnEdicion = actividad;
-        titulo.textContent = actividad ? `Editar ${actividad.codigo}` : "Nueva actividad";
+        rutaNueva = opciones.ruta || "/actividades";
+        titulo.textContent = actividad ? `Editar ${actividad.codigo}` : (opciones.titulo || "Nueva actividad");
         guardar.textContent = actividad ? "Guardar cambios" : "Guardar actividad";
 
         const ninguno = crearElemento("option", "", "Ninguno");
@@ -402,7 +406,7 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
             };
             const guardada = actividadEnEdicion
                 ? await enviarJson(`/actividades/${actividadEnEdicion.id}`, "PUT", cuerpo)
-                : await enviarJson("/actividades", "POST", cuerpo);
+                : await enviarJson(rutaNueva, "POST", cuerpo);
             // La actividad ya quedó guardada: si un archivo falla, se avisa y se puede subir al editarla.
             actividadEnEdicion = guardada;
             await subirAdjuntos(guardada.id, editorInformacion.archivosPorSubir(),
@@ -466,7 +470,7 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
     }
 
     return {
-        abrirNueva: (valores) => abrir(null, valores),
+        abrirNueva: (valores, opciones) => abrir(null, valores, opciones),
         abrirEdicion: (actividad) => abrir(actividad),
         abrirDetalle,
     };

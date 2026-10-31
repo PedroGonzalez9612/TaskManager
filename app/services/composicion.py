@@ -12,6 +12,7 @@ from app.repositories.empresa_repository import EmpresaRepository
 from app.repositories.evidencia_repository import EvidenciaRepository
 from app.repositories.orden_jornada_repository import OrdenJornadaRepository
 from app.repositories.proyecto_repository import ProyectoRepository
+from app.repositories.reporte_repository import ReporteRepository
 from app.repositories.turno_repository import AsignacionTurnoRepository, TurnoRepository
 from app.repositories.usuario_repository import UsuarioRepository
 from app.services.actividad_service import ActividadService
@@ -25,12 +26,13 @@ from app.services.evidencia_service import EvidenciaService
 from app.services.indicador_service import IndicadorService
 from app.services.programacion_service import ProgramacionService
 from app.services.proyecto_service import ProyectoService
+from app.services.reporte_service import ReporteService
 from app.services.turno_service import TurnoService
 
 
 def construir_servicios(db, reloj=None) -> SimpleNamespace:
     """Devuelve los servicios como atributos: actividades, ejecucion, carga, proyectos, catalogos,
-    cierre_jornada, programacion, turnos, asistencia, evidencias, adjuntos e indicadores.
+    cierre_jornada, programacion, turnos, asistencia, evidencias, adjuntos, indicadores y reportes.
     "reloj" es para las pruebas; sin él, cada servicio usa la hora del servidor."""
     actividad_repository = ActividadRepository(db)
     asignacion_repository = AsignacionRepository(db)
@@ -83,8 +85,12 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
         actividad_repository, asignacion_repository, ejecucion_repository, asistencia_repository,
         usuario_repository, empresa_repository, proyecto_repository, turnos, cierre_jornada, reloj=reloj,
     )
+    # Convertir un reporte de actividad es crear una actividad.
+    reportes = ReporteService(
+        ReporteRepository(db), usuario_repository, actividad_repository, actividades, reloj=reloj,
+    )
     return SimpleNamespace(
         actividades=actividades, ejecucion=ejecucion, carga=carga, proyectos=proyectos, catalogos=catalogos,
         cierre_jornada=cierre_jornada, programacion=programacion, turnos=turnos, asistencia=asistencia,
-        evidencias=evidencias, adjuntos=adjuntos, indicadores=indicadores,
+        evidencias=evidencias, adjuntos=adjuntos, indicadores=indicadores, reportes=reportes,
     )

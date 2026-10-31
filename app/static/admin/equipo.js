@@ -18,6 +18,7 @@ let formulario = null;
 let actividades = [];
 let operarios = [];         // { id, nombre, turno, jornada, programacion }
 let proyectos = [];
+let reportes = [];          // Reportes de actividad por revisar: son de la empresa, no de un día.
 let capacidadPorDefecto = 0;
 
 function inicioDelDia(fecha) {
@@ -374,12 +375,78 @@ function pintarTablero() {
     }
 }
 
-// Lo que necesita al Administrador: actividades del día sin nadie (nunca asignadas o devueltas).
+// Convertir un reporte: el formulario de actividad, ya lleno con lo reportado y asignado a quien lo
+// reportó. El Administrador lo programa y lo ajusta antes de guardar (alcance, Sección 5.1).
+function convertirReporte(reporte) {
+    const hoy = fechaTexto(new Date());
+    const fecha = fechaTexto(dia) < hoy ? hoy : fechaTexto(dia);
+    const descripcion = [`Pedido por ${reporte.pedido_por}.`, reporte.detalle].filter(Boolean).join("\n");
+    formulario.abrirNueva({
+        titulo: reporte.titulo,
+        descripcion,
+        tiempo_estimado_min: reporte.tiempo_estimado_min,
+        fecha_programada: fecha,
+        operario_ids: [reporte.operario_id],
+    }, { ruta: `/reportes/${reporte.id}/convertir`, titulo: "Convertir el reporte en actividad" });
+}
+
+function descartarReporte(reporte) {
+    const motivo = crearElemento("textarea");
+    motivo.id = "descartar-motivo";
+    motivo.rows = 3;
+    motivo.maxLength = 1000;
+    motivo.required = true;
+    const etiqueta = crearElemento("label", "", "Motivo");
+    etiqueta.htmlFor = motivo.id;
+    abrirDialogoAccion({
+        titulo: "Descartar el reporte",
+        subtitulo: `${reporte.titulo} (reporte de ${reporte.operario_nombre})`,
+        campos: [etiqueta, motivo, crearElemento("p", "ayuda-campo",
+            "No se borra: el operario ve que se descartó y el motivo.")],
+        textoConfirmar: "Descartar reporte",
+        iconoConfirmar: "minus",
+        textoCerrar: "Volver",
+        alConfirmar: async () => {
+            await enviarJson(`/reportes/${reporte.id}/descartar`, "POST", { motivo: motivo.value });
+            await cargar();
+            mostrarAviso("Reporte descartado.");
+        },
+    });
+}
+
+function crearFilaDeReporte(reporte) {
+    const fila = crearElemento("li", "fila-por-atender");
+    const textos = crearElemento("div");
+    const meta = crearElemento("p", "fila-meta datos-linea");
+    meta.append(crearElemento("span", "", `Reporte de ${reporte.operario_nombre}`),
+        crearElemento("span", "", `Pedido por ${reporte.pedido_por}`));
+    if (reporte.tiempo_estimado_min) {
+        meta.append(crearElemento("span", "cifra", duracionTexto(reporte.tiempo_estimado_min)));
+    }
+    textos.append(crearElemento("p", "fila-nombre", reporte.titulo), meta);
+    if (reporte.detalle) {
+        textos.append(crearElemento("p", "texto-secundario", reporte.detalle));
+    }
+    const convertir = crearConIcono("button", "boton-secundario", "plus", "Convertir en actividad");
+    convertir.type = "button";
+    convertir.addEventListener("click", () => convertirReporte(reporte));
+    const descartar = crearElemento("button", "boton-terciario boton-baja", "Descartar");
+    descartar.type = "button";
+    descartar.addEventListener("click", () => descartarReporte(reporte));
+    const acciones = crearElemento("div", "fila-por-atender-acciones");
+    acciones.append(convertir, descartar);
+    fila.append(textos, acciones);
+    return fila;
+}
+
+// Lo que necesita al Administrador: actividades del día sin nadie (nunca asignadas o devueltas) y
+// los reportes de actividad por revisar.
 function pintarPorAtender() {
     const pendientes = actividades.filter((a) => a.operarios.length === 0 && !["COMPLETADA", "NO_REALIZADA"].includes(a.estado));
+    const total = pendientes.length + reportes.length;
     document.getElementById("titulo-por-atender").replaceChildren("Por atender",
-        crearElemento("span", "cantidad cifra", pendientes.length ? String(pendientes.length) : ""));
-    document.getElementById("nada-por-atender").hidden = pendientes.length > 0;
+        crearElemento("span", "cantidad cifra", total ? String(total) : ""));
+    document.getElementById("nada-por-atender").hidden = total > 0;
     document.getElementById("por-atender").replaceChildren(...pendientes.map((actividad) => {
         const fila = crearElemento("li", "fila-por-atender");
         const textos = crearElemento("div");
@@ -400,7 +467,7 @@ function pintarPorAtender() {
         asignar.addEventListener("click", () => formulario.abrirEdicion(actividad));
         fila.append(textos, asignar);
         return fila;
-    }));
+    }), ...reportes.map(crearFilaDeReporte));
 }
 
 function pintarResumen() {
@@ -428,11 +495,13 @@ function pintarResumen() {
 async function cargar() {
     const fecha = fechaTexto(dia);
     try {
-        const [lista, carga, listaProyectos] = await Promise.all([
+        const [lista, carga, listaProyectos, porRevisar] = await Promise.all([
             pedirApi(`/actividades?fecha_desde=${fecha}&fecha_hasta=${fecha}`),
             pedirApi(`/analisis/carga?desde=${fecha}&hasta=${fecha}`),
             pedirApi("/proyectos"),
+            pedirApi("/reportes?estado=PENDIENTE"),
         ]);
+        reportes = porRevisar;
         actividades = actividadesDelHorario(lista);     // Las canceladas no se dibujan.
         proyectos = listaProyectos;
         capacidadPorDefecto = carga.capacidad_min;
