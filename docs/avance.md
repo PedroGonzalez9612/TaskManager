@@ -520,8 +520,9 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   de la entrada; la misma fila en Hoy y Semana; carga por día en Resumen; cerrar sesión con su texto en
   computador; espacios de `estilos.css` en la escala `--e1` a `--e7`. Decisiones en el alcance (bitácora del
   2026-10-31).
-- **Pendiente:** el aviso 10 minutos antes de una hora fija y la evidencia de la evolución del diseño para el
-  informe de Diseño de Interfaces. Confirmar con la profesora que la interfaz en código sirve como el
+- **Aviso de hora fija (2026-10-31):** 10 minutos antes, en Inicio y en Hoy, con "Pausar e iniciar" en el
+  detalle de la fija (pausa la otra con el motivo "Actividad de hora fija").
+- **Pendiente:** la evidencia de la evolución del diseño para el informe de Diseño de Interfaces. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
 
 ## Depuración del proyecto (2026-10-24) ✅

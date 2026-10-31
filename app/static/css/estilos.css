@@ -4154,6 +4154,20 @@ textarea[aria-invalid="true"] {
     display: none;
 }
 
+/* Aviso de hora fija: la línea en ámbar con candado y la acción de abrirla. Sin franja de color a
+   todo el ancho: una advertencia es un ícono y una frase (alcance, Sección 6.2). */
+.aviso-hora-fija {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e1) var(--e3);
+}
+
+.aviso-hora-fija p {
+    margin: 0;
+}
+
 .barra-turno-estado {
     display: inline-flex;
 }

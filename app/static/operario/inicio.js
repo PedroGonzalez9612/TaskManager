@@ -194,6 +194,12 @@ function crearAhora() {
     const contenido = [];
     let principal = null;
 
+    // Una hora fija que empieza en 10 minutos o menos se avisa primero (alcance, Sección 5.1).
+    const avisoFija = crearAvisoHoraFija(programacion, abrirDetalle);
+    if (avisoFija) {
+        contenido.push(avisoFija);
+    }
+
     if (tramoUrgente) {
         const urgente = actividadDe(tramoUrgente);
         contenido.push(crearUrgente(urgente, Boolean(tramoEnCurso)));
@@ -209,7 +215,8 @@ function crearAhora() {
         principal ||= { texto: "Abrir actividad", actividad: sigue };
     }
 
-    const fija = crearSiguienteFija(principal?.actividad.id);
+    // Si ya está el aviso de la hora fija, la línea "Sigue a las..." lo repetiría.
+    const fija = avisoFija ? null : crearSiguienteFija(principal?.actividad.id);
     if (fija) {
         contenido.push(fija);
     }

@@ -284,6 +284,11 @@ function pintarEncabezado(periodico = false) {
     const estado = estadoDeJornada(programacion);
     // Antes de la entrada basta un aviso: el del modo de lectura. "Llegada tarde" ya está en la barra.
     const aviso = estado === "inicio" ? null : avisoDelTurno(programacion);
+    // Una hora fija que empieza en 10 minutos o menos (alcance, Sección 5.1).
+    const avisoFija = crearAvisoHoraFija(programacion, abrirDetalle);
+    if (avisoFija) {
+        avisos.push(avisoFija);
+    }
     if (aviso) {
         const [tipo, texto] = aviso;
         avisos.push(crearConIcono("p", tipo === "info" ? "linea-info" : "linea-advertencia", tipo === "info" ? "info" : "clock", texto));

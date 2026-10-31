@@ -5,6 +5,8 @@
 // Administrador es otro (abrirDetalleActividad, en js/actividades-comun.js).
 
 const MOTIVO_URGENTE = "Actividad urgente";
+const MOTIVO_HORA_FIJA = "Actividad de hora fija";
+const AVISO_HORA_FIJA_MIN = 10;     // Desde cuántos minutos antes se avisa una actividad de hora fija (alcance, 5.1).
 
 // Evidencia de la ejecución (alcance, Sección 5.1).
 const MAXIMO_EVIDENCIAS = 5;
@@ -46,6 +48,14 @@ function accionesDelOperario(actividad, actividades, alCambiar, soloLectura) {
         } else {
             acciones.push({ texto: "Pausar y atender", icono: "pause", alHacer: () => atenderUrgente(actividad, otraEnCurso, alCambiar) });
         }
+    } else if (actividad.estado === "ASIGNADA" && actividad.hora_programada && otraEnCurso && !otraEnCurso.hora_programada) {
+        // Llegó una hora fija (alcance, Sección 5.1): la que lleva se pausa con el motivo "Actividad de
+        // hora fija" y la fija empieza en el mismo paso. Después se retoma la otra.
+        acciones.push({
+            texto: "Pausar e iniciar", icono: "pause",
+            alHacer: () => pausarEIniciar(actividad, otraEnCurso, alCambiar, MOTIVO_HORA_FIJA),
+        });
+        nota = `${otraEnCurso.titulo} queda en pausa con el motivo "${MOTIVO_HORA_FIJA}". La retomas al terminar esta.`;
     } else if (actividad.estado === "ASIGNADA") {
         // Una sola actividad en ejecución a la vez: el botón se desactiva y se explica por qué.
         if (otraEnCurso) {
@@ -381,16 +391,22 @@ function crearPieDeAcciones(acciones, dialogo, error) {
 // Pausa lo que está en curso con el motivo "Actividad urgente" e inicia (o reanuda) la urgente.
 // Son dos pasos en el servidor: si el segundo falla, lo primero ya quedó en pausa y se recarga.
 async function atenderUrgente(urgente, enCurso, alCambiar) {
+    return pausarEIniciar(urgente, enCurso, alCambiar, MOTIVO_URGENTE);
+}
+
+// Pausa lo que está en curso con su motivo e inicia (o reanuda) la otra: la urgente o la de hora fija.
+// Son dos pasos en el servidor: si el segundo falla, lo primero ya quedó en pausa y se recarga.
+async function pausarEIniciar(nueva, enCurso, alCambiar, motivo) {
     try {
-        await enviarJson(`/actividades/${enCurso.id}/pausar`, "POST", { motivo: MOTIVO_URGENTE });
-        const accion = urgente.estado === "PAUSADA" ? "reanudar" : "iniciar";
-        await pedirApi(`/actividades/${urgente.id}/${accion}`, { method: "POST" });
+        await enviarJson(`/actividades/${enCurso.id}/pausar`, "POST", { motivo });
+        const accion = nueva.estado === "PAUSADA" ? "reanudar" : "iniciar";
+        await pedirApi(`/actividades/${nueva.id}/${accion}`, { method: "POST" });
     } catch (error) {
         alCambiar();
         throw error;
     }
     await alCambiar();
-    mostrarAviso(`${enCurso.titulo} quedó en pausa. ${urgente.titulo}: en curso.`);
+    mostrarAviso(`${enCurso.titulo} quedó en pausa. ${nueva.titulo}: en curso.`);
 }
 
 // ---------- Hojas inferiores: pausar, devolver y finalizar ----------
@@ -741,6 +757,43 @@ function avisoDelTurno(programacion) {
         return ["info", `${estado === "inicio" ? "Tu turno inicia en" : "Tu turno termina en"} ${duracionTexto(faltan)}.`];
     }
     return null;
+}
+
+// ---------- Aviso de hora fija (alcance, Sección 5.1) ----------
+// Desde 10 minutos antes de una actividad de hora fija, y mientras no se haya iniciado en su tiempo,
+// Inicio y Hoy lo avisan con una línea y la acción de abrirla. Solo con la entrada marcada.
+
+function horaFijaProxima(programacion) {
+    if (estadoDeJornada(programacion) !== "dia") {
+        return null;
+    }
+    const tramo = programacion.tramos.find((t) => t.tipo === "PENDIENTE" && t.hora_fija
+        && minutosHasta(t.inicio) <= AVISO_HORA_FIJA_MIN && minutosHasta(t.fin) > 0);
+    const actividad = tramo && programacion.actividades.find((a) => a.id === tramo.actividad_id);
+    return actividad ? { tramo, actividad, minutos: minutosHasta(tramo.inicio) } : null;
+}
+
+function crearAvisoHoraFija(programacion, alAbrir) {
+    const proxima = horaFijaProxima(programacion);
+    if (!proxima) {
+        return null;
+    }
+    const { tramo, actividad, minutos } = proxima;
+    const hayEnCurso = programacion.tramos.some((t) => t.tipo === "EN_CURSO");
+    let texto = minutos > 0
+        ? `En ${duracionTexto(minutos)}, a las ${horaDeMomento(tramo.inicio)}, empieza ${actividad.titulo}. Es de hora fija.`
+        : `Ya es la hora de ${actividad.titulo}, que es de hora fija.`;
+    if (hayEnCurso) {
+        texto += minutos > 0 ? " A esa hora pausa la que llevas." : " Pausa la que llevas e iníciala.";
+    }
+    const aviso = crearElemento("div", "aviso-hora-fija");
+    const abrir = crearElemento("button", "boton-texto", "Abrir");
+    abrir.type = "button";
+    abrir.dataset.foco = `hora-fija-${actividad.id}`;
+    abrir.setAttribute("aria-label", `Abrir ${actividad.titulo}`);
+    abrir.addEventListener("click", () => alAbrir(actividad));
+    aviso.append(crearConIcono("p", "linea-advertencia", "lock", texto), abrir);
+    return aviso;
 }
 
 async function marcarAsistencia(boton, ruta, texto, alCambiar) {
