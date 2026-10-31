@@ -64,8 +64,6 @@
     --tamano-texto: 1rem;           /* 16 px en celular; 15 px en escritorio */
     --tamano-secundario: 0.875rem;  /* 14 px */
     --tamano-etiqueta: 0.8125rem;   /* 13 px: el mínimo */
-    --tamano-cronometro: 2.5rem;    /* 40 px */
-    --tamano-cifra-grande: 1.625rem; /* 26 px: valor de un indicador */
 
     --interlineado-h1: 1.25;
     --interlineado-h2: 1.3;
@@ -90,7 +88,7 @@
     --icono-alerta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
     --icono-aviso: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4'/%3E%3Cpath d='M12 16h.01'/%3E%3C/svg%3E");
 
-    /* ---- Espacios: una sola escala. Todo relleno y toda separación sale de estos seis pasos ---- */
+    /* ---- Espacios: una sola escala. Todo relleno y toda separación sale de estos siete pasos ---- */
     --e1: 0.25rem;
     --e2: 0.5rem;
     --e3: 0.75rem;
@@ -111,6 +109,7 @@
     --velo: rgb(27 34 48 / 0.5);    /* Lo que queda detrás de un diálogo (figura y fondo) */
     --alto-control: 2.75rem;        /* Al menos 44 px: fácil de tocar en celular (Ley de Fitts) */
     --alto-boton-principal: 3.25rem; /* 52 px: el botón principal en celular */
+    --alto-barra-inferior: 3.8rem;  /* La barra de vistas en celular: el contenido deja este espacio abajo */
 }
 
 /* El tamaño que el usuario tenga en su navegador (16 px si no lo ha cambiado). */
@@ -222,7 +221,7 @@ a {
 .marca {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--e2);
     min-width: 0;
     font-weight: var(--peso-fuerte);
     color: var(--texto);
@@ -276,14 +275,14 @@ a {
     display: flex;
     flex: 1;
     align-self: stretch;
-    gap: 0.2rem;
+    gap: var(--e1);
 }
 
 .navegacion a {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0 0.9rem;
+    gap: var(--e2);
+    padding: 0 var(--e4);
     border-block: 3px solid transparent;
     color: var(--texto-secundario);
     font-weight: var(--peso-fuerte);
@@ -308,7 +307,7 @@ a {
 .usuario {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--e2);
 }
 
 .usuario-textos strong {
@@ -322,6 +321,26 @@ a {
     color: var(--texto-secundario);
     font-size: var(--tamano-etiqueta);
     line-height: var(--interlineado-etiqueta);
+}
+
+/* Cerrar sesión: en computador con su texto; en celular solo la puerta (el texto queda para el lector). */
+.boton-icono.boton-salir {
+    display: inline-flex;
+    gap: var(--e2);
+    width: auto;
+    padding: 0 var(--e2);
+    font-size: var(--tamano-secundario);
+}
+
+@media (max-width: 50em) {
+    .boton-salir span {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
 }
 
 .boton-icono {
@@ -381,7 +400,7 @@ body.ancho-angosto {
         z-index: 20;
         flex: none;
         gap: 0;
-        height: 3.8rem;
+        height: var(--alto-barra-inferior);
         padding-bottom: env(safe-area-inset-bottom);
         background: var(--superficie);
         border-top: 1px solid var(--borde);
@@ -391,7 +410,7 @@ body.ancho-angosto {
         flex: 1;
         flex-direction: column;
         justify-content: center;
-        gap: 0.1rem;
+        gap: var(--e1);
         padding: 0;
         font-size: var(--tamano-etiqueta);
     }
@@ -407,7 +426,7 @@ body.ancho-angosto {
     }
 
     .principal {
-        padding: var(--e5) var(--margen) 5.5rem;
+        padding: var(--e5) var(--margen) var(--e7);
     }
 }
 
@@ -458,7 +477,7 @@ body.ancho-angosto {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: var(--e1);
     min-height: var(--alto-control);
     padding: 0 var(--e5);
     border-radius: var(--radio-control);
@@ -503,7 +522,7 @@ body.ancho-angosto {
 
 .boton-pequeno {
     min-height: var(--alto-control);
-    padding: 0 0.8rem;
+    padding: 0 var(--e3);
 }
 
 /* ================= Paneles, tablas y listas ================= */
@@ -582,12 +601,12 @@ body.ancho-angosto {
 
 .estado-vacio strong {
     display: block;
-    margin-bottom: 0.2rem;
+    margin-bottom: var(--e1);
     color: var(--texto);
 }
 
 .estado-vacio .boton {
-    margin-top: 0.9rem;
+    margin-top: var(--e4);
 }
 
 .mensaje-error {
@@ -597,8 +616,8 @@ body.ancho-angosto {
 .limites {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem 1.4rem;
-    padding: 0.8rem 1.1rem;
+    gap: var(--e2) var(--e5);
+    padding: var(--e3) var(--e4);
     border-bottom: 1px solid var(--borde);
     font-size: var(--tamano-secundario);
     color: var(--texto-secundario);
@@ -628,7 +647,7 @@ body.ancho-angosto {
 .aviso > span {
     display: flex;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: var(--e2);
 }
 
 /* Advertencia que no es urgente: fondo ámbar suave con su texto oscuro. */
@@ -650,6 +669,7 @@ body.ancho-angosto {
     display: flex;
     align-items: center;
     gap: var(--e2);
+    min-height: var(--alto-control);      /* 44 px: fácil de tocar (Ley de Fitts) */
 }
 
 .formulario .opcion-mostrar {
@@ -740,12 +760,12 @@ body.ancho-angosto {
 /* Información que no pide una acción inmediata: texto secundario con su ícono, sin color propio (6.3). */
 
 .aviso-bloque {
-    margin: 0 0 1rem;
+    margin: 0 0 var(--e4);
 }
 
 .aviso-limite {
     margin: 0;
-    padding: 0.7rem 1.1rem;
+    padding: var(--e3) var(--e4);
     border-bottom: 1px solid var(--borde);
     font-size: var(--tamano-secundario);
 }
@@ -753,8 +773,8 @@ body.ancho-angosto {
 .etiqueta {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.15rem 0.6rem;
+    gap: var(--e1);
+    padding: var(--e1) var(--e2);
     border-radius: 999px;
     font-size: var(--tamano-etiqueta);
     font-weight: var(--peso-fuerte);
@@ -767,7 +787,7 @@ body.ancho-angosto {
 .senales {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem;
+    gap: var(--e1);
 }
 
 /* Prioridades: la intensidad del color crece con la urgencia. */
@@ -810,7 +830,7 @@ body.ancho-angosto {
 .carga-sobrecarga {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--e1);
     color: var(--error-texto);
     font-weight: var(--peso-fuerte);
 }
@@ -828,7 +848,7 @@ fieldset.grupo-botones {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--e2);
 }
 
 /* ================= Formularios y diálogos ================= */
@@ -922,7 +942,7 @@ fieldset.grupo-botones {
 .campo-logo {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
+    gap: var(--e3);
     margin-top: var(--e3);
 }
 
@@ -965,8 +985,8 @@ fieldset.grupo-botones {
 }
 
 .mensaje-formulario {
-    margin: 0.7rem 0 0;
-    padding: 0.6rem 0.7rem;
+    margin: var(--e3) 0 0;
+    padding: var(--e2) var(--e3);
     border-radius: 0.5rem;
     font-size: var(--tamano-secundario);
     line-height: var(--interlineado-secundario);
@@ -1059,7 +1079,7 @@ fieldset.grupo-botones {
     right: 1.3rem;
     bottom: 1.3rem;
     max-width: calc(100vw - 2.6rem);
-    padding: 0.7rem 0.9rem;
+    padding: var(--e3) var(--e4);
     border-radius: 0.5rem;
     background: var(--exito);
     color: var(--texto-sobre-color);
@@ -1068,7 +1088,7 @@ fieldset.grupo-botones {
     z-index: 50;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--e2);
 }
 
 /* ---------- Formulario de actividad y detalle ---------- */
@@ -1076,9 +1096,9 @@ fieldset.grupo-botones {
 .campo-formulario {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--e1);
     min-width: 0;
-    margin-top: 0.6rem;
+    margin-top: var(--e2);
 }
 
 .formulario .campo-formulario label {
@@ -1110,8 +1130,8 @@ fieldset.grupo-botones {
     display: flex;
     flex-direction: column;
     max-height: 12rem;
-    margin-top: 0.35rem;
-    padding: 0.3rem;
+    margin-top: var(--e1);
+    padding: var(--e1);
     border: 1px solid var(--borde);
     border-radius: 0.5rem;
     overflow-y: auto;
@@ -1120,10 +1140,10 @@ fieldset.grupo-botones {
 .formulario .opcion {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--e2);
     min-height: var(--alto-control);
     margin: 0;
-    padding: 0 0.5rem;
+    padding: 0 var(--e2);
     border-radius: 0.4rem;
     font-weight: var(--peso-normal);
     cursor: pointer;
@@ -1149,19 +1169,19 @@ fieldset.grupo-botones {
 }
 
 .detalle-cuerpo {
-    padding: 1.1rem;
+    padding: var(--e4);
 }
 
 .detalle-titulo {
-    margin: 0.7rem 0;
+    margin: var(--e3) 0;
 }
 
 .detalle-datos {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 0.4rem 1.1rem;
+    gap: var(--e2) var(--e4);
     margin: 0;
-    padding: 0.8rem 0;
+    padding: var(--e3) 0;
     border-block: 1px solid var(--borde);
 }
 
@@ -1175,7 +1195,7 @@ fieldset.grupo-botones {
 }
 
 .detalle-subtitulo {
-    margin: 0.9rem 0 0.2rem;
+    margin: var(--e4) 0 var(--e1);
 }
 
 .detalle-descripcion {
@@ -1190,20 +1210,20 @@ fieldset.grupo-botones {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.9rem;
+    padding: var(--e4);
 }
 
 .tarjeta-login {
     width: 100%;
     max-width: 24rem;
-    padding: 1.8rem 1.5rem;
+    padding: var(--e6) var(--e5);
     background: var(--superficie);
     border: 1px solid var(--borde);
     border-radius: 0.8rem;
 }
 
 .tarjeta-login .marca {
-    padding: 0 0 1.1rem;
+    padding: 0 0 var(--e4);
 }
 
 .tarjeta-login h1 {
@@ -1211,12 +1231,12 @@ fieldset.grupo-botones {
 }
 
 .tarjeta-login .subtitulo {
-    margin: 0.2rem 0 1.3rem;
+    margin: var(--e1) 0 var(--e5);
     color: var(--texto-secundario);
 }
 
 .tarjeta-login .boton {
-    margin-top: 1rem;
+    margin-top: var(--e4);
 }
 
 /* ================= Operario: vista "Hoy" (su fila del tablero, en vertical) ================= */
@@ -1232,10 +1252,6 @@ fieldset.grupo-botones {
 /* ---------- Turno: estado, entrada, salida y fin del turno ---------- */
 
 /* Datos del cierre de la jornada, en Inicio (alcance, Sección 6.1). */
-
-.portada-nota {
-    margin: 0;
-}
 
 /* Hora fija: fondo gris suave, candado y texto principal (13,9:1). No es una alerta: dice que no se mueve. */
 .etiqueta-hora-fija {
@@ -1406,7 +1422,7 @@ fieldset.grupo-botones {
 }
 
 .panel-encabezado p {
-    margin: 0.15rem 0 0;
+    margin: var(--e1) 0 0;
     font-size: var(--tamano-secundario);
 }
 
@@ -1419,7 +1435,7 @@ fieldset.grupo-botones {
     display: inline-block;
     width: 1.1em;
     height: 1.1em;
-    margin-right: 0.4rem;
+    margin-right: var(--e2);
     vertical-align: -0.18em;
     background: currentColor;
     -webkit-mask: var(--icono-alerta) center / contain no-repeat;
@@ -1475,7 +1491,7 @@ fieldset.grupo-botones {
 .buscador input {
     width: 100%;
     min-height: var(--alto-control);
-    padding: 0 var(--e3) 0 2.5rem;
+    padding: 0 var(--e3) 0 var(--e6);
     border: 1px solid var(--borde-control);
     border-radius: var(--radio-control);
     background: var(--superficie);
@@ -2709,7 +2725,7 @@ fieldset.grupo-botones {
     /* Alto de la pantalla menos la barra superior; el relleno de abajo deja libre la barra de vistas. */
     .inicio {
         min-height: calc(100dvh - 3.25rem);
-        padding-bottom: calc(3.8rem + var(--e5));
+        padding-bottom: calc(var(--alto-barra-inferior) + var(--e5));
     }
 }
 
@@ -2899,7 +2915,7 @@ fieldset.grupo-botones {
     justify-self: center;
     width: 0.875rem;
     height: 0.875rem;
-    margin-top: calc(var(--e3) + 0.25rem);
+    margin-top: calc(var(--e3) + var(--e1));
     border: 2px solid var(--borde-control);
     border-radius: 50%;
     background: var(--fondo);
@@ -2913,7 +2929,7 @@ fieldset.grupo-botones {
 .dia-punto-curso {
     width: 1.125rem;
     height: 1.125rem;
-    margin-top: calc(var(--e3) + 0.125rem);
+    margin-top: calc(var(--e3) + var(--e1));
     border: 4px solid var(--principal);
     background: var(--superficie);
 }
@@ -3117,7 +3133,7 @@ fieldset.grupo-botones {
 /* En celular, el final de la línea queda libre de la barra de vistas. */
 @media (max-width: 50em) {
     .dia {
-        padding-bottom: calc(3.8rem + var(--e5));
+        padding-bottom: calc(var(--alto-barra-inferior) + var(--e5));
     }
 }
 
@@ -3213,7 +3229,7 @@ fieldset.grupo-botones {
 }
 
 /* Los datos en dos columnas, separados del resto por líneas finas. */
-.detalle-op-datos {
+.lista-datos {
     display: grid;
     grid-template-columns: minmax(6.5rem, auto) minmax(0, 1fr);
     gap: var(--e2) var(--e4);
@@ -3221,11 +3237,11 @@ fieldset.grupo-botones {
     border-block: 1px solid var(--borde);
 }
 
-.detalle-op-datos dt {
+.lista-datos dt {
     color: var(--texto-secundario);
 }
 
-.detalle-op-datos dd {
+.lista-datos dd {
     margin: 0;
 }
 
@@ -3304,7 +3320,7 @@ fieldset.grupo-botones {
     justify-self: center;
     width: 0.75rem;
     height: 0.75rem;
-    margin-top: 0.4rem;
+    margin-top: var(--e2);
     border-radius: 50%;
     background: var(--principal);
 }
@@ -3419,6 +3435,16 @@ fieldset.grupo-botones {
 
 .boton-terciario:hover {
     text-decoration: underline;
+}
+
+/* Acción de baja (devolver, cancelar, desactivar): en el rojo de error, nunca como la principal (6.2). */
+.boton-terciario.boton-baja,
+.boton-secundario.boton-baja {
+    color: var(--error-texto);
+}
+
+.boton-secundario.boton-baja {
+    border-color: var(--error);
 }
 
 /* ---------- Hojas inferiores: pausar, devolver y finalizar ---------- */
@@ -3685,14 +3711,52 @@ fieldset.grupo-botones {
     gap: var(--e1);
 }
 
-/* Lo que se pasó del estimado: la barra va llena y en el ámbar de advertencia, con su texto al lado. */
+/* Lo que se pasó del estimado: la barra va llena y en el ámbar de advertencia, con su texto al lado.
+   El ámbar base es claro (2,2:1 sobre blanco): el borde en su texto oscuro le da el 3:1 de un gráfico. */
 .barra-avance-excedida .barra-avance-relleno {
     background: var(--advertencia);
 }
 
+.barra-avance-excedida {
+    box-shadow: inset 0 0 0 1px var(--advertencia-texto);
+}
+
+/* La carga por día: la barra y, si pasa de la capacidad, lo que sobra rayado en rojo (sobrecarga). */
+.resumen-carga-lista {
+    display: grid;
+    gap: var(--e3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.resumen-carga-lista li {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--e1) var(--e3);
+}
+
+.resumen-carga-lista .barra-avance {
+    display: flex;
+}
+
+.resumen-carga-texto {
+    grid-column: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+}
+
+.barra-avance-sobrecarga {
+    display: block;
+    height: 100%;
+    background: repeating-linear-gradient(135deg, var(--error) 0 2px, var(--error-suave) 2px 5px);
+}
+
 @media (max-width: 50em) {
     .resumen {
-        padding-bottom: calc(3.8rem + var(--e5));
+        padding-bottom: calc(var(--alto-barra-inferior) + var(--e5));
     }
 }
 
@@ -3848,9 +3912,10 @@ fieldset.grupo-botones {
 }
 
 .semana-bloque-hora {
-    display: inline-flex;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 2px;
+    gap: 2px var(--e1);
     color: var(--texto-secundario);
 }
 
@@ -3866,6 +3931,27 @@ fieldset.grupo-botones {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
 }
+
+.semana-bloque-largo .semana-bloque-nombre {
+    -webkit-line-clamp: 3;
+}
+
+/* El estado dentro del bloque: ícono y texto en su color (6.3, regla 1). */
+.semana-bloque-estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-weight: var(--peso-fuerte);
+}
+
+.semana-bloque-estado .icono {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.semana-estado-urgente { color: var(--error-texto); }
+.semana-estado-en-curso { color: var(--principal); }
+.semana-estado-pausada { color: var(--advertencia-texto); }
 
 .semana-flexible {
     border-style: dashed;
@@ -3948,7 +4034,7 @@ fieldset.grupo-botones {
     color: var(--principal);
 }
 
-.semana-pestana[aria-selected="true"] {
+.semana-pestana[aria-pressed="true"] {
     border-color: var(--principal);
     background: var(--principal-suave);
 }
@@ -3977,7 +4063,7 @@ fieldset.grupo-botones {
 
 @media (max-width: 50em) {
     .semana {
-        padding-bottom: calc(3.8rem + var(--e5));
+        padding-bottom: calc(var(--alto-barra-inferior) + var(--e5));
     }
 }
 
@@ -3987,7 +4073,7 @@ fieldset.grupo-botones {
 .usuario-perfil {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--e2);
     min-height: var(--alto-control);
     padding: 0 var(--e2);
     border-radius: var(--radio-control);
@@ -4032,15 +4118,22 @@ fieldset.grupo-botones {
     line-height: var(--interlineado-h3);
 }
 
+/* El campo con error: borde rojo, con el mensaje asociado (alcance, Sección 6.3: errores). */
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+    border: 2px solid var(--error);
+}
+
 /* Bajo su título, la lista de datos no necesita la línea de arriba. */
-.perfil-seccion .detalle-op-datos {
+.perfil-seccion .lista-datos {
     padding-top: 0;
     border-top: 0;
 }
 
 @media (max-width: 50em) {
     .perfil {
-        padding-bottom: calc(3.8rem + var(--e5));
+        padding-bottom: calc(var(--alto-barra-inferior) + var(--e5));
     }
 }
 
@@ -4059,6 +4152,10 @@ fieldset.grupo-botones {
 
 .barra-turno:empty {
     display: none;
+}
+
+.barra-turno-estado {
+    display: inline-flex;
 }
 
 .barra-turno-hora {

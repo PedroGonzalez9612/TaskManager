@@ -8,13 +8,15 @@
 
 const PANTALLA_ANGOSTA = window.matchMedia("(max-width: 50em)");
 const PX_POR_MINUTO = 1.2;          // Alto de la cuadrícula: 72 px por hora (lo lee el CSS en --alto-hora).
-const DURACION_MINIMA_MIN = 25;     // Un bloque corto se dibuja con este alto, para leer su nombre.
+const DURACION_MINIMA_MIN = 50;     // Un bloque corto se dibuja con este alto: caben la hora y dos renglones.
+const DURACION_BLOQUE_LARGO_MIN = 45;   // Desde aquí el nombre puede ocupar tres renglones.
 const UN_MINUTO = 60000;
 
 let lunes = inicioDeSemana(new Date());
 let semana = null;
 let actividades = [];
 let diaElegido = null;              // En celular: la fecha que se ve.
+let cargadaEn = 0;                  // Cuándo llegó la semana: el tiempo en curso se adelanta desde ahí.
 
 function hora(momento) {
     const fecha = new Date(momento);
@@ -67,6 +69,23 @@ function claseDeTramo(tramo, actividad) {
     return tramo.hora_fija ? "semana-fija" : "semana-flexible";
 }
 
+// El estado que se escribe dentro del bloque: Urgente, En curso o Pausada. Lo normal no lleva texto.
+function estadoDelBloque(tramo, actividad) {
+    if (tramo.tipo === "FINALIZADA") {
+        return null;
+    }
+    if (actividad.prioridad === "URGENTE") {
+        return { clase: "semana-estado-urgente", icono: "triangle-alert", texto: "Urgente" };
+    }
+    if (tramo.tipo === "EN_CURSO") {
+        return { clase: "semana-estado-en-curso", icono: "circle", texto: "En curso" };
+    }
+    if (actividad.estado === "PAUSADA") {
+        return { clase: "semana-estado-pausada", icono: "pause", texto: "Pausada" };
+    }
+    return null;
+}
+
 function iconoDeTramo(tramo) {
     if (tramo.tipo === "FINALIZADA") {
         return "check";
@@ -114,14 +133,25 @@ function crearBloque(tramo, dia, rango) {
     bloque.type = "button";
     bloque.style.top = `${(minutoInicio - rango.desde) * PX_POR_MINUTO}px`;
     bloque.style.height = `${duracion * PX_POR_MINUTO - 2}px`;
+    if (duracion >= DURACION_BLOQUE_LARGO_MIN) {
+        bloque.classList.add("semana-bloque-largo");
+    }
     const cabeza = crearElemento("span", "semana-bloque-hora cifra");
     const iconoNombre = iconoDeTramo(tramo);
     if (iconoNombre) {
         cabeza.insertAdjacentHTML("beforeend", icono(iconoNombre));
     }
     cabeza.append(textoHora(tramo));
-    bloque.append(cabeza, crearElemento("span", "semana-bloque-nombre", actividad.titulo));
-    bloque.setAttribute("aria-label", `${textoHora(tramo)}, ${actividad.titulo}. Ver detalle`);
+    // El estado que no es lo normal va con su ícono y su texto, no solo con el borde (6.3, regla 1). En
+    // la misma línea de la hora, para que el nombre conserve sus renglones.
+    const estado = estadoDelBloque(tramo, actividad);
+    if (estado) {
+        cabeza.append(crearConIcono("span", `semana-bloque-estado ${estado.clase}`, estado.icono, estado.texto));
+    }
+    bloque.append(cabeza);
+    bloque.append(crearElemento("span", "semana-bloque-nombre", actividad.titulo));
+    // El nombre accesible dice todo lo que se ve: hora, estado y nombre.
+    bloque.setAttribute("aria-label", `${textoHora(tramo)}${estado ? `, ${estado.texto}` : ""}, ${actividad.titulo}. Ver detalle`);
     bloque.title = actividad.titulo;
     bloque.addEventListener("click", () => abrirDetalle(actividad, dia));
     return bloque;
@@ -249,8 +279,8 @@ function pintarPestanas() {
     contenedor.replaceChildren(...semana.dias.map((dia) => {
         const pestana = crearElemento("button", "semana-pestana");
         pestana.type = "button";
-        pestana.setAttribute("role", "tab");
-        pestana.setAttribute("aria-selected", String(dia.fecha === diaElegido));
+        // Botones que eligen el día: el elegido se anuncia como presionado.
+        pestana.setAttribute("aria-pressed", String(dia.fecha === diaElegido));
         const carga = cargaDelDia(dia);
         // La carga corta, para que quepa en la pestaña: "4,4 h".
         const horas = (Math.round((carga.total / 60) * 10) / 10).toLocaleString("es-CO");
@@ -269,21 +299,6 @@ function pintarPestanas() {
         return pestana;
     }));
     contenedor.hidden = false;
-}
-
-// Los datos como frase, con el estado cuando no es lo normal (alcance, Sección 6.2).
-function datosDeFila(tramo, actividad) {
-    const categoria = NOMBRE_CATEGORIA[actividad.categoria] || actividad.categoria;
-    if (tramo.tipo === "FINALIZADA") {
-        return "Finalizada";
-    }
-    if (tramo.tipo === "EN_CURSO") {
-        return `En curso. ${categoria}`;
-    }
-    if (actividad.estado === "PAUSADA") {
-        return `Pausada. ${categoria}`;
-    }
-    return `${categoria}, ${duracionTexto(actividad.tiempo_estimado_min)}`;
 }
 
 function pintarDiaElegido() {
@@ -306,24 +321,12 @@ function pintarDiaElegido() {
         const horaTexto = crearElemento("span", `dia-hora cifra ${tramo.aproximada && tramo.tipo === "PENDIENTE" ? "dia-hora-aproximada" : "dia-hora-exacta"}`, textoHora(tramo));
         const punto = crearElemento("span", `dia-punto${tramo.tipo === "FINALIZADA" ? " dia-punto-lleno" : ""}${tramo.tipo === "EN_CURSO" ? " dia-punto-curso" : ""}`);
         punto.setAttribute("aria-hidden", "true");
-        const fila = crearElemento("button", `fila fila-${tramo.tipo === "EN_CURSO" ? "en-curso" : "pendiente"}`);
-        fila.type = "button";
-        const textos = crearElemento("span", "fila-textos");
-        const excepciones = crearElemento("span", "fila-excepciones");
-        if (actividad.prioridad === "URGENTE" && tramo.tipo !== "FINALIZADA") {
-            excepciones.append(crearSenalPrioridad("URGENTE"));
-        }
-        if (tramo.hora_fija && tramo.tipo !== "FINALIZADA") {
-            excepciones.append(crearConIcono("span", "etiqueta etiqueta-hora-fija", "lock", "Hora fija"));
-        }
-        if (excepciones.childElementCount) {
-            textos.append(excepciones);
-        }
-        textos.append(crearElemento("strong", "fila-nombre", actividad.titulo),
-            crearElemento("span", "fila-datos", datosDeFila(tramo, actividad)));
-        fila.append(textos);
-        fila.insertAdjacentHTML("beforeend", icono("chevron-right"));
-        fila.addEventListener("click", () => abrirDetalle(actividad, dia));
+        // La misma fila de Hoy (operario-comun.js): mismas etiquetas y misma frase de datos.
+        const tipo = { FINALIZADA: "hecha", EN_CURSO: "en-curso" }[tramo.tipo] || "pendiente";
+        const fila = crearFilaDeActividad({
+            actividad, tramo, tipo, vencida: tramo.vencida, siguiente: dia.es_vigente && tramo.siguiente,
+            urgenteComoEtiqueta: true,
+        }, cargadaEn, (elegida) => abrirDetalle(elegida, dia));
         nodo.append(horaTexto, punto, fila);
         nodos.push(nodo);
     }
@@ -358,6 +361,7 @@ async function cargar() {
     try {
         semana = await pedirApi(`/programacion-de-la-semana?desde=${fechaTexto(lunes)}&hasta=${fechaTexto(domingo)}`);
         actividades = semana.actividades;
+        cargadaEn = Date.now();
         if (!semana.dias.some((dia) => dia.fecha === diaElegido)) {
             diaElegido = (semana.dias.find((dia) => dia.es_vigente) || semana.dias[0]).fecha;
         }

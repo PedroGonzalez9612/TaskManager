@@ -157,6 +157,7 @@ function crearLoQueSigue(tramo, actividad) {
     cabeza.append(crearElemento("p", "inicio-rotulo", "Lo que sigue"), crearElemento("p", "texto-secundario cifra", hora));
 
     const fila = crearElemento("button", "inicio-sigue");
+    fila.dataset.foco = `sigue-${actividad.id}`;
     fila.type = "button";
     const textos = crearElemento("span", "inicio-sigue-textos");
     // Urgente es una de las excepciones que llevan etiqueta (6.2).
@@ -258,6 +259,7 @@ function crearBalance() {
 function crearBoton(clase, iconoNombre, texto, alHacer) {
     const boton = iconoNombre ? crearConIcono("button", clase, iconoNombre, texto) : crearElemento("button", clase, texto);
     boton.type = "button";
+    boton.dataset.foco = texto;
     boton.addEventListener("click", alHacer);
     return boton;
 }
@@ -308,11 +310,12 @@ function pintarFecha() {
     document.getElementById("fecha-inicio").textContent = conHora ? `${conMayuscula}, ${horaDeMomento(Date.now())}` : conMayuscula;
 }
 
-function pintar() {
+// "periodico": el repintado de cada medio minuto, que no toca lo que no cambió.
+function pintar(periodico = false) {
     const estado = estadoDeJornada(programacion);
     document.getElementById("saludo").textContent = saludo();
     pintarFecha();
-    document.getElementById("inicio-turno").replaceChildren(...crearLineaTurno());
+    reemplazarSiCambia(document.getElementById("inicio-turno"), crearLineaTurno(), periodico);
 
     let contenido;
     let principal = null;
@@ -324,11 +327,11 @@ function pintar() {
         contenido = crearBalance();
     }
     const ahora = document.getElementById("inicio-ahora");
-    ahora.replaceChildren(...contenido);
+    reemplazarSiCambia(ahora, contenido, periodico);
     ahora.hidden = false;
 
     const acciones = document.getElementById("inicio-acciones");
-    acciones.replaceChildren(...crearAcciones(estado, principal));
+    reemplazarSiCambia(acciones, crearAcciones(estado, principal), periodico);
     acciones.hidden = false;
 }
 
@@ -349,6 +352,6 @@ async function cargar() {
 iniciarPaginaProtegida(["OPERARIO"]).then((usuario) => {
     nombreOperario = usuario.nombre.split(" ")[0];
     // El tiempo se muestra en minutos: basta con repintar cada medio minuto (sin segundos corriendo).
-    setInterval(() => programacion && !document.querySelector("dialog[open]") && pintar(), 30000);
+    setInterval(() => programacion && !document.querySelector("dialog[open]") && pintar(true), 30000);
     cargar();
 });

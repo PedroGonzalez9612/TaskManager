@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-    <title>Resumen — GestLab</title>
+    <title>Resumen de tu semana — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
 <body class="cargando ancho-angosto">
@@ -13,7 +13,7 @@
     <main class="principal resumen">
         <header class="resumen-encabezado">
             <div>
-                <h1>Tu semana</h1>
+                <h1>Resumen de tu semana</h1>
                 <p id="rango-semana" class="texto-secundario"></p>
             </div>
             <fieldset class="grupo-botones">
@@ -26,6 +26,7 @@
 
         <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando tu semana…</p>
         <section id="resumen-frases" class="resumen-frases" aria-label="Cómo te fue" aria-live="polite" hidden></section>
+        <section id="resumen-carga" class="resumen-seccion" aria-labelledby="titulo-carga" hidden></section>
         <section id="resumen-asistencia" class="resumen-seccion" aria-labelledby="titulo-asistencia" hidden></section>
         <section id="resumen-tiempos" class="resumen-seccion" aria-labelledby="titulo-tiempos" hidden></section>
         <section id="resumen-pausas" class="resumen-seccion" aria-labelledby="titulo-pausas" hidden></section>

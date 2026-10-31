@@ -13,6 +13,7 @@ let actividades = [];           // Las del día, como las presenta la API (para 
 let programacion = null;
 let cargadaEn = 0;              // Cuándo llegó la programación: el tiempo en curso se adelanta desde ahí.
 let ordenando = false;          // Mientras se ordena el día no se muestra nada más (alcance, Sección 6.1).
+const urgentesAnunciadas = new Set();   // Las urgentes cuya alerta ya se anunció al lector de pantalla.
 
 function horaLocal(momento) {
     return horaDeMomento(momento);
@@ -118,95 +119,24 @@ function armarDia() {
 // ---------- Filas ----------
 
 // Minutos trabajados en la actividad en curso: los del servidor más los que pasaron desde que se cargó.
-function minutosEnCurso(actividad) {
-    return (actividad.ejecucion?.tiempo_real_min || 0) + Math.floor((Date.now() - cargadaEn) / UN_MINUTO);
-}
-
-function textoRetraso(actividad) {
-    const dias = actividad.dias_de_retraso;
-    return dias === 1 ? "Retraso: 1 día" : `Retraso: ${dias} días`;
-}
-
-// Las excepciones llevan etiqueta (Urgente, Hora fija, Retraso); "Siguiente" es texto (6.2).
-function crearExcepciones(nodo) {
-    const { actividad } = nodo;
-    const excepciones = [];
-    if (actividad.hora_programada && nodo.tipo !== "hecha") {
-        excepciones.push(crearConIcono("span", "etiqueta etiqueta-hora-fija", "lock", "Hora fija"));
-    }
-    if (nodo.vencida) {
-        excepciones.push(crearConIcono("span", "etiqueta etiqueta-retraso", "clock", "Hora vencida"));
-    } else if (actividad.reprogramada && nodo.tipo !== "hecha") {
-        excepciones.push(crearConIcono("span", "etiqueta etiqueta-retraso", "clock", textoRetraso(actividad)));
-    }
-    if (nodo.siguiente) {
-        excepciones.push(crearElemento("span", "fila-siguiente", "Siguiente"));
-    }
-    if (!excepciones.length) {
-        return null;
-    }
-    const linea = crearElemento("span", "fila-excepciones");
-    linea.append(...excepciones);
-    return linea;
-}
-
-// Los datos como frase: "Operación, 30 min, prioridad media". El estado va como texto con su ícono.
-function crearDatos(nodo) {
-    const { actividad, tramo } = nodo;
-    const datos = crearElemento("span", "fila-datos");
-    const categoria = NOMBRE_CATEGORIA[actividad.categoria] || actividad.categoria;
-    if (nodo.tipo === "en-curso") {
-        datos.classList.add("fila-datos-en-curso");
-        datos.textContent = `En curso, ${duracionTexto(minutosEnCurso(actividad))} de ${estimadoCorto(actividad.tiempo_estimado_min)}`;
-        return datos;
-    }
-    if (nodo.tipo === "hecha") {
-        const real = actividad.ejecucion?.tiempo_real_min;
-        datos.append(...crearConIcono("span", "fila-estado estado-finalizada", "check",
-            real ? `Finalizada, tomó ${duracionTexto(real)}` : "Finalizada").childNodes);
-        return datos;
-    }
-    if (actividad.estado === "PAUSADA") {
-        const faltan = Math.round((new Date(tramo.fin) - new Date(tramo.inicio)) / UN_MINUTO);
-        const pausada = crearConIcono("span", "fila-estado estado-pausada", "pause",
-            faltan > 0 ? `Pausada, faltan ${duracionTexto(faltan)}` : "Pausada");
-        datos.append(pausada, `. ${categoria}`);
-        return datos;
-    }
-    datos.append(`${categoria}, ${duracionTexto(actividad.tiempo_estimado_min)}`);
-    if (["ALTA", "MEDIA", "BAJA"].includes(actividad.prioridad)) {
-        datos.append(", ");
-        datos.append(crearConIcono("span", `fila-prioridad prioridad-texto-${actividad.prioridad.toLowerCase()}`,
-            ICONO_PRIORIDAD[actividad.prioridad], `prioridad ${NOMBRE_PRIORIDAD[actividad.prioridad].toLowerCase()}`));
-    }
-    return datos;
-}
-
+// La fila de cada actividad es la misma de Semana: crearFilaDeActividad, en operario-comun.js.
 function crearFila(nodo) {
-    const { actividad } = nodo;
-    const fila = crearElemento("button", `fila fila-${nodo.tipo}`);
-    fila.type = "button";
-    const textos = crearElemento("span", "fila-textos");
-    const excepciones = crearExcepciones(nodo);
-    if (excepciones) {
-        textos.append(excepciones);
-    }
-    textos.append(crearElemento("strong", "fila-nombre", actividad.titulo), crearDatos(nodo));
-    fila.append(textos);
-    fila.insertAdjacentHTML("beforeend", icono("chevron-right"));
-    fila.setAttribute("aria-label", `${actividad.titulo}. Ver detalle`);
-    fila.addEventListener("click", () => abrirDetalle(actividad));
-    return fila;
+    return crearFilaDeActividad(nodo, cargadaEn, abrirDetalle);
 }
 
 // Urgente pendiente: el único bloque rojo lleno de la pantalla. Se atiende desde su detalle.
 function crearUrgente(nodo) {
     const { actividad } = nodo;
     const bloque = crearElemento("section", "dia-urgente");
-    bloque.setAttribute("role", "alert");
+    // La alerta se anuncia una sola vez, no en cada repintado.
+    if (!urgentesAnunciadas.has(actividad.id)) {
+        bloque.setAttribute("role", "alert");
+        urgentesAnunciadas.add(actividad.id);
+    }
     const hayEnCurso = programacion.tramos.some((tramo) => tramo.tipo === "EN_CURSO");
     const abrir = crearElemento("button", "boton-sobre-urgente", "Abrir la urgente");
     abrir.type = "button";
+    abrir.dataset.foco = `urgente-${actividad.id}`;
     abrir.addEventListener("click", () => abrirDetalle(actividad));
     bloque.append(
         crearConIcono("p", "dia-urgente-etiqueta", "triangle-alert", actividad.estado === "PAUSADA" ? "Urgente en pausa" : "Urgente"),
@@ -226,7 +156,8 @@ function crearMarcaEntrada() {
     if (asistencia && asistencia.jornada === fecha) {
         marca.append("Inicio del turno, entrada a las ", crearElemento("span", "cifra", horaLocal(asistencia.entrada)));
     } else {
-        marca.textContent = "Inicio del turno. Todavía no marcas la entrada";
+        // Que falta la entrada ya lo dicen el aviso de arriba y la barra superior: aquí no se repite.
+        marca.textContent = "Inicio del turno";
     }
     return marca;
 }
@@ -247,6 +178,7 @@ function crearMarcaFinTurno() {
 function crearBotonOrdenar() {
     const boton = crearConIcono("button", "boton-secundario dia-ordenar", "arrow-up-down", "Ordenar mi día");
     boton.type = "button";
+    boton.dataset.foco = "ordenar";
     boton.addEventListener("click", abrirOrdenador);
     return boton;
 }
@@ -301,7 +233,7 @@ function crearNodo(nodo) {
     return elemento;
 }
 
-function pintarLineaDeTiempo() {
+function pintarLineaDeTiempo(periodico = false) {
     const linea = document.getElementById("linea-tiempo");
     const mensaje = document.getElementById("mensaje");
     const nodos = armarDia();
@@ -310,7 +242,7 @@ function pintarLineaDeTiempo() {
     mensaje.classList.remove("mensaje-error");
     mensaje.textContent = "No tienes actividades para hoy.";
     linea.hidden = ordenando;
-    linea.replaceChildren(...nodos.map(crearNodo));
+    reemplazarSiCambia(linea, nodos.map(crearNodo), periodico);
 }
 
 // ---------- Encabezado: la carga y el tiempo disponible (alcance, Sección 6.1) ----------
@@ -332,7 +264,7 @@ function crearBarraCarga(trabajo, capacidad) {
     return barra;
 }
 
-function pintarEncabezado() {
+function pintarEncabezado(periodico = false) {
     const { resumen, turno } = programacion;
     const trabajo = resumen.trabajado_min + resumen.pendiente_min;
     const capacidad = resumen.capacidad_min;
@@ -345,16 +277,17 @@ function pintarEncabezado() {
     }
     const horario = crearElemento("p", "dia-horario cifra",
         turno ? `Turno de ${turno.hora_inicio} a ${turno.hora_fin}` : "Sin turno asignado");
-    document.getElementById("dia-carga").replaceChildren(frase, crearBarraCarga(trabajo, capacidad), horario);
+    reemplazarSiCambia(document.getElementById("dia-carga"), [frase, crearBarraCarga(trabajo, capacidad), horario], periodico);
 
     // Avisos del turno y del modo de lectura, como líneas con su ícono (sin caja).
     const avisos = [];
-    const aviso = avisoDelTurno(programacion);
+    const estado = estadoDeJornada(programacion);
+    // Antes de la entrada basta un aviso: el del modo de lectura. "Llegada tarde" ya está en la barra.
+    const aviso = estado === "inicio" ? null : avisoDelTurno(programacion);
     if (aviso) {
         const [tipo, texto] = aviso;
         avisos.push(crearConIcono("p", tipo === "info" ? "linea-info" : "linea-advertencia", tipo === "info" ? "info" : "clock", texto));
     }
-    const estado = estadoDeJornada(programacion);
     if (estado !== "dia") {
         const lectura = crearConIcono("p", "linea-info", "info", estado === "inicio"
             ? "Estás viendo tu día. Para iniciar actividades, marca la entrada en Inicio."
@@ -364,7 +297,7 @@ function pintarEncabezado() {
         lectura.querySelector("span").append(" ", enlace);
         avisos.push(lectura);
     }
-    document.getElementById("dia-avisos").replaceChildren(...avisos);
+    reemplazarSiCambia(document.getElementById("dia-avisos"), avisos, periodico);
 }
 
 // ---------- Ordenar el día: solo las actividades de horario flexible ----------
@@ -495,9 +428,10 @@ function enviarCuerpo(orden) {
 // desplaza por su cuenta.
 let vistaUbicada = false;
 
-function pintar() {
-    pintarEncabezado();
-    pintarLineaDeTiempo();
+// "periodico": el repintado de cada medio minuto, que no toca lo que no cambió (y conserva el foco).
+function pintar(periodico = false) {
+    pintarEncabezado(periodico);
+    pintarLineaDeTiempo(periodico);
 }
 
 async function cargar() {
@@ -522,6 +456,6 @@ iniciarPaginaProtegida(["OPERARIO"]).then(() => {
     const fecha = fechaLarga(new Date());
     document.getElementById("fecha-hoy").textContent = fecha.charAt(0).toUpperCase() + fecha.slice(1);
     // El tiempo va en minutos: basta con repintar cada medio minuto (sin segundos corriendo).
-    setInterval(() => programacion && !ordenando && !document.querySelector("dialog[open]") && pintar(), 30000);
+    setInterval(() => programacion && !ordenando && !document.querySelector("dialog[open]") && pintar(true), 30000);
     cargar();
 });

@@ -30,12 +30,13 @@ function accionesDelOperario(actividad, actividades, alCambiar, soloLectura) {
     const otraEnCurso = enCurso && enCurso.id !== actividad.id ? enCurso : null;
     const acciones = [];
     let aviso = "";
+    let nota = "";          // Información que explica una acción que falta (sin color propio, 6.3).
 
     if (soloLectura) {
         if (["ASIGNADA", "PAUSADA"].includes(actividad.estado)) {
             aviso = "Para iniciarla o reanudarla, marca la entrada en Inicio.";
         }
-        return { acciones, aviso };
+        return { acciones, aviso, nota };
     }
     if (actividad.prioridad === "URGENTE" && otraEnCurso && ["ASIGNADA", "PAUSADA"].includes(actividad.estado)) {
         // Urgente con otra en curso: una de horario flexible se pausa y la urgente empieza en el mismo
@@ -43,7 +44,7 @@ function accionesDelOperario(actividad, actividades, alCambiar, soloLectura) {
         if (otraEnCurso.hora_programada) {
             aviso = `${otraEnCurso.titulo} es de hora fija y no se interrumpe. Atiende la urgente al finalizarla.`;
         } else {
-            acciones.push({ texto: "Pausar y atender", icono: "play", alHacer: () => atenderUrgente(actividad, otraEnCurso, alCambiar) });
+            acciones.push({ texto: "Pausar y atender", icono: "pause", alHacer: () => atenderUrgente(actividad, otraEnCurso, alCambiar) });
         }
     } else if (actividad.estado === "ASIGNADA") {
         // Una sola actividad en ejecución a la vez: el botón se desactiva y se explica por qué.
@@ -75,14 +76,16 @@ function accionesDelOperario(actividad, actividades, alCambiar, soloLectura) {
         // Una de hora fija no se pausa (alcance, Sección 5.1).
         if (!actividad.hora_programada) {
             acciones.push({ texto: "Pausar", icono: "pause", alHacer: () => abrirPausar(actividad, alCambiar), abreHoja: true });
+        } else {
+            nota = "Es de hora fija: no se pausa. Al terminarla, finalízala.";
         }
     }
     // Devolver: solo antes de iniciarla, con motivo. Es una acción de baja (6.2): al final, terciaria.
     if (actividad.estado === "ASIGNADA" && !actividad.ejecucion) {
-        acciones.push({ texto: "Devolver actividad", icono: "undo-2", clase: "boton-terciario",
+        acciones.push({ texto: "Devolver actividad", icono: "undo-2", clase: "boton-terciario boton-baja",
             alHacer: () => abrirDevolver(actividad, alCambiar), abreHoja: true });
     }
-    return { acciones, aviso };
+    return { acciones, aviso, nota };
 }
 
 // ---------- Piezas del detalle ----------
@@ -118,7 +121,7 @@ function textoHora(actividad) {
 
 // Los datos en una lista de dos columnas: nombre y valor.
 function crearDatosDeLaActividad(actividad) {
-    const datos = crearElemento("dl", "detalle-op-datos");
+    const datos = crearElemento("dl", "lista-datos");
     const prioridad = crearConIcono("span", `fila-prioridad prioridad-texto-${actividad.prioridad.toLowerCase()}`,
         ICONO_PRIORIDAD[actividad.prioridad], NOMBRE_PRIORIDAD[actividad.prioridad]);
     const filas = [
@@ -315,9 +318,10 @@ function abrirDetalleOperario(actividad, actividades, alCambiar, { soloLectura =
         cuerpo.append(...crearRegistro(actividad.ejecucion), ...crearInformacionOperario(actividad));
     }
 
-    const { acciones, aviso } = accionesDelOperario(actividad, actividades, alCambiar, soloLectura);
-    // El aviso (por qué no se puede iniciar) y el error van junto a las acciones, donde se miran.
-    const avisoLinea = aviso ? crearConIcono("p", "linea-advertencia", "circle-alert", aviso) : null;
+    const { acciones, aviso, nota } = accionesDelOperario(actividad, actividades, alCambiar, soloLectura);
+    // El aviso (por qué no se puede iniciar), la nota y el error van junto a las acciones, donde se miran.
+    const avisoLinea = aviso ? crearConIcono("p", "linea-advertencia", "circle-alert", aviso)
+        : nota ? crearConIcono("p", "linea-info", "info", nota) : null;
     const error = crearElemento("p", "mensaje-formulario");
     error.setAttribute("role", "alert");
     error.hidden = true;
@@ -362,7 +366,7 @@ function crearPieDeAcciones(acciones, dialogo, error) {
                 boton.disabled = false;
             }
         });
-        if (clase === "boton-terciario") {
+        if (clase.includes("boton-terciario")) {
             pie.append(boton);
         } else {
             fila.prepend(boton);    // La principal queda a la derecha, al final de la lectura.
@@ -393,7 +397,9 @@ async function atenderUrgente(urgente, enCurso, alCambiar) {
 
 // Un diálogo que en celular sube desde abajo (hoja inferior, alcance 14). La acción principal va
 // arriba y "Cancelar" debajo (6.2). Devuelve una promesa: true si se confirmó y salió bien.
-function abrirHoja({ titulo, subtitulo = "", contenido = [], textoConfirmar, alConfirmar }) {
+// Con "deBaja" (devolver), el botón que confirma lleva borde y texto rojos: una acción de baja nunca es
+// la principal (alcance, Sección 6.2).
+function abrirHoja({ titulo, subtitulo = "", contenido = [], textoConfirmar, alConfirmar, deBaja = false }) {
     return new Promise((resolver) => {
         const hoja = crearElemento("dialog", "dialogo hoja");
         hoja.setAttribute("aria-label", titulo);
@@ -404,7 +410,8 @@ function abrirHoja({ titulo, subtitulo = "", contenido = [], textoConfirmar, alC
         const error = crearElemento("p", "mensaje-formulario");
         error.setAttribute("role", "alert");
         error.hidden = true;
-        const confirmar = crearElemento("button", "boton boton-principal-grande", textoConfirmar);
+        const confirmar = crearElemento("button",
+            deBaja ? "boton-secundario boton-baja boton-principal-grande" : "boton boton-principal-grande", textoConfirmar);
         confirmar.type = "submit";
         const cancelar = crearElemento("button", "boton-secundario boton-principal-grande", "Cancelar");
         cancelar.type = "button";
@@ -510,6 +517,7 @@ function abrirDevolver(actividad, alCambiar) {
         subtitulo: `${actividad.titulo} sale de tu día y vuelve a quien la asignó, con el motivo que elijas.`,
         contenido: [grupo],
         textoConfirmar: "Devolver actividad",
+        deBaja: true,
         alConfirmar: async () => {
             await enviarJson(`/actividades/${actividad.id}/devolver`, "POST", leer());
             await alCambiar();
@@ -604,6 +612,94 @@ function abrirFinalizar(actividad, alCambiar) {
     });
 }
 
+// ---------- La fila de una actividad: la comparten Hoy y Semana (alcance, Sección 6.2) ----------
+// "nodo" trae la actividad, su tramo y cómo se ve: tipo ("hecha", "en-curso" o "pendiente"), vencida,
+// siguiente y, en Semana, urgenteComoEtiqueta (en Hoy la urgente es un bloque rojo aparte).
+
+function textoRetraso(actividad) {
+    const dias = actividad.dias_de_retraso;
+    return dias === 1 ? "Retraso: 1 día" : `Retraso: ${dias} días`;
+}
+
+// Las excepciones llevan etiqueta (Urgente, Hora fija, Retraso u Hora vencida); "Siguiente" es texto (6.2).
+function crearExcepciones(nodo) {
+    const { actividad } = nodo;
+    const excepciones = [];
+    if (nodo.urgenteComoEtiqueta && actividad.prioridad === "URGENTE" && nodo.tipo !== "hecha") {
+        excepciones.push(crearSenalPrioridad("URGENTE"));
+    }
+    if (actividad.hora_programada && nodo.tipo !== "hecha") {
+        excepciones.push(crearConIcono("span", "etiqueta etiqueta-hora-fija", "lock", "Hora fija"));
+    }
+    if (nodo.vencida) {
+        excepciones.push(crearConIcono("span", "etiqueta etiqueta-retraso", "clock", "Hora vencida"));
+    } else if (actividad.reprogramada && nodo.tipo !== "hecha") {
+        excepciones.push(crearConIcono("span", "etiqueta etiqueta-retraso", "clock", textoRetraso(actividad)));
+    }
+    if (nodo.siguiente) {
+        excepciones.push(crearElemento("span", "fila-siguiente", "Siguiente"));
+    }
+    if (!excepciones.length) {
+        return null;
+    }
+    const linea = crearElemento("span", "fila-excepciones");
+    linea.append(...excepciones);
+    return linea;
+}
+
+// Los datos como frase: "Operación, 30 min, prioridad media". El estado va como texto con su ícono.
+// "cargadaEn" es cuándo llegó la programación: el tiempo en curso se adelanta desde ahí.
+function crearDatosDeFila(nodo, cargadaEn) {
+    const { actividad, tramo } = nodo;
+    const datos = crearElemento("span", "fila-datos");
+    const categoria = NOMBRE_CATEGORIA[actividad.categoria] || actividad.categoria;
+    if (nodo.tipo === "en-curso") {
+        const minutos = (actividad.ejecucion?.tiempo_real_min || 0) + Math.floor((Date.now() - cargadaEn) / 60000);
+        datos.classList.add("fila-datos-en-curso");
+        datos.textContent = `En curso, ${duracionTexto(minutos)} de ${estimadoCorto(actividad.tiempo_estimado_min)}`;
+        return datos;
+    }
+    if (nodo.tipo === "hecha") {
+        const real = actividad.ejecucion?.tiempo_real_min;
+        datos.append(...crearConIcono("span", "fila-estado estado-finalizada", "check",
+            real ? `Finalizada, tomó ${duracionTexto(real)}` : "Finalizada").childNodes);
+        return datos;
+    }
+    if (actividad.estado === "PAUSADA") {
+        const faltan = Math.round((new Date(tramo.fin) - new Date(tramo.inicio)) / 60000);
+        const pausada = crearConIcono("span", "fila-estado estado-pausada", "pause",
+            faltan > 0 ? `Pausada, faltan ${duracionTexto(faltan)}` : "Pausada");
+        datos.append(pausada, `. ${categoria}`);
+        return datos;
+    }
+    datos.append(`${categoria}, ${duracionTexto(actividad.tiempo_estimado_min)}`);
+    if (["ALTA", "MEDIA", "BAJA"].includes(actividad.prioridad)) {
+        datos.append(", ");
+        datos.append(crearConIcono("span", `fila-prioridad prioridad-texto-${actividad.prioridad.toLowerCase()}`,
+            ICONO_PRIORIDAD[actividad.prioridad], `prioridad ${NOMBRE_PRIORIDAD[actividad.prioridad].toLowerCase()}`));
+    }
+    return datos;
+}
+
+// La fila completa: toda ella abre el detalle. Su nombre accesible es su texto visible (etiquetas,
+// nombre y datos); "data-foco" permite devolverle el foco si la pantalla se repinta.
+function crearFilaDeActividad(nodo, cargadaEn, alAbrir) {
+    const { actividad } = nodo;
+    const fila = crearElemento("button", `fila fila-${nodo.tipo}`);
+    fila.type = "button";
+    fila.dataset.foco = `fila-${actividad.id}`;
+    const textos = crearElemento("span", "fila-textos");
+    const excepciones = crearExcepciones(nodo);
+    if (excepciones) {
+        textos.append(excepciones);
+    }
+    textos.append(crearElemento("strong", "fila-nombre", actividad.titulo), crearDatosDeFila(nodo, cargadaEn));
+    fila.append(textos);
+    fila.insertAdjacentHTML("beforeend", icono("chevron-right"));
+    fila.addEventListener("click", () => alAbrir(actividad));
+    return fila;
+}
+
 // ---------- La jornada: lo que comparten Inicio y Hoy (alcance, Secciones 5.1 y 6.1) ----------
 
 const MOTIVO_FIN_JORNADA = "Fin de jornada";
@@ -673,7 +769,7 @@ function abrirSalida(programacion, alCambiar) {
             ? `Tienes ${enCurso.codigo} en curso. Es de hora fija y no se pausa: se finaliza antes de marcar la salida.`
             : `Tienes ${enCurso.codigo} en curso. Se pausa con el motivo "${MOTIVO_FIN_JORNADA}" y la retomas en tu siguiente jornada.`));
     }
-    campos.push(crearElemento("p", "portada-nota",
+    campos.push(crearElemento("p", "texto-secundario",
         "Después de marcar la salida no podrás iniciar ni reanudar actividades en esta jornada."));
 
     let textoConfirmar = "Marcar salida";

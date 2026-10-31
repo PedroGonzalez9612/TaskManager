@@ -513,7 +513,16 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
 - **Mi perfil (observación 10):** datos del usuario y cambio de contraseña (`PUT /auth/contrasena`), para
   los tres roles; el avatar de la barra lleva a `perfil.html`.
 - **Barra superior (observación 13):** el Operario ve el estado de su turno y la hora en todas sus pantallas.
-- **Pendiente:** Etapa 7 (validación y evidencias para el informe).
+- **Etapa 7, validación (2026-10-31):** contrastes medidos (todos cumplen), capturas finales y auditoría del
+  agente `profesor-interfaces` (3 graves, 7 medios y 11 menores), corregidos: estado con ícono y texto en los
+  bloques de Semana; Devolver como acción de baja en rojo; campo con error marcado en Mi perfil; repintado
+  que conserva el foco y no repite avisos; títulos distintos en Resumen y Semana; un solo aviso en Hoy antes
+  de la entrada; la misma fila en Hoy y Semana; carga por día en Resumen; cerrar sesión con su texto en
+  computador; espacios de `estilos.css` en la escala `--e1` a `--e7`. Decisiones en el alcance (bitácora del
+  2026-10-31).
+- **Pendiente:** el aviso 10 minutos antes de una hora fija y la evidencia de la evolución del diseño para el
+  informe de Diseño de Interfaces. Confirmar con la profesora que la interfaz en código sirve como el
+  prototipo de la Fase 2.
 
 ## Depuración del proyecto (2026-10-24) ✅
 

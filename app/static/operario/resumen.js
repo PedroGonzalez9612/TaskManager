@@ -85,6 +85,45 @@ function pintarFrases(yo) {
     contenedor.hidden = false;
 }
 
+// ---------- Tu carga por día: una franja simple, sin librería (alcance, Sección 6.2) ----------
+// Cada día con su carga frente a su capacidad. La barra es lo programado; si pasa de la capacidad,
+// lo que sobra se ve rayado en rojo (sobrecarga, 6.3) y el texto lo dice.
+
+function pintarCarga(carga) {
+    const jornadas = Object.fromEntries((carga.operarios[0]?.jornadas || []).map((j) => [j.fecha, j]));
+    const lista = crearElemento("ul", "resumen-carga-lista");
+    for (let dia = 0; dia < 7; dia += 1) {
+        const fecha = fechaTexto(sumarDias(lunes, dia));
+        const jornada = jornadas[fecha];
+        const fila = crearElemento("li");
+        const texto = jornada
+            ? `${duracionTexto(jornada.minutos)} de ${duracionTexto(jornada.capacidad_min)}${jornada.sobrecarga ? ", sobrecarga" : ""}`
+            : "Sin trabajo programado";
+        const barra = crearElemento("div", "barra-avance");
+        barra.setAttribute("aria-hidden", "true");
+        if (jornada) {
+            const total = Math.max(jornada.minutos, jornada.capacidad_min);
+            const lleno = crearElemento("span", "barra-avance-relleno");
+            lleno.style.width = `${(Math.min(jornada.minutos, jornada.capacidad_min) * 100) / total}%`;
+            barra.append(lleno);
+            if (jornada.sobrecarga) {
+                const exceso = crearElemento("span", "barra-avance-sobrecarga");
+                exceso.style.width = `${((jornada.minutos - jornada.capacidad_min) * 100) / total}%`;
+                barra.append(exceso);
+            }
+        }
+        fila.append(
+            crearElemento("span", "resumen-dia", diaCorto(fecha)),
+            barra,
+            jornada?.sobrecarga
+                ? crearConIcono("span", "resumen-carga-texto semana-carga-exceso", "triangle-alert", texto)
+                : crearElemento("span", "resumen-carga-texto cifra texto-secundario", texto),
+        );
+        lista.append(fila);
+    }
+    seccion("resumen-carga", "Tu carga por día", lista);
+}
+
 // ---------- Tu asistencia ----------
 
 const ESTADO_ASISTENCIA = {
@@ -184,7 +223,7 @@ function pintarLoQueViene(yo, siguiente) {
     if (siguiente !== null) {
         frases.push(siguiente
             ? frase("La semana siguiente tienes ", [duracionTexto(siguiente)], " de trabajo programado.")
-            : frase("La semana siguiente todavía no tienes trabajo programado."));
+            : frase("Para la semana siguiente todavía no tienes trabajo programado."));
     }
     if (frases.length) {
         seccion("resumen-viene", "Lo que viene", ...frases);
@@ -208,8 +247,9 @@ async function cargar() {
     const esEstaSemana = desde === fechaTexto(inicioDeSemana(new Date()));
     const lunesSiguiente = sumarDias(lunes, 7);
     try {
-        const [indicadores, carga] = await Promise.all([
+        const [indicadores, cargaDeLaSemana, carga] = await Promise.all([
             pedirApi(`/analisis/indicadores?desde=${desde}&hasta=${hasta}`),
+            pedirApi(`/analisis/carga?desde=${desde}&hasta=${hasta}`),
             esEstaSemana
                 ? pedirApi(`/analisis/carga?desde=${fechaTexto(lunesSiguiente)}&hasta=${fechaTexto(sumarDias(lunesSiguiente, 6))}`)
                 : Promise.resolve(null),
@@ -220,6 +260,7 @@ async function cargar() {
             : null;
         mensaje.hidden = true;
         pintarFrases(yo);
+        pintarCarga(cargaDeLaSemana);
         pintarAsistencia(yo.detalle.asistencias);
         pintarTiempos(yo.detalle.finalizadas);
         pintarPausas(yo.detalle.pausas_por_motivo);

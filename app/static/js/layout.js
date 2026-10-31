@@ -122,10 +122,9 @@ function construirBloqueUsuario(usuario) {
         textos.append(crearElemento("span", "usuario-rol", rol));
     }
 
-    const salir = crearConIcono("button", "boton-icono", "log-out", "");
+    // En computador dice "Cerrar sesión"; en celular queda la puerta, con el texto para el lector (6.5).
+    const salir = crearConIcono("button", "boton-icono boton-salir", "log-out", "Cerrar sesión");
     salir.type = "button";
-    salir.title = "Cerrar sesión";
-    salir.setAttribute("aria-label", "Cerrar sesión");
     salir.addEventListener("click", async () => {
         await pedirApi("/auth/logout", { method: "POST" });
         window.location.href = RUTA_LOGIN;
@@ -134,6 +133,25 @@ function construirBloqueUsuario(usuario) {
     perfil.append(avatar, textos);
     bloque.append(perfil, salir);
     return bloque;
+}
+
+// ---------- Repintar sin perder el foco (WCAG 2.4.3 y 4.1.3) ----------
+// Las pantallas que muestran minutos se repintan cada medio minuto. Para no mover a quien navega con
+// teclado ni repetir avisos al lector de pantalla: con "soloSiCambia", no se toca lo que dice lo mismo;
+// y si se repinta, el foco vuelve al elemento con el mismo "data-foco".
+function reemplazarSiCambia(contenedor, nodos, soloSiCambia = false) {
+    const firma = nodos.map((nodo) => nodo.textContent).join("␞");
+    if (soloSiCambia && contenedor.dataset.firma === firma) {
+        return false;
+    }
+    const enfocado = document.activeElement;
+    const clave = enfocado && contenedor.contains(enfocado) ? enfocado.dataset.foco : null;
+    contenedor.replaceChildren(...nodos);
+    contenedor.dataset.firma = firma;
+    if (clave) {
+        contenedor.querySelector(`[data-foco="${CSS.escape(clave)}"]`)?.focus();
+    }
+    return true;
 }
 
 // ---------- Estado del turno en la barra superior (Operario; observación 13 del usuario) ----------
@@ -170,16 +188,26 @@ function estadoDelTurnoEnLaBarra(programacion) {
     return ["barra-turno-en-turno", null, `En turno hasta las ${turno.hora_fin}`];
 }
 
+// El estado se anuncia solo cuando cambia (está en su propia región "aria-live"); la hora, que cambia
+// cada minuto, no se anuncia: es un reloj visual.
 function pintarEstadoDelTurno(contenedor, programacion) {
     const estado = estadoDelTurnoEnLaBarra(programacion);
-    const hora = crearElemento("span", "barra-turno-hora cifra", horaDeLaBarra(Date.now()));
-    if (!estado) {
-        contenedor.replaceChildren(hora);
-        return;
+    let region = contenedor.querySelector(".barra-turno-estado");
+    let hora = contenedor.querySelector(".barra-turno-hora");
+    if (!region) {
+        region = crearElemento("span", "barra-turno-estado");
+        region.setAttribute("aria-live", "polite");
+        hora = crearElemento("span", "barra-turno-hora cifra");
+        hora.setAttribute("aria-hidden", "true");
+        contenedor.replaceChildren(region, hora);
     }
-    const [clase, nombreIcono, texto] = estado;
-    const etiqueta = nombreIcono ? crearConIcono("span", clase, nombreIcono, texto) : crearElemento("span", clase, texto);
-    contenedor.replaceChildren(etiqueta, hora);
+    hora.textContent = horaDeLaBarra(Date.now());
+    const contenido = [];
+    if (estado) {
+        const [clase, nombreIcono, texto] = estado;
+        contenido.push(nombreIcono ? crearConIcono("span", clase, nombreIcono, texto) : crearElemento("span", clase, texto));
+    }
+    reemplazarSiCambia(region, contenido, true);
 }
 
 async function construirEstadoDelTurno(contenedor) {
@@ -206,8 +234,6 @@ async function iniciarPaginaProtegida(rolesPermitidos) {
     barra.append(crearMarca(usuario), construirNavegacion(usuario));
     if (usuario.rol === "OPERARIO") {
         const estado = crearElemento("div", "barra-turno");
-        estado.setAttribute("aria-live", "polite");
-        estado.setAttribute("aria-label", "Tu turno");
         barra.append(estado);
         construirEstadoDelTurno(estado);
     }
