@@ -4032,6 +4032,12 @@ fieldset.grupo-botones {
     line-height: var(--interlineado-h3);
 }
 
+/* Bajo su título, la lista de datos no necesita la línea de arriba. */
+.perfil-seccion .detalle-op-datos {
+    padding-top: 0;
+    border-top: 0;
+}
+
 @media (max-width: 50em) {
     .perfil {
         padding-bottom: calc(3.8rem + var(--e5));
