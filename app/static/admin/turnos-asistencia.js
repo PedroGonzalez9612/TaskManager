@@ -91,6 +91,11 @@ function crearFilaAsistencia(asistencia) {
         crearElemento("span", "", `Salida ${horaDeMomento(asistencia.salida)}`),
     );
     textos.append(crearElemento("span", "fila-nombre", asistencia.operario), meta);
+    // Salida anticipada (alcance, Sección 5.1): información en gris con su ícono, no una etiqueta.
+    if (asistencia.salida_anticipada_min > 0) {
+        textos.append(crearConIcono("span", "linea-info", "clock",
+            `Salida anticipada: ${duracionTexto(asistencia.salida_anticipada_min)} antes del fin del turno`));
+    }
     // Mientras no marque la salida está en turno: todavía no hay nada que validar.
     const estadoMostrado = asistencia.estado === "REGISTRADA" && !asistencia.salida ? "EN_TURNO" : asistencia.estado;
     const estado = crearConIcono(

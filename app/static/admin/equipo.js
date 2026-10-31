@@ -19,6 +19,8 @@ let actividades = [];
 let operarios = [];         // { id, nombre, turno, jornada, programacion }
 let proyectos = [];
 let reportes = [];          // Reportes de actividad por revisar: son de la empresa, no de un día.
+// Una de hora fija detenida con uno de estos motivos se le muestra al Administrador (alcance, Sección 5.1).
+const MOTIVOS_DETENER_HORA_FIJA = ["Emergencia", "Falla del equipo"];
 let capacidadPorDefecto = 0;
 
 function inicioDelDia(fecha) {
@@ -383,6 +385,37 @@ function pintarTablero() {
     }
 }
 
+// Quién detuvo una actividad de hora fija por una emergencia y con qué motivo: [{ nombre, motivo }].
+function detencionesPorEmergencia(actividad) {
+    if (!actividad.hora_programada) {
+        return [];
+    }
+    return (actividad.ejecuciones || [])
+        .filter((ejecucion) => ejecucion.estado === "PAUSADA"
+            && MOTIVOS_DETENER_HORA_FIJA.includes(ejecucion.pausas?.at(-1)?.motivo))
+        .map((ejecucion) => ({
+            nombre: actividad.operarios.find((o) => o.id === ejecucion.usuario_id)?.nombre || "Un operario",
+            motivo: ejecucion.pausas.at(-1).motivo,
+        }));
+}
+
+function crearFilaDetenida(actividad) {
+    const fila = crearElemento("li", "fila-por-atender");
+    const textos = crearElemento("div");
+    const meta = crearElemento("p", "fila-meta datos-linea");
+    meta.append(crearElemento("span", "codigo", actividad.codigo),
+        crearElemento("span", "cifra", `Hora fija ${actividad.hora_programada}`));
+    textos.append(crearElemento("p", "fila-nombre", actividad.titulo), meta);
+    for (const { nombre, motivo } of detencionesPorEmergencia(actividad)) {
+        textos.append(crearConIcono("p", "aviso aviso-advertencia", "triangle-alert", `Detenida por ${nombre}: ${motivo}`));
+    }
+    const ver = crearElemento("button", "boton-secundario", "Ver detalle");
+    ver.type = "button";
+    ver.addEventListener("click", () => formulario.abrirDetalle(actividad));
+    fila.append(textos, ver);
+    return fila;
+}
+
 // Convertir un reporte: el formulario de actividad, ya lleno con lo reportado y asignado a quien lo
 // reportó. El Administrador lo programa y lo ajusta antes de guardar (alcance, Sección 5.1).
 function convertirReporte(reporte) {
@@ -447,15 +480,16 @@ function crearFilaDeReporte(reporte) {
     return fila;
 }
 
-// Lo que necesita al Administrador: actividades del día sin nadie (nunca asignadas o devueltas) y
-// los reportes de actividad por revisar.
+// Lo que necesita al Administrador: actividades de hora fija detenidas por una emergencia (primero),
+// actividades del día sin nadie (nunca asignadas o devueltas) y los reportes de actividad por revisar.
 function pintarPorAtender() {
     const pendientes = actividades.filter((a) => a.operarios.length === 0 && !["COMPLETADA", "NO_REALIZADA"].includes(a.estado));
-    const total = pendientes.length + reportes.length;
+    const detenidas = actividades.filter((a) => detencionesPorEmergencia(a).length);
+    const total = pendientes.length + detenidas.length + reportes.length;
     document.getElementById("titulo-por-atender").replaceChildren("Por atender",
         crearElemento("span", "cantidad cifra", total ? String(total) : ""));
     document.getElementById("nada-por-atender").hidden = total > 0;
-    document.getElementById("por-atender").replaceChildren(...pendientes.map((actividad) => {
+    document.getElementById("por-atender").replaceChildren(...detenidas.map(crearFilaDetenida), ...pendientes.map((actividad) => {
         const fila = crearElemento("li", "fila-por-atender");
         const textos = crearElemento("div");
         const meta = crearElemento("p", "fila-meta datos-linea");

@@ -122,7 +122,11 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   La tabla de reglas de estado está en la Sección 5.1 del alcance; las actividades presentadas traen
   `editable` y `cancelable` para que la interfaz muestre solo lo permitido.
 - Las horas de un turno asignado no se cambian: se crea otro y se asigna desde una fecha.
-- Una actividad de hora fija no se pausa ni se reprograma; la urgente no la interrumpe.
+- Una actividad de hora fija no se pausa ni se reprograma; la urgente no la interrumpe. Se inicia desde
+  10 minutos antes de su hora (si se inicia tarde, queda `retraso_inicio_min` en la ejecución) y solo se
+  detiene por "Emergencia" o "Falla del equipo" (`MOTIVOS_DETENER_HORA_FIJA`), que Equipo muestra en "Por atender".
+- Entre varias urgentes va primero la creada antes (`fecha_creacion` de la actividad). La salida antes del fin
+  del turno es "Salida anticipada" (`salida_anticipada_min`, calculada con la salida vigente).
 - Reporte de actividad: el Operario reporta lo que otra área le pidió (Hoy); queda Por revisar, sin entrar
   en su día ni en su carga, hasta que el Administrador lo convierte en actividad o lo descarta con motivo
   (Equipo, "Por atender"). Clase `Reporte`, `ReporteService`, rutas `/reportes`.

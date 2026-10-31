@@ -530,6 +530,12 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
 - **Parte 1 / Parte 2 (2026-10-31):** la programación del día parte la actividad en curso de horario
   flexible que no alcanza a terminar antes de una de hora fija (5 pruebas); Hoy, Semana y Equipo muestran
   las dos partes.
+- **Casos del Operario (2026-10-31, decisión del usuario):** una de hora fija se inicia desde 10 minutos
+  antes (F1); el retraso de inicio queda en el registro (F2); se detiene por emergencia, y el Administrador
+  la ve en "Por atender" (F5); entre urgentes, primero la más antigua, con la nueva `fecha_creacion` de la
+  actividad (E5); la salida antes del fin del turno queda como salida anticipada, con aviso al Operario y
+  dato para el Administrador y los indicadores (S3). 12 pruebas nuevas. E3 y E4 siguen en
+  [casos_por_definir.md](casos_por_definir.md).
 - **Pendiente:** la evidencia de la evolución del diseño para el informe de Diseño de Interfaces. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
 

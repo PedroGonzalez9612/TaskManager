@@ -226,6 +226,10 @@ function crearRegistroEjecucion(ejecucion, titulo = "Tu registro", textoObservac
     }
     const datos = crearElemento("dl", "detalle-datos");
     const filas = [["Inicio", horaCorta(ejecucion.fecha_inicio)]];
+    // Retraso de inicio: una de hora fija que se inició después de su hora (alcance, Sección 5.1).
+    if (ejecucion.retraso_inicio_min) {
+        filas.push(["Retraso de inicio", duracionTexto(ejecucion.retraso_inicio_min)]);
+    }
     if (ejecucion.fecha_fin) {
         filas.push(["Fin", horaCorta(ejecucion.fecha_fin)]);
     }

@@ -402,3 +402,38 @@ def test_la_api_de_programacion_trae_turno_asistencia_y_en_turno(cliente_de, ser
     assert programacion["turno"]["fin"] == "Sat, 10 Oct 2026 15:00:00 GMT"
     assert programacion["asistencia"]["estado"] == "REGISTRADA"
     assert programacion["en_turno"] is True
+
+
+# ---------- Salida anticipada (alcance, Sección 5.1) ----------
+
+def test_la_salida_antes_del_fin_del_turno_queda_como_anticipada(asistencia, empresa, dia, reloj):
+    asistencia.marcar_entrada(empresa.ana)
+    reloj.avanzar(9 * 60)    # 12:00 en Bogotá; el turno de día termina a las 14:00.
+
+    salida = asistencia.marcar_salida(empresa.ana)
+
+    assert salida["salida_anticipada_min"] == 120
+    fila = next(f for f in asistencia.listar(empresa.admin, HOY) if f["usuario_id"] == empresa.ana["id"])
+    assert fila["salida_anticipada_min"] == 120
+
+
+def test_salir_al_fin_del_turno_o_despues_no_es_anticipada(asistencia, empresa, dia, reloj):
+    asistencia.marcar_entrada(empresa.ana)
+    reloj.avanzar(11 * 60 + 5)    # 14:05 en Bogotá.
+    assert asistencia.marcar_salida(empresa.ana)["salida_anticipada_min"] == 0
+
+
+def test_sin_turno_no_hay_salida_anticipada(asistencia, empresa, reloj):
+    asistencia.marcar_entrada(empresa.ana)
+    reloj.avanzar(60)
+    assert asistencia.marcar_salida(empresa.ana)["salida_anticipada_min"] == 0
+
+
+def test_la_correccion_del_administrador_actualiza_la_salida_anticipada(asistencia, empresa, dia, reloj):
+    asistencia.marcar_entrada(empresa.ana)
+    reloj.avanzar(9 * 60)
+    salida = asistencia.marcar_salida(empresa.ana)
+    reloj.avanzar(3 * 60)    # 15:00: ya se puede corregir a una salida de las 14:00.
+    asistencia.corregir(empresa.admin, salida["id"], "03:00", "14:00", "Olvidó marcar al salir")
+    fila = next(f for f in asistencia.listar(empresa.admin, HOY) if f["usuario_id"] == empresa.ana["id"])
+    assert fila["salida_anticipada_min"] == 0

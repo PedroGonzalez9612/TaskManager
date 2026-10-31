@@ -7,6 +7,19 @@
 const MOTIVO_URGENTE = "Actividad urgente";
 const MOTIVO_HORA_FIJA = "Actividad de hora fija";
 const AVISO_HORA_FIJA_MIN = 10;     // Desde cuántos minutos antes se avisa una actividad de hora fija (alcance, 5.1).
+// Una de hora fija no se pausa, salvo para detenerla por una emergencia (MOTIVOS_DETENER_HORA_FIJA en enums.py).
+const MOTIVOS_DETENER_HORA_FIJA = ["Emergencia", "Falla del equipo"];
+
+// Desde cuándo se puede iniciar una de hora fija: los mismos 10 minutos antes del aviso (alcance, 5.1).
+// null si es de horario flexible o si ya se puede.
+function inicioPermitidoDesde(actividad) {
+    if (!actividad.hora_programada) {
+        return null;
+    }
+    const desde = new Date(fechaDesdeTexto(actividad.fecha_programada, actividad.hora_programada).getTime()
+        - AVISO_HORA_FIJA_MIN * 60000);
+    return Date.now() < desde.getTime() ? desde : null;
+}
 
 // Evidencia de la ejecución (alcance, Sección 5.1).
 const MAXIMO_EVIDENCIAS = 5;
@@ -40,7 +53,12 @@ function accionesDelOperario(actividad, actividades, alCambiar, soloLectura) {
         }
         return { acciones, aviso, nota };
     }
-    if (actividad.prioridad === "URGENTE" && otraEnCurso && ["ASIGNADA", "PAUSADA"].includes(actividad.estado)) {
+    const esperaSuHora = actividad.estado === "ASIGNADA" ? inicioPermitidoDesde(actividad) : null;
+    if (esperaSuHora) {
+        // Todavía no es su hora: el botón se ve, desactivado, y la nota dice desde cuándo.
+        acciones.push({ texto: "Iniciar actividad", icono: "play", desactivada: true, alHacer: () => {} });
+        nota = `Es de hora fija: podrás iniciarla desde las ${horaDeMomento(esperaSuHora)}.`;
+    } else if (actividad.prioridad === "URGENTE" && otraEnCurso && ["ASIGNADA", "PAUSADA"].includes(actividad.estado)) {
         // Urgente con otra en curso: una de horario flexible se pausa y la urgente empieza en el mismo
         // paso; una de hora fija no se interrumpe.
         if (otraEnCurso.hora_programada) {
@@ -83,11 +101,13 @@ function accionesDelOperario(actividad, actividades, alCambiar, soloLectura) {
         });
     } else if (actividad.estado === "EN_EJECUCION") {
         acciones.push({ texto: "Finalizar", icono: "check", alHacer: () => abrirFinalizar(actividad, alCambiar), abreHoja: true });
-        // Una de hora fija no se pausa (alcance, Sección 5.1).
+        // Una de hora fija no se pausa; solo se detiene por una emergencia, como acción de baja (alcance, 5.1).
         if (!actividad.hora_programada) {
             acciones.push({ texto: "Pausar", icono: "pause", alHacer: () => abrirPausar(actividad, alCambiar), abreHoja: true });
         } else {
             nota = "Es de hora fija: no se pausa. Al terminarla, finalízala.";
+            acciones.push({ texto: "Detener por emergencia", icono: "triangle-alert", clase: "boton-terciario boton-baja",
+                alHacer: () => abrirDetener(actividad, alCambiar), abreHoja: true });
         }
     }
     // Devolver: solo antes de iniciarla, con motivo. Es una acción de baja (6.2): al final, terciaria.
@@ -526,6 +546,24 @@ function abrirPausar(actividad, alCambiar) {
     }));
 }
 
+// Detener una de hora fija: solo por una emergencia, con uno de dos motivos y sin "Otro". Queda
+// pausada, el Administrador la ve en "Por atender" y se puede reanudar (alcance, Sección 5.1).
+function abrirDetener(actividad, alCambiar) {
+    const { grupo, leer } = crearOpcionesDeMotivo(MOTIVOS_DETENER_HORA_FIJA, "motivo-detener");
+    return abrirHoja({
+        titulo: "Detener por emergencia",
+        subtitulo: `${actividad.titulo} es de hora fija: solo se detiene si pasa algo grave. Tu Administrador lo verá.`,
+        contenido: [grupo],
+        textoConfirmar: "Detener actividad",
+        deBaja: true,
+        alConfirmar: async () => {
+            await enviarJson(`/actividades/${actividad.id}/pausar`, "POST", leer());
+            await alCambiar();
+            mostrarAviso(`${actividad.titulo} quedó detenida. Avisamos a tu Administrador.`);
+        },
+    });
+}
+
 // Devolver: antes de iniciarla, con su motivo. Vuelve al Administrador (alcance, Sección 5.1).
 function abrirDevolver(actividad, alCambiar) {
     return abrirConMotivos("/catalogos/motivos-devolucion", "motivo-devolucion", ({ grupo, leer }) => abrirHoja({
@@ -828,6 +866,12 @@ function abrirSalida(programacion, alCambiar) {
         campos.push(crearConIcono("p", "aviso aviso-advertencia aviso-bloque", "circle-alert", esFija
             ? `Tienes ${enCurso.codigo} en curso. Es de hora fija y no se pausa: se finaliza antes de marcar la salida.`
             : `Tienes ${enCurso.codigo} en curso. Se pausa con el motivo "${MOTIVO_FIN_JORNADA}" y la retomas en tu siguiente jornada.`));
+    }
+    // Salida anticipada (alcance, Sección 5.1): se permite, y se avisa antes de confirmar.
+    const faltanDelTurno = programacion.turno ? minutosHasta(programacion.turno.fin) : 0;
+    if (faltanDelTurno > 0) {
+        campos.push(crearConIcono("p", "linea-info", "clock",
+            `Tu turno termina a las ${horaDeMomento(programacion.turno.fin)}. Si sales ahora, quedará como salida anticipada (${duracionTexto(faltanDelTurno)} antes).`));
     }
     campos.push(crearElemento("p", "texto-secundario",
         "Después de marcar la salida no podrás iniciar ni reanudar actividades en esta jornada."));
