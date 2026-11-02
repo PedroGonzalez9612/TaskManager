@@ -572,11 +572,6 @@ body.ancho-angosto {
     padding: var(--e5);
 }
 
-/* Las tablas anchas se desplazan dentro de su contenedor, nunca toda la página. */
-.contenedor-tabla {
-    overflow-x: auto;
-}
-
 .tabla {
     width: 100%;
     border-collapse: collapse;
@@ -804,44 +799,10 @@ body.ancho-angosto {
     color: var(--neutro-texto);
 }
 
-.senales {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--e1);
-}
-
 /* Prioridades: la intensidad del color crece con la urgencia. */
 .etiqueta.prioridad-urgente { background: var(--error);             color: var(--texto-sobre-color); }
-.etiqueta.prioridad-alta    { background: var(--alta-suave);        color: var(--alta-texto); }
-.etiqueta.prioridad-media   { background: var(--advertencia-suave); color: var(--advertencia-texto); }
-.etiqueta.prioridad-baja    { background: transparent; padding-inline: 0; color: var(--texto-secundario); font-weight: var(--peso-normal); }
 
 /* Estados de actividad: sin asignar y por iniciar (gris), en curso (principal), finalizada (verde). */
-/* "Sin asignar" y "Por iniciar" son lo normal: texto gris con su ícono, sin fondo. */
-.etiqueta.estado-pendiente,
-.etiqueta.estado-asignada {
-    background: transparent;
-    padding-inline: 0;
-    color: var(--texto-secundario);
-    font-weight: var(--peso-normal);
-}
-
-.etiqueta.estado-en_ejecucion { background: var(--principal-suave); color: var(--principal-hover); }
-.etiqueta.estado-pausada      { background: var(--advertencia-suave); color: var(--advertencia-texto); }
-.etiqueta.estado-completada   { background: var(--exito-suave); color: var(--exito-texto); }
-
-/* Categorías: etiqueta blanca con borde; el color de la categoría va solo en su ícono. */
-.etiqueta.categoria {
-    background: var(--superficie);
-    border: 1px solid var(--borde);
-    color: var(--texto);
-}
-
-.categoria-operacion .icono    { color: var(--cat-operacion); }
-.categoria-administrativa .icono { color: var(--cat-administrativa); }
-.categoria-revision .icono       { color: var(--cat-revision); }
-.categoria-atencion .icono      { color: var(--cat-atencion); }
-.categoria-traslado .icono     { color: var(--cat-traslado); }
 
 .carga {
     color: var(--texto-secundario);
@@ -1193,14 +1154,6 @@ fieldset.grupo-botones {
     width: min(40rem, calc(100vw - 1.8rem));
 }
 
-.detalle-cuerpo {
-    padding: var(--e4);
-}
-
-.detalle-titulo {
-    margin: var(--e3) 0;
-}
-
 .detalle-datos {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -1380,15 +1333,6 @@ fieldset.grupo-botones {
     }
 }
 
-/* ================= Administrador: filtros y actividades ================= */
-
-.maestro-detalle {
-    display: grid;
-    grid-template-columns: 15rem minmax(0, 1fr);    /* el 0 evita que la tabla ensanche la página */
-    align-items: start;
-    gap: 0 var(--e6);
-}
-
 /* Lo que acompaña a la superficie principal (filtros, listas de apoyo): sobre el fondo, sin panel,
    para que el panel marque lo principal de la pantalla (alcance, Sección 6.2: paneles con jerarquía). */
 .seccion-apoyo {
@@ -1399,71 +1343,10 @@ fieldset.grupo-botones {
     margin: 0 0 var(--e3);
 }
 
-.filtros > h2 {
-    padding-block-start: var(--e4);
-}
-
-@media (max-width: 62em) {
-    .maestro-detalle {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-.lista-filtros {
-    display: flex;
-    flex-direction: column;
-    gap: var(--e1);
-}
-
 /* En celular los filtros van en fila y se acomodan: no empujan la lista hacia abajo. */
-@media (max-width: 62em) {
-    .lista-filtros {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-}
-
-.filtro {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e3);
-    min-height: var(--alto-control);
-    padding: var(--e2) var(--e3);
-    border: none;
-    border-radius: 0.5rem;
-    background: transparent;
-    color: var(--texto);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-.filtro:hover {
-    background: var(--superficie);
-}
-
-.filtro[aria-pressed="true"] {
-    background: var(--principal-suave);
-    color: var(--principal-hover);
-    font-weight: var(--peso-fuerte);
-}
 
 .filtro-cantidad {
     color: var(--texto-secundario);
-}
-
-/* El día que agrupa sus actividades en la lista del Administrador. */
-.grupo-dia {
-    display: flex;
-    align-items: baseline;
-    gap: var(--e2);
-    padding: var(--e3) var(--e5) var(--e2);
-    background: var(--fondo);
-    border-bottom: 1px solid var(--borde);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-secundario);
-    font-weight: var(--peso-fuerte);
 }
 
 /* Códigos, fechas y tiempos no se parten en dos renglones. */
@@ -1959,52 +1842,6 @@ fieldset.grupo-botones {
 
 /* ================= Administrador: actividades como lista ================= */
 
-/* En el panel angosto de filtros, el título va siempre en un renglón. */
-.fila-actividad-admin {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 6rem 9rem 6.5rem 8.5rem;   /* Estado: cabe "Falta información" */
-    align-items: center;
-    gap: var(--e4);
-    width: 100%;
-    padding: var(--e3) var(--e5);
-    border: none;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-}
-
-/* Las etiquetas ocupan solo su texto, no todo el ancho de su columna. */
-.fila-actividad-admin .etiqueta {
-    justify-self: start;
-}
-
-.fila-actividad-admin:hover {
-    background: var(--fondo);
-}
-
-.fila-actividad-admin:focus-visible {
-    outline-offset: -3px;
-}
-
-.dato-doble > span {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.encabezado-lista {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 6rem 9rem 6.5rem 8.5rem;   /* Estado: cabe "Falta información" */
-    gap: var(--e4);
-    padding: var(--e3) var(--e5);
-    border-bottom: 1px solid var(--borde);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-}
-
 .boton-texto {
     display: inline-flex;
     align-items: center;
@@ -2040,22 +1877,6 @@ fieldset.grupo-botones {
 
 .boton-texto.peligro:hover {
     background: var(--error-suave);
-}
-
-@media (max-width: 62em) {
-    .encabezado-lista {
-        display: none;
-    }
-
-    .fila-actividad-admin {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: var(--e2) var(--e4);
-        padding-inline: var(--e4);
-    }
-
-    .fila-actividad-admin > :nth-child(1) {
-        grid-column: 1 / -1;
-    }
 }
 
 /* ================= Información de la actividad (alcance, Sección 5.1) ================= */
@@ -2175,16 +1996,6 @@ fieldset.grupo-botones {
 .etiqueta.etiqueta-falta-informacion {
     background: var(--advertencia-suave);
     color: var(--advertencia-texto);
-}
-
-/* En la columna de estado de Actividades, "Falta información" va debajo del estado, a su medida. */
-.dato-doble > .etiqueta {
-    display: flex;
-    width: fit-content;
-}
-
-.dato-doble > .etiqueta + .etiqueta {
-    margin-top: var(--e1);
 }
 
 /* ================= Operario: Inicio (alcance, Sección 6.1; diseño en docs/disenos/operario_v3/) ================= */
@@ -2580,20 +2391,6 @@ fieldset.grupo-botones {
     width: 0;
     border-left: 2px dashed var(--borde-control);
     background: none;
-}
-
-/* "Ahora": sólido hasta su línea, punteado después. */
-.dia-actual::before {
-    background: linear-gradient(var(--principal) 50%, transparent 50%);
-}
-
-.dia-actual::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    bottom: 0;
-    left: calc(3.75rem + var(--e2) + 0.75rem - 1px);
-    border-left: 2px dashed var(--borde-control);
 }
 
 .dia-nodo:first-child::before {
@@ -4009,12 +3806,6 @@ fieldset.grupo-botones {
 
 body.con-panel-lateral .principal {
     margin-right: var(--ancho-panel-lateral);
-}
-
-/* La fila cuyo detalle está abierto. */
-[aria-current="true"] > .fila-actividad-admin,
-.fila-actividad-admin[aria-current="true"] {
-    background: var(--principal-suave);
 }
 
 /* En celular: el detalle ocupa toda la pantalla y las hojas suben desde abajo. */

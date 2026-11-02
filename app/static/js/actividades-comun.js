@@ -1,40 +1,15 @@
-// Piezas compartidas para mostrar actividades: señales de prioridad y estado, el diálogo de detalle
-// del Administrador, el registro de ejecución y la información por bloques. Las usan las vistas del
-// Operario y del Administrador.
+// Piezas compartidas para mostrar actividades: la etiqueta Urgente, el estado y la prioridad como texto,
+// el panel lateral del Administrador, el registro de ejecución y la información por bloques. Las usan las
+// vistas del Operario y del Administrador.
 
 const ICONO_PRIORIDAD = { URGENTE: "triangle-alert", ALTA: "chevron-up", MEDIA: "circle-alert", BAJA: "minus" };
-const ICONO_ESTADO = {
-    PENDIENTE: "circle", ASIGNADA: "circle", EN_EJECUCION: "play", PAUSADA: "pause", DEVUELTA: "circle-alert",
-    COMPLETADA: "check", NO_REALIZADA: "minus", CANCELADA: "minus",
-};
-const ICONO_CATEGORIA = {
-    OPERACION: "briefcase",
-    ATENCION: "message-circle",
-    ADMINISTRATIVA: "file-text",
-    REVISION: "search",
-    TRASLADO: "truck",
-};
-
 // ---------- Señales: siempre color + ícono + texto (alcance, Sección 6.3, regla 1) ----------
 
+// Solo Urgente es etiqueta (alcance, Sección 6.2); las demás prioridades van como texto con su ícono.
 function crearSenalPrioridad(prioridad) {
     return crearConIcono(
         "span", `etiqueta prioridad-${prioridad.toLowerCase()}`,
         ICONO_PRIORIDAD[prioridad], NOMBRE_PRIORIDAD[prioridad] || prioridad,
-    );
-}
-
-function crearEtiquetaEstado(estado) {
-    return crearConIcono(
-        "span", `etiqueta estado-${estado.toLowerCase()}`,
-        ICONO_ESTADO[estado], NOMBRE_ESTADO[estado] || estado,
-    );
-}
-
-function crearEtiquetaCategoria(categoria) {
-    return crearConIcono(
-        "span", `etiqueta categoria categoria-${String(categoria).toLowerCase()}`,
-        ICONO_CATEGORIA[categoria], NOMBRE_CATEGORIA[categoria] || categoria,
     );
 }
 
