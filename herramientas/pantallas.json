@@ -31,8 +31,8 @@
         },
         {
             "rol": "administrador",
-            "nombre": "usuarios",
-            "ruta": "/static/admin/usuarios.html"
+            "nombre": "administracion",
+            "ruta": "/static/admin/administracion.html"
         },
         {
             "rol": "operario",

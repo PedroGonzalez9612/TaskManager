@@ -1733,7 +1733,33 @@ fieldset.grupo-botones {
 /* ================= Turnos y asistencia (Administrador) ================= */
 
 .fila-turno {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e4);
     padding: var(--e3) var(--e5);
+}
+
+/* En las listas del Administrador v3 (sin panel) las filas van casi al borde, como las demás. */
+.lista-admin .fila-usuario,
+.lista-admin .fila-turno,
+.lista-admin .fila-asistencia {
+    padding-inline: var(--e2);
+}
+
+/* Administración, pestaña Empresa: sus datos y los medidores de los límites. */
+.empresa-subtitulo {
+    margin: var(--e6) 0 var(--e3);
+}
+
+.empresa-limites {
+    display: grid;
+    gap: var(--e3);
+    max-width: 28rem;
+}
+
+.empresa-limites .medidor {
+    margin-top: 0;
 }
 
 .fila-asistencia {

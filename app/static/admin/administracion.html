@@ -4,48 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-    <title>Usuarios — GestLab</title>
+    <title>Administración — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
 <body class="cargando ancho-medio">
+    <!-- Administración (alcance, Sección 6.2): la configuración de la empresa, que casi no cambia.
+         Pestañas: Usuarios, Turnos y Empresa (límites de usuarios). -->
     <main class="principal">
         <div class="encabezado-pagina">
             <div>
-                <h1>Usuarios</h1>
-                <p id="subtitulo" class="cifra"></p>
+                <h1>Administración</h1>
+                <p id="subtitulo" class="cifra texto-secundario"></p>
             </div>
-            <button type="button" class="boton" data-abrir-dialogo>Nuevo usuario</button>
+            <button type="button" class="boton" id="nuevo-usuario" data-abrir-dialogo>Nuevo usuario</button>
+            <button type="button" class="boton" id="nuevo-turno" hidden>Nuevo turno</button>
         </div>
 
-        <div class="rejilla-ficha">
-            <div>
-            <section class="panel" aria-label="Usuarios de la empresa">
-                <p id="aviso-limite" class="nota-panel" hidden></p>
-                <ul id="lista-usuarios" class="lista-filas" hidden></ul>
-                <div id="estado-vacio" class="estado-vacio" hidden>
-                    <strong>Aún no hay usuarios</strong>
-                    Crea a los operarios de tu empresa para poder asignarles actividades.
-                </div>
-            </section>
-
-            </div>
-
-            <aside>
-                <section class="panel" aria-labelledby="titulo-turnos">
-                    <div class="panel-encabezado">
-                        <h2 id="titulo-turnos">Turnos</h2>
-                        <button type="button" class="boton-texto" id="nuevo-turno">Nuevo turno</button>
-                    </div>
-                    <ul id="lista-turnos" class="lista-filas"></ul>
-                    <p id="turnos-vacio" class="nota-panel" hidden>Aún no hay turnos. Crea uno para asignarlo a tus operarios.</p>
-                </section>
-
-                <section class="panel" aria-labelledby="titulo-limites">
-                    <div class="panel-encabezado"><h2 id="titulo-limites">Límites de usuarios</h2></div>
-                    <div id="limites" class="panel-cuerpo" aria-live="polite"></div>
-                </section>
-            </aside>
+        <div class="pestanas" role="tablist" aria-label="Administración">
+            <button type="button" role="tab" id="pestana-usuarios" aria-controls="vista-usuarios" data-vista="usuarios">Usuarios</button>
+            <button type="button" role="tab" id="pestana-turnos" aria-controls="vista-turnos" data-vista="turnos">Turnos</button>
+            <button type="button" role="tab" id="pestana-empresa" aria-controls="vista-empresa" data-vista="empresa">Empresa</button>
         </div>
+
+        <section id="vista-usuarios" role="tabpanel" aria-labelledby="pestana-usuarios" class="vista-pestana">
+            <p id="aviso-limite" class="linea-info" hidden></p>
+            <div class="personas-controles">
+                <div id="filtros-usuarios" class="filtros-linea" role="group" aria-label="Mostrar usuarios"></div>
+                <label class="solo-lectores" for="buscar-usuario">Buscar usuario</label>
+                <input id="buscar-usuario" type="search" class="buscar-persona" placeholder="Buscar usuario" autocomplete="off">
+            </div>
+            <ul id="lista-usuarios" class="lista-admin" hidden></ul>
+            <div id="estado-vacio" class="estado-vacio" hidden>
+                <strong>Nadie en este filtro</strong>
+                Crea a los operarios de tu empresa con "Nuevo usuario" para poder asignarles actividades.
+            </div>
+        </section>
+
+        <section id="vista-turnos" role="tabpanel" aria-labelledby="pestana-turnos" class="vista-pestana" hidden>
+            <p class="texto-secundario">Las horas de un turno asignado no se cambian: crea otro y asígnalo desde una fecha. El anterior se conserva para las jornadas pasadas.</p>
+            <ul id="lista-turnos" class="lista-admin"></ul>
+            <p id="turnos-vacio" class="estado-vacio" hidden>Aún no hay turnos. Crea uno con "Nuevo turno" para asignarlo a tus operarios.</p>
+        </section>
+
+        <section id="vista-empresa" role="tabpanel" aria-labelledby="pestana-empresa" class="vista-pestana" hidden>
+            <dl id="datos-empresa" class="lista-datos"></dl>
+            <h2 class="empresa-subtitulo">Límites de usuarios</h2>
+            <div id="limites" class="empresa-limites" aria-live="polite"></div>
+            <p class="texto-secundario">Los límites, el logo y los datos de la empresa los cambia el Superadmin.</p>
+        </section>
     </main>
 
     <dialog id="dialogo-usuario" class="dialogo" aria-labelledby="titulo-dialogo">
@@ -132,7 +138,7 @@
     <script src="/static/js/layout.js"></script>
     <script src="/static/js/componentes.js"></script>
     <script src="/static/js/usuarios-comun.js"></script>
-    <script src="/static/admin/turnos-asistencia.js"></script>
-    <script src="/static/admin/usuarios.js"></script>
+    <script src="/static/admin/turnos.js"></script>
+    <script src="/static/admin/administracion.js"></script>
 </body>
 </html>

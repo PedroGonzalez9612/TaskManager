@@ -17,7 +17,7 @@ const VISTAS_POR_ROL = {
         // Administración. Indicadores se agrega cuando exista su pantalla.
         { texto: "Hoy", icono: "house", destino: "/static/admin/hoy.html", rutas: ["/static/admin/hoy.html"], conPendientes: true },
         { texto: "Planeación", icono: "clipboard-check", destino: "/static/admin/actividades.html", rutas: ["/static/admin/actividades.html"] },
-        { texto: "Administración", icono: "users", destino: "/static/admin/usuarios.html", rutas: ["/static/admin/usuarios.html"] },
+        { texto: "Administración", icono: "users", destino: "/static/admin/administracion.html", rutas: ["/static/admin/administracion.html"] },
     ],
     OPERARIO: [
         { texto: "Inicio", icono: "house", destino: "/static/operario/inicio.html", rutas: ["/static/operario/inicio.html"] },

@@ -40,7 +40,7 @@ function crearFilaUsuario(usuario, alAsignarTurno = null, opciones = {}) {
     const textos = crearElemento("div");
     const nombre = crearElemento("span", "fila-nombre", usuario.nombre);
     if (!activo) {
-        nombre.append(" ", crearConIcono("span", "etiqueta", "minus", "Desactivado"));
+        nombre.append(" ", crearConIcono("span", "estado-texto", "minus", "Desactivado"));
     }
     // El rol va con los datos de la persona; a la derecha quedan solo las acciones, en un renglón.
     const meta = crearElemento("span", "fila-meta datos-linea");
