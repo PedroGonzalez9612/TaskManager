@@ -27,6 +27,7 @@ def create_app(config_class=Config):
     from app.routes.turno_routes import create_blueprint as turno_bp
     from app.routes.asistencia_routes import create_blueprint as asistencia_bp
     from app.routes.reporte_routes import create_blueprint as reporte_bp
+    from app.routes.hoy_routes import create_blueprint as hoy_bp
 
     app.register_blueprint(auth_bp(db))
     app.register_blueprint(empresa_bp(db))
@@ -39,6 +40,7 @@ def create_app(config_class=Config):
     app.register_blueprint(turno_bp(db))
     app.register_blueprint(asistencia_bp(db))
     app.register_blueprint(reporte_bp(db))
+    app.register_blueprint(hoy_bp(db))
 
     @app.errorhandler(ErrorApi)
     def handle_error_api(error):

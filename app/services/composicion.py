@@ -23,6 +23,7 @@ from app.services.catalogo_service import CatalogoService
 from app.services.cierre_jornada_service import CierreJornadaService
 from app.services.ejecucion_service import EjecucionService
 from app.services.evidencia_service import EvidenciaService
+from app.services.hoy_service import HoyService
 from app.services.indicador_service import IndicadorService
 from app.services.programacion_service import ProgramacionService
 from app.services.proyecto_service import ProyectoService
@@ -32,7 +33,7 @@ from app.services.turno_service import TurnoService
 
 def construir_servicios(db, reloj=None) -> SimpleNamespace:
     """Devuelve los servicios como atributos: actividades, ejecucion, carga, proyectos, catalogos,
-    cierre_jornada, programacion, turnos, asistencia, evidencias, adjuntos, indicadores y reportes.
+    cierre_jornada, programacion, turnos, asistencia, evidencias, adjuntos, indicadores, reportes y hoy.
     "reloj" es para las pruebas; sin él, cada servicio usa la hora del servidor."""
     actividad_repository = ActividadRepository(db)
     asignacion_repository = AsignacionRepository(db)
@@ -89,8 +90,11 @@ def construir_servicios(db, reloj=None) -> SimpleNamespace:
     reportes = ReporteService(
         ReporteRepository(db), usuario_repository, actividad_repository, actividades, reloj=reloj,
     )
+    # La pantalla Hoy del Administrador junta lo de los demás servicios (alcance, Sección 6.2).
+    hoy = HoyService(usuario_repository, empresa_repository, asistencia_repository, turnos, actividades, carga,
+                     reportes, reloj=reloj)
     return SimpleNamespace(
         actividades=actividades, ejecucion=ejecucion, carga=carga, proyectos=proyectos, catalogos=catalogos,
         cierre_jornada=cierre_jornada, programacion=programacion, turnos=turnos, asistencia=asistencia,
-        evidencias=evidencias, adjuntos=adjuntos, indicadores=indicadores, reportes=reportes,
+        evidencias=evidencias, adjuntos=adjuntos, indicadores=indicadores, reportes=reportes, hoy=hoy,
     )

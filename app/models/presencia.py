@@ -1,14 +1,15 @@
-"""Presencia de una persona en su jornada (alcance, Sección 5.1): si está, con una sola regla para
-todo el sistema. La usan la barra del Operario, la asistencia y la pantalla Hoy del Administrador, así
-que todas dicen lo mismo con el mismo nombre.
+"""Presencia y carga de una persona en su jornada (alcance, Sección 5.1): si está y cuánto trabajo
+tiene, con una sola regla para todo el sistema. Las usan la barra del Operario, la asistencia y la
+pantalla Hoy del Administrador, así que todas dicen lo mismo con el mismo nombre.
 
-Es una función pura: recibe el horario del turno, la asistencia y la hora, y no lee la base de datos
-ni el reloj."""
-from app.models.enums import EstadoPresencia
+Son funciones puras: no leen la base de datos ni el reloj."""
+from app.models.enums import EstadoCarga, EstadoPresencia
 from app.models.pausa import en_utc, minutos_entre
 
 # Minutos desde el inicio del turno antes de considerar que la persona llegó tarde.
 TOLERANCIA_ENTRADA_MIN = 10
+# Tiempo libre desde el que una persona tiene espacio para recibir más trabajo.
+ESPACIO_MINIMO_MIN = 60
 
 
 def _minutos(desde, hasta) -> int:
@@ -42,3 +43,12 @@ def presencia_en_jornada(turno, asistencia, ahora, es_jornada_vigente: bool = Tr
     if tarde > TOLERANCIA_ENTRADA_MIN:
         return {"estado": EstadoPresencia.LLEGADA_TARDE, "minutos": tarde}
     return {"estado": EstadoPresencia.POR_LLEGAR, "minutos": 0}
+
+
+def estado_de_carga(minutos: int, capacidad_min: int) -> EstadoCarga:
+    """Sobrecargado si el trabajo pasa de su capacidad; con espacio si le queda 1 hora libre o más."""
+    if minutos > capacidad_min:
+        return EstadoCarga.SOBRECARGADO
+    if capacidad_min - minutos >= ESPACIO_MINIMO_MIN:
+        return EstadoCarga.CON_ESPACIO
+    return EstadoCarga.NORMAL

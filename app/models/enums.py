@@ -71,6 +71,13 @@ class EstadoPresencia(str, Enum):
     SIN_SALIDA = "SIN_SALIDA"                  # Una jornada anterior quedó sin marcar la salida.
 
 
+class EstadoCarga(str, Enum):
+    """Cuánto trabajo tiene una persona en su jornada (alcance, Sección 5.1). Lo calcula estado_de_carga."""
+    SOBRECARGADO = "SOBRECARGADO"      # Pasa del 100 % de su capacidad.
+    CON_ESPACIO = "CON_ESPACIO"        # Le queda 1 hora libre o más.
+    NORMAL = "NORMAL"
+
+
 class EstadoReporte(str, Enum):
     """Un reporte de actividad espera la revisión del Administrador (alcance, Sección 5.1)."""
     PENDIENTE = "PENDIENTE"            # Por revisar: todavía no es trabajo del día.

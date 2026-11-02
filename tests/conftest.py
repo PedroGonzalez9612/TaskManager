@@ -139,6 +139,7 @@ def cliente_de(db, reloj):
     from app.routes.programacion_routes import create_blueprint as programacion_bp
     from app.routes.proyecto_routes import create_blueprint as proyecto_bp
     from app.routes.reporte_routes import create_blueprint as reporte_bp
+    from app.routes.hoy_routes import create_blueprint as hoy_bp
     from app.routes.turno_routes import create_blueprint as turno_bp
     from app.routes.usuario_routes import create_blueprint as usuario_bp
     from app.utils.errors import ErrorApi
@@ -148,7 +149,7 @@ def cliente_de(db, reloj):
     # Con el reloj de la prueba: con la hora real, el cierre de jornada reprogramaría las actividades
     # de HOY en cuanto pasara esa fecha.
     for blueprint in (actividad_bp, proyecto_bp, analisis_bp, programacion_bp, usuario_bp, turno_bp, asistencia_bp,
-                      reporte_bp):
+                      reporte_bp, hoy_bp):
         app.register_blueprint(blueprint(db, reloj=reloj))
     app.register_blueprint(catalogo_bp(db))
 
