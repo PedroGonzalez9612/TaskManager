@@ -6,18 +6,18 @@ Leyenda: ✅ terminado · 🟡 parcial · ⬜ pendiente
 
 ## Estado de los criterios del MVP (Sección 8 del alcance)
 
-Revisado contra el código el 2026-10-24.
+Revisado contra el código el 2026-11-02.
 
 | # | Criterio | Estado | Qué falta |
 |---|---|---|---|
 | 1 | Empresa y usuarios (tres roles, cada uno con su interfaz) | ✅ | — Además: límites de usuarios por empresa, marca blanca, desactivar y reactivar |
-| 2 | Actividades y proyectos | 🟡 | La API de proyectos y el selector de proyecto al crear una actividad ya existen. Falta la **pantalla de Proyectos** (lista y detalle con su avance en horas) |
+| 2 | Actividades y proyectos | ✅ | — Actividades independientes o de un proyecto; Planeación, Proyectos muestra cada proyecto con su avance en horas y sus actividades |
 | 3 | Asignación y prioridad | ✅ | — Uno o varios operarios, cuatro prioridades, estimado, fecha y hora fija, alerta de sobrecarga |
 | 4 | Ejecución (iniciar, pausar, reanudar, finalizar) | ✅ | — Por operario, con motivo de pausa, "Pausar y atender" y evidencia. El detalle del rediseño v3 (Etapa 5) está en curso |
-| 5 | Registro de tiempo | 🟡 | El servidor registra cada acción y calcula el tiempo real; Inicio, Hoy y el detalle muestran el tiempo contra lo estimado. Falta la **comparación de lo real con lo estimado** en Resumen y en los indicadores |
-| 6 | Análisis de carga laboral | ✅ | — Carga por jornada con la capacidad del turno, alerta al superar el 100 % y tablero del turno en Equipo |
-| 7 | Turnos y asistencia | 🟡 | Turnos, asignación, marcas de entrada y salida, validación y corrección, alerta de llegada tarde al Operario. Falta el **aviso de posible ausencia al Administrador** y la **reasignación por ausencia** |
-| 8 | Indicadores de cumplimiento | ⬜ | **Todo:** cumplimiento de jornada, aprovechamiento, tiempo adicional y cumplimiento de actividades, por operario y por empresa (servicio, ruta y pantalla) |
+| 5 | Registro de tiempo | ✅ | — El servidor registra cada acción y calcula el tiempo real; el Operario lo ve contra lo estimado en Inicio, Hoy, el detalle y Resumen, y el Administrador en Indicadores (precisión de estimación) |
+| 6 | Análisis de carga laboral | ✅ | — Carga por jornada con la capacidad del turno, alerta al superar el 100 %, Hoy, Personas y Planeación, Carga de la semana |
+| 7 | Turnos y asistencia | ✅ | — Turnos, asignación, marcas de entrada y salida, validación y corrección, llegada tarde al Operario y aviso de posible ausencia al Administrador (Hoy, Pendientes) con la reasignación de su trabajo |
+| 8 | Indicadores de cumplimiento | ✅ | — Cumplimiento de jornada, aprovechamiento, tiempo adicional, cumplimiento de actividades y precisión de estimación, de la empresa, por persona y por categoría y proyecto (pantalla Indicadores) |
 
 ## Etapa 1 — Inicio de sesión, empresas y usuarios (2026-09-26) ✅
 
@@ -558,7 +558,10 @@ Indicadores y Administración, con submenús como pestañas.
   reactivar), Turnos (con cuántas personas tiene cada uno) y Empresa (datos y límites de usuarios). La
   asistencia salió de aquí a Hoy. Archivos: `admin/administracion.*` y `admin/turnos.js` (antes
   `usuarios.*` y `turnos-asistencia.js`).
-- **Pendiente:** Indicadores y la revisión final. La reasignación
+- **Indicadores:** Empresa (los indicadores en una franja, como frases, y lo que quedó pendiente), Por persona
+  (en orden alfabético, sin ranking; cada persona abre su asistencia, lo que finalizó y sus pausas) y Por
+  actividad (categoría y proyecto). Usa `GET /analisis/indicadores`, sin cambios en el servidor.
+- **Pendiente:** la revisión final (contraste, capturas, auditoría de diseño, CSS sin uso). La reasignación
   automática de lo no reasignado a la siguiente jornada ya la hace el cierre de jornada. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
 

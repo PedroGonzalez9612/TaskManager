@@ -79,7 +79,8 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   `app/models/presencia.py` y sus nombres de `NOMBRE_PRESENCIA` en `api.js`; nunca se calcula en el navegador.
   Planeación (`admin/actividades.js`): Actividades, Carga de la semana (tabla personas por días con
   `GET /analisis/carga`, que trae el `estado` de cada día) y Proyectos. El tablero por horas se retiró.
-  Administración (`admin/administracion.js` y `admin/turnos.js`): Usuarios, Turnos y Empresa. Semana
+  Administración (`admin/administracion.js` y `admin/turnos.js`): Usuarios, Turnos y Empresa. Indicadores
+  (`admin/indicadores.js`): Empresa, Por persona y Por actividad, con `GET /analisis/indicadores`. Semana
   del Operario (`operario/semana.js`, clases `semana-*`) es un calendario propio que pide
   `GET /programacion-de-la-semana`; Resumen (`operario/resumen.js`) usa `GET /analisis/indicadores`; Actividades del Administrador tiene filtros y lista agrupada por día.
   Qué falta del MVP y del producto: ver "Estado de los criterios del MVP" en `docs/avance.md`.

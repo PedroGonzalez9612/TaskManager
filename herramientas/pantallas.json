@@ -31,6 +31,12 @@
         },
         {
             "rol": "administrador",
+            "nombre": "indicadores",
+            "ruta": "/static/admin/indicadores.html",
+            "esperar": ".indicador"
+        },
+        {
+            "rol": "administrador",
             "nombre": "administracion",
             "ruta": "/static/admin/administracion.html"
         },

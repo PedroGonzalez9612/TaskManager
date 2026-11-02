@@ -3480,7 +3480,7 @@ fieldset.grupo-botones {
 }
 
 /* Planeación, Actividades: nombre y datos, prioridad, quién y estado. */
-.lista-admin .fila-admin:not(.fila-proyecto, .fila-persona) {
+.lista-admin .fila-admin:not(.fila-proyecto, .fila-persona, .fila-indicadores) {
     grid-template-columns: minmax(0, 1fr) 7rem 9rem 10rem 1.25rem;
 }
 
@@ -3677,6 +3677,107 @@ fieldset.grupo-botones {
     white-space: nowrap;
 }
 
+/* Indicadores (alcance, Secciones 5.2 y 6.2): en una sola franja, como frases; no una tarjeta por número. */
+.indicadores {
+    display: grid;
+    margin: 0 0 var(--e5);
+    border-top: 1px solid var(--borde);
+}
+
+.indicador {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: var(--e1) var(--e4);
+    padding: var(--e3) 0;
+    border-bottom: 1px solid var(--borde);
+}
+
+.indicador dt {
+    font-weight: var(--peso-fuerte);
+}
+
+.indicador dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--e1) var(--e3);
+    margin: 0;
+}
+
+.indicador > .linea-info {
+    grid-column: 1 / -1;
+}
+
+.indicador-cifra {
+    min-width: 5.5rem;
+    font-size: var(--tamano-h2);
+}
+
+.indicadores-subtitulo {
+    margin: var(--e6) 0 var(--e3);
+}
+
+.indicadores-pendientes {
+    margin: 0;
+    padding-left: var(--e5);
+}
+
+.indicadores-pendientes li + li {
+    margin-top: var(--e2);
+}
+
+.encabezado-indicadores,
+.fila-indicadores {
+    grid-template-columns: minmax(0, 1fr) repeat(4, 8rem) 7rem 1.25rem;
+}
+
+.encabezado-indicadores {
+    display: grid;
+    gap: var(--e4);
+    padding: var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+/* El detalle de una persona en el panel lateral: un renglón por día, actividad o motivo. */
+.indicadores-detalle {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--borde);
+}
+
+.indicadores-detalle li {
+    display: grid;
+    gap: var(--e1);
+    padding: var(--e2) 0;
+    border-bottom: 1px solid var(--borde);
+}
+
+.panel-lateral .indicador {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 62em) {
+    .indicador {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .encabezado-indicadores {
+        display: none;
+    }
+
+    .fila-indicadores {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    /* En celular cada cifra lleva su nombre al lado: "Jornada 91 %". */
+    .fila-indicadores > .cifra::before {
+        content: attr(data-nombre) " ";
+        color: var(--texto-secundario);
+    }
+}
+
 /* Hoy, Pendientes: grupos de lo más urgente a lo menos; cada fila con sus acciones a la derecha. */
 .grupo-pendiente {
     margin-bottom: var(--e6);
@@ -3781,7 +3882,7 @@ fieldset.grupo-botones {
         display: none;
     }
 
-    .lista-admin .fila-admin:not(.fila-proyecto, .fila-persona),
+    .lista-admin .fila-admin:not(.fila-proyecto, .fila-persona, .fila-indicadores),
     .fila-proyecto,
     .fila-persona {
         grid-template-columns: minmax(0, 1fr) auto;

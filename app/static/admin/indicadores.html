@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <title>Indicadores — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <!-- Indicadores del Administrador (alcance, Secciones 5.2 y 6.2): cómo les fue en la semana. Los
+         calcula GET /analisis/indicadores; aquí se escriben como frases, sin rankings. -->
+    <main class="principal">
+        <div class="encabezado-pagina">
+            <div>
+                <h1>Indicadores</h1>
+                <p id="rango-semana" class="texto-secundario"></p>
+            </div>
+            <fieldset class="grupo-botones">
+                <legend class="solo-lectores">Cambiar de semana</legend>
+                <button type="button" id="semana-anterior" class="boton-secundario" aria-label="Semana anterior"></button>
+                <button type="button" id="semana-actual" class="boton-secundario">Esta semana</button>
+                <button type="button" id="semana-siguiente" class="boton-secundario" aria-label="Semana siguiente"></button>
+            </fieldset>
+        </div>
+
+        <div class="pestanas" role="tablist" aria-label="Indicadores">
+            <button type="button" role="tab" id="pestana-empresa" aria-controls="vista-empresa" data-vista="empresa">Empresa</button>
+            <button type="button" role="tab" id="pestana-personas" aria-controls="vista-personas" data-vista="personas">Por persona</button>
+            <button type="button" role="tab" id="pestana-actividad" aria-controls="vista-actividad" data-vista="actividad">Por actividad</button>
+        </div>
+
+        <p id="mensaje" class="estado-vacio" aria-live="polite">Cargando los indicadores…</p>
+
+        <section id="vista-empresa" role="tabpanel" aria-labelledby="pestana-empresa" class="vista-pestana">
+            <p class="texto-secundario">Solo cuentan las jornadas que ya terminaron.</p>
+            <dl id="indicadores-empresa" class="indicadores"></dl>
+            <h2 class="indicadores-subtitulo">Lo que quedó pendiente</h2>
+            <ul id="pendientes-empresa" class="indicadores-pendientes"></ul>
+        </section>
+
+        <section id="vista-personas" role="tabpanel" aria-labelledby="pestana-personas" class="vista-pestana" hidden>
+            <div class="personas-controles">
+                <label class="solo-lectores" for="buscar-persona">Buscar persona</label>
+                <input id="buscar-persona" type="search" class="buscar-persona" placeholder="Buscar persona" autocomplete="off">
+            </div>
+            <div class="encabezado-indicadores" aria-hidden="true">
+                <span>Persona</span><span>Jornada</span><span>Aprovechamiento</span><span>Actividades</span><span>Real / estimado</span><span>Adicional</span>
+            </div>
+            <ul id="lista-personas" class="lista-admin"></ul>
+            <p id="sin-personas" class="estado-vacio" hidden>Nadie en esta búsqueda.</p>
+        </section>
+
+        <section id="vista-actividad" role="tabpanel" aria-labelledby="pestana-actividad" class="vista-pestana" hidden>
+            <h2 class="indicadores-subtitulo">Por categoría</h2>
+            <ul id="por-categoria" class="lista-admin"></ul>
+            <h2 class="indicadores-subtitulo">Por proyecto</h2>
+            <ul id="por-proyecto" class="lista-admin"></ul>
+            <p id="sin-proyectos" class="texto-secundario" hidden>Ninguna actividad de un proyecto se evaluó esta semana.</p>
+        </section>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/actividades-comun.js"></script>
+    <script src="/static/admin/indicadores.js"></script>
+</body>
+</html>

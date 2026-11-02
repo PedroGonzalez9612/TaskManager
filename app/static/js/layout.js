@@ -13,10 +13,10 @@ const VISTAS_POR_ROL = {
         },
     ],
     ADMINISTRADOR: [
-        // Cuatro menús, por lo que más usa (alcance, Sección 6.2): Hoy, Planeación, Indicadores y
-        // Administración. Indicadores se agrega cuando exista su pantalla.
+        // Cuatro menús, por lo que más usa (alcance, Sección 6.2): Hoy, Planeación, Indicadores y Administración.
         { texto: "Hoy", icono: "house", destino: "/static/admin/hoy.html", rutas: ["/static/admin/hoy.html"], conPendientes: true },
         { texto: "Planeación", icono: "clipboard-check", destino: "/static/admin/actividades.html", rutas: ["/static/admin/actividades.html"] },
+        { texto: "Indicadores", icono: "chart-column", destino: "/static/admin/indicadores.html", rutas: ["/static/admin/indicadores.html"] },
         { texto: "Administración", icono: "users", destino: "/static/admin/administracion.html", rutas: ["/static/admin/administracion.html"] },
     ],
     OPERARIO: [
