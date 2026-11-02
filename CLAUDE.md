@@ -124,12 +124,12 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
 - Las horas de un turno asignado no se cambian: se crea otro y se asigna desde una fecha.
 - Una actividad de hora fija no se pausa ni se reprograma; la urgente no la interrumpe. Se inicia desde
   10 minutos antes de su hora (si se inicia tarde, queda `retraso_inicio_min` en la ejecución) y solo se
-  detiene por "Emergencia" o "Falla del equipo" (`MOTIVOS_DETENER_HORA_FIJA`), que Equipo muestra en "Por atender".
+  detiene por "Emergencia" o "Falla del equipo" (`MOTIVOS_DETENER_HORA_FIJA`), que el Administrador ve en Hoy, Pendientes.
 - Entre varias urgentes va primero la creada antes (`fecha_creacion` de la actividad). La salida antes del fin
   del turno es "Salida anticipada" (`salida_anticipada_min`, calculada con la salida vigente).
 - Reporte de actividad: el Operario reporta lo que otra área le pidió (Hoy); queda Por revisar, sin entrar
   en su día ni en su carga, hasta que el Administrador lo convierte en actividad o lo descarta con motivo
-  (Equipo, "Por atender"). Clase `Reporte`, `ReporteService`, rutas `/reportes`.
+  (Hoy, Pendientes). Clase `Reporte`, `ReporteService`, rutas `/reportes`.
 - Motivos de pausa y de cancelación: listas por empresa que se llenan con lo escrito en "Otro".
 - Capacidad de la jornada: la del turno vigente del operario (duración menos descanso). Sin turno, 7 h
   (`CAPACIDAD_JORNADA_MIN` en `carga_service.py`).

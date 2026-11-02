@@ -125,7 +125,7 @@ Cada operario tiene su propia **ejecución**: su hora de inicio, sus pausas y su
 | Acción | Regla |
 |---|---|
 | **Iniciar** | Solo si la actividad le está asignada, ya marcó la entrada de su jornada y no tiene otra en curso. Un operario tiene una sola actividad en curso a la vez; la base de datos lo garantiza aunque lleguen dos peticiones al mismo tiempo |
-| **Pausar** | Exige un motivo. Una actividad de hora fija no se puede pausar una vez iniciada, salvo para **detenerla por una emergencia** ("Emergencia" o "Falla del equipo"): queda pausada, el Administrador la ve en "Por atender" de Equipo y el operario la puede reanudar |
+| **Pausar** | Exige un motivo. Una actividad de hora fija no se puede pausar una vez iniciada, salvo para **detenerla por una emergencia** ("Emergencia" o "Falla del equipo"): queda pausada, el Administrador la ve en Hoy, en Pendientes, y el operario la puede reanudar |
 | **Reanudar** | Solo si no tiene otra en curso y su jornada sigue abierta (marcó la entrada y no ha marcado la salida) |
 | **Finalizar** | Puede dejar evidencia de su trabajo: una observación, fotos y adjuntos (PDF o imágenes), todo opcional. Hasta 5 archivos de 5 MB como máximo cada uno |
 
@@ -153,7 +153,7 @@ La evidencia es de cada operario: cada uno deja la suya en su propia ejecución.
 
 A veces otra área le pide un trabajo directamente al Operario. Para que no quede en el aire, él lo reporta desde Hoy: qué le pidieron y quién lo pidió (obligatorios), y si quiere un detalle y cuánto cree que tarda. El reporte queda **Por revisar** y todavía no es trabajo: no aparece en su día ni suma a su carga.
 
-El Administrador ve los reportes por revisar en Equipo, en "Por atender", y decide:
+El Administrador ve los reportes por revisar en Hoy, en Pendientes, y decide:
 
 - **Convertirlo en actividad:** se abre el formulario de actividad ya lleno con lo reportado y asignado a quien lo reportó. El Administrador lo programa (fecha, hora, prioridad, operarios) como cualquier actividad. Desde ahí es una actividad normal.
 - **Descartarlo,** con un motivo.
