@@ -8,36 +8,45 @@
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
 <body class="cargando">
+    <!-- Actividades del Administrador (alcance, Sección 6.2): el trabajo. Tres pestañas: las actividades,
+         los proyectos y los reportes de actividad por revisar. El detalle se abre en el panel lateral. -->
     <main class="principal">
         <div class="encabezado-pagina">
             <div>
                 <h1>Actividades</h1>
-                <p id="resumen" class="cifra" aria-live="polite"></p>
+                <p id="resumen" class="cifra texto-secundario" aria-live="polite"></p>
             </div>
-            <button type="button" id="nueva-actividad" class="boton">Nueva actividad</button>
+            <button type="button" id="accion-principal" class="boton">Nueva actividad</button>
         </div>
 
-        <div class="maestro-detalle">
-            <!-- Los filtros son de apoyo: van sobre el fondo, sin panel (alcance, Sección 6.2). -->
-            <nav class="seccion-apoyo filtros" aria-labelledby="titulo-filtros">
-                <h2 id="titulo-filtros">Mostrar actividades</h2>
-                <div id="lista-filtros" class="lista-filtros"></div>
-            </nav>
-
-            <section class="panel" aria-live="polite">
-                <div class="panel-encabezado">
-                    <h2 id="titulo-lista" class="titulo-con-cantidad">Por hacer</h2>
-                </div>
-                <div id="encabezado-lista" class="encabezado-lista" aria-hidden="true" hidden>
-                    <span>Actividad</span><span>Prioridad</span><span>Hora</span><span>Operarios</span><span>Estado</span>
-                </div>
-                <ul id="lista-actividades" class="lista-filas" hidden></ul>
-                <div id="sin-actividades" class="estado-vacio" hidden>
-                    <strong id="sin-actividades-titulo">Sin actividades</strong>
-                    <span id="sin-actividades-texto">Crea una actividad y asígnala a uno o varios operarios.</span>
-                </div>
-            </section>
+        <div class="pestanas" role="tablist" aria-label="Actividades">
+            <button type="button" role="tab" id="pestana-actividades" aria-controls="vista-actividades" data-vista="actividades">Actividades</button>
+            <button type="button" role="tab" id="pestana-proyectos" aria-controls="vista-proyectos" data-vista="proyectos">Proyectos</button>
+            <button type="button" role="tab" id="pestana-reportes" aria-controls="vista-reportes" data-vista="reportes">Reportes <span id="cantidad-reportes" class="cantidad cifra"></span></button>
         </div>
+
+        <section id="vista-actividades" role="tabpanel" aria-labelledby="pestana-actividades" class="vista-pestana">
+            <div id="lista-filtros" class="filtros-linea" role="group" aria-label="Mostrar actividades"></div>
+            <ul id="lista-actividades" class="lista-admin" aria-live="polite" hidden></ul>
+            <div id="sin-actividades" class="estado-vacio" hidden>
+                <strong id="sin-actividades-titulo">Sin actividades</strong>
+                <span id="sin-actividades-texto">Crea una actividad y asígnala a uno o varios operarios.</span>
+            </div>
+        </section>
+
+        <section id="vista-proyectos" role="tabpanel" aria-labelledby="pestana-proyectos" class="vista-pestana" hidden>
+            <ul id="lista-proyectos" class="lista-admin" hidden></ul>
+            <div id="sin-proyectos" class="estado-vacio" hidden>
+                <strong>Todavía no hay proyectos</strong>
+                <span>Un proyecto agrupa actividades con un mismo objetivo. Crea uno con "Nuevo proyecto".</span>
+            </div>
+        </section>
+
+        <section id="vista-reportes" role="tabpanel" aria-labelledby="pestana-reportes" class="vista-pestana" hidden>
+            <p class="texto-secundario">Trabajo que otra área les pidió directamente a tus operarios. Conviértelo en actividad para programarlo, o descártalo con un motivo.</p>
+            <ul id="lista-reportes" class="lista-admin" hidden></ul>
+            <p id="sin-reportes" class="estado-vacio" hidden>No hay reportes por revisar.</p>
+        </section>
     </main>
 
     <script src="/static/js/api.js"></script>

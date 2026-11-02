@@ -452,13 +452,15 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
 
     // Primero la información (alcance, Sección 6.2): el detalle con el registro de cada operario. Las
     // acciones dependen del estado (alcance, Sección 5.1, reglas de estado de la actividad).
-    function abrirDetalle(actividad) {
+    // "opciones" llega al panel lateral: { volverA, alCerrar } (ver abrirDetalleActividad).
+    function abrirDetalle(actividad, opciones = {}) {
         const acciones = [];
         if (actividad.editable) {
-            acciones.push({ texto: "Editar", clase: "boton-secundario", alHacer: async () => abrir(actividad) });
+            acciones.push({ texto: "Editar", clase: "boton", alHacer: async () => abrir(actividad) });
         }
+        // Cancelar es una acción de baja: nunca la principal (alcance, Sección 6.2).
         if (actividad.cancelable) {
-            acciones.push({ texto: "Cancelar actividad", clase: "boton-secundario peligro", alHacer: () => abrirCancelar(actividad) });
+            acciones.push({ texto: "Cancelar actividad", clase: "boton-terciario boton-baja", alHacer: () => abrirCancelar(actividad) });
         }
         let aviso = "";
         if (!actividad.editable && actividad.cancelable) {
@@ -466,7 +468,7 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
         } else if (!actividad.editable && actividad.estado_general === "EN_EJECUCION") {
             aviso = "Alguien la tiene en curso: mientras tanto no se edita, no se reasigna ni se cancela.";
         }
-        abrirDetalleActividad(actividad, { acciones, aviso, extra: crearRegistrosDelEquipo(actividad) });
+        abrirDetalleActividad(actividad, { acciones, aviso, extra: crearRegistrosDelEquipo(actividad), ...opciones });
     }
 
     return {

@@ -3,22 +3,9 @@
 
 let turnosDeLaEmpresa = [];
 
-const NOMBRE_ESTADO_ASISTENCIA = {
-    REGISTRADA: "Por validar",
-    VALIDADA: "Validada",
-    CORREGIDA: "Corregida",
-    SIN_MARCA: "Sin marca",
-    SIN_SALIDA: "Sin salida",
-    EN_TURNO: "En turno",
-};
-const ICONO_ESTADO_ASISTENCIA = {
-    REGISTRADA: "clock",
-    VALIDADA: "check",
-    CORREGIDA: "pencil",
-    SIN_MARCA: "minus",
-    SIN_SALIDA: "circle-alert",
-    EN_TURNO: "log-in",
-};
+// La revisión de las marcas (alcance, Sección 5.1). Si la persona vino es otra cosa: su presencia.
+const NOMBRE_REVISION = { REGISTRADA: "Por validar", VALIDADA: "Validada", CORREGIDA: "Corregida" };
+const ICONO_REVISION = { REGISTRADA: "clock", VALIDADA: "check", CORREGIDA: "pencil" };
 
 function horaDeMomento(momento) {
     if (!momento) {
@@ -91,18 +78,15 @@ function crearFilaAsistencia(asistencia) {
         crearElemento("span", "", `Salida ${horaDeMomento(asistencia.salida)}`),
     );
     textos.append(crearElemento("span", "fila-nombre", asistencia.operario), meta);
-    // Salida anticipada (alcance, Sección 5.1): información en gris con su ícono, no una etiqueta.
-    if (asistencia.salida_anticipada_min > 0) {
-        textos.append(crearConIcono("span", "linea-info", "clock",
-            `Salida anticipada: ${duracionTexto(asistencia.salida_anticipada_min)} antes del fin del turno`));
+    // La presencia (con la salida anticipada en su texto) y, si hay marcas, su revisión: texto con ícono.
+    const { presencia } = asistencia;
+    const estado = crearElemento("div", "asistencia-estados");
+    estado.append(crearConIcono("span", `presencia ${TONO_PRESENCIA[presencia.estado] || ""}`,
+        ICONO_PRESENCIA[presencia.estado], textoDePresencia(presencia, asistencia.turno)));
+    if (asistencia.estado && asistencia.salida) {
+        estado.append(crearConIcono("span", "texto-secundario", ICONO_REVISION[asistencia.estado],
+            NOMBRE_REVISION[asistencia.estado]));
     }
-    // Mientras no marque la salida está en turno: todavía no hay nada que validar.
-    const estadoMostrado = asistencia.estado === "REGISTRADA" && !asistencia.salida ? "EN_TURNO" : asistencia.estado;
-    const estado = crearConIcono(
-        "span", `etiqueta asistencia-${estadoMostrado.toLowerCase()}`,
-        ICONO_ESTADO_ASISTENCIA[estadoMostrado] || "circle",
-        NOMBRE_ESTADO_ASISTENCIA[estadoMostrado] || estadoMostrado,
-    );
     const acciones = crearElemento("div", "fila-acciones");
     if (asistencia.id && asistencia.salida && asistencia.estado === "REGISTRADA") {
         const validar = crearElemento("button", "boton-texto", "Validar");

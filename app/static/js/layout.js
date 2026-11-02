@@ -13,9 +13,11 @@ const VISTAS_POR_ROL = {
         },
     ],
     ADMINISTRADOR: [
+        // Cuatro menús (alcance, Sección 6.2): Equipo, Actividades, Indicadores y Administración.
+        // Indicadores se agrega cuando exista su pantalla.
         { texto: "Equipo", icono: "calendar-days", destino: "/static/admin/equipo.html", rutas: ["/static/admin/equipo.html"] },
         { texto: "Actividades", icono: "clipboard-check", destino: "/static/admin/actividades.html", rutas: ["/static/admin/actividades.html"] },
-        { texto: "Usuarios", icono: "users", destino: "/static/admin/usuarios.html", rutas: ["/static/admin/usuarios.html"] },
+        { texto: "Administración", icono: "users", destino: "/static/admin/usuarios.html", rutas: ["/static/admin/usuarios.html"] },
     ],
     OPERARIO: [
         { texto: "Inicio", icono: "house", destino: "/static/operario/inicio.html", rutas: ["/static/operario/inicio.html"] },
@@ -135,6 +137,39 @@ function construirBloqueUsuario(usuario) {
     return bloque;
 }
 
+// ---------- Pestañas de un submenú (alcance, Sección 6.2) ----------
+// Botones role="tab" con data-vista y aria-controls dentro de un role="tablist". La pestaña elegida
+// queda en la dirección (por ejemplo #proyectos), para volver a ella o enlazarla desde otra pantalla.
+// Las flechas izquierda y derecha pasan de una a otra (patrón de pestañas de WAI-ARIA). "alCambiar"
+// recibe el nombre de la vista elegida.
+function iniciarPestanas(lista, alCambiar) {
+    const pestanas = [...lista.querySelectorAll('[role="tab"]')];
+    function elegir(pestana, conFoco = false) {
+        for (const otra of pestanas) {
+            const elegida = otra === pestana;
+            otra.setAttribute("aria-selected", String(elegida));
+            otra.tabIndex = elegida ? 0 : -1;
+            document.getElementById(otra.getAttribute("aria-controls")).hidden = !elegida;
+        }
+        if (conFoco) {
+            pestana.focus();
+        }
+        history.replaceState(null, "", `#${pestana.dataset.vista}`);
+        alCambiar?.(pestana.dataset.vista);
+    }
+    pestanas.forEach((pestana, indice) => {
+        pestana.addEventListener("click", () => elegir(pestana));
+        pestana.addEventListener("keydown", (evento) => {
+            const paso = { ArrowRight: 1, ArrowLeft: -1 }[evento.key];
+            if (paso) {
+                evento.preventDefault();
+                elegir(pestanas[(indice + paso + pestanas.length) % pestanas.length], true);
+            }
+        });
+    });
+    elegir(pestanas.find((pestana) => `#${pestana.dataset.vista}` === location.hash) || pestanas[0]);
+}
+
 // ---------- Repintar sin perder el foco (WCAG 2.4.3 y 4.1.3) ----------
 // Las pantallas que muestran minutos se repintan cada medio minuto. Para no mover a quien navega con
 // teclado ni repetir avisos al lector de pantalla: con "soloSiCambia", no se toca lo que dice lo mismo;
@@ -165,27 +200,12 @@ function horaDeLaBarra(momento) {
 
 // Devuelve [clase, ícono o null, texto] según el turno y la asistencia de la jornada vigente.
 function estadoDelTurnoEnLaBarra(programacion) {
-    const { turno, asistencia, fecha } = programacion;
-    const marcada = asistencia && asistencia.jornada === fecha;
-    if (marcada && asistencia.salida) {
-        return ["barra-turno-neutro", null, "Jornada terminada"];
-    }
-    if (!turno) {
+    const { presencia, turno } = programacion;
+    if (!presencia || (presencia.estado === "SIN_TURNO" && !turno)) {
         return null;
     }
-    const ahora = Date.now();
-    if (ahora < new Date(turno.inicio).getTime()) {
-        return ["barra-turno-neutro", null, `Tu turno empieza a las ${turno.hora_inicio}`];
-    }
-    if (ahora >= new Date(turno.fin).getTime()) {
-        return ["barra-turno-neutro", null, "Fuera de turno"];
-    }
-    if (!marcada) {
-        return programacion.retraso_entrada_min > 0
-            ? ["barra-turno-tarde", "clock", "Llegada tarde"]
-            : ["barra-turno-neutro", null, `Tu turno empezó a las ${turno.hora_inicio}`];
-    }
-    return ["barra-turno-en-turno", null, `En turno hasta las ${turno.hora_fin}`];
+    const clase = { EN_TURNO: "barra-turno-en-turno", LLEGADA_TARDE: "barra-turno-tarde" }[presencia.estado] || "barra-turno-neutro";
+    return [clase, presencia.estado === "LLEGADA_TARDE" ? "clock" : null, textoDePresencia(presencia, turno)];
 }
 
 // El estado se anuncia solo cuando cambia (está en su propia región "aria-live"); la hora, que cambia
@@ -213,9 +233,18 @@ function pintarEstadoDelTurno(contenedor, programacion) {
 async function construirEstadoDelTurno(contenedor) {
     try {
         const programacion = await pedirApi("/programacion-del-dia");
-        pintarEstadoDelTurno(contenedor, programacion);
-        // La hora y el estado cambian con el reloj: se repintan cada medio minuto (sin segundos).
-        setInterval(() => pintarEstadoDelTurno(contenedor, programacion), 30000);
+        let actual = programacion;
+        pintarEstadoDelTurno(contenedor, actual);
+        // La hora se repinta cada medio minuto (sin segundos). El estado lo calcula el servidor: se le
+        // vuelve a pedir cada minuto, para que pase solo de "Por llegar" a "Llegada tarde", por ejemplo.
+        setInterval(() => pintarEstadoDelTurno(contenedor, actual), 30000);
+        setInterval(async () => {
+            try {
+                actual = await pedirApi("/programacion-del-dia");
+            } catch {
+                // Sin conexión se conserva el último estado conocido.
+            }
+        }, 60000);
     } catch {
         contenedor.hidden = true;     // Sin la programación, la barra sigue funcionando sin el estado.
     }

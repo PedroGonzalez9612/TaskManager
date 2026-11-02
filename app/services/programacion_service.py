@@ -8,8 +8,9 @@ la medianoche sigue viendo la jornada del día en que empezó su turno, hasta qu
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from app.models.enums import EstadoActividad, Prioridad, Rol
+from app.models.enums import EstadoActividad, EstadoPresencia, Prioridad, Rol
 from app.models.orden_jornada import OrdenJornada
+from app.models.presencia import TOLERANCIA_ENTRADA_MIN, presencia_en_jornada
 from app.services.programacion_dia import programar_dia
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 from app.utils.fechas import validar_fecha
@@ -18,9 +19,6 @@ from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, momento_local
 # Lo que el operario todavía tiene por hacer: es lo único que se puede ordenar.
 ESTADOS_PENDIENTES = (EstadoActividad.ASIGNADA.value, EstadoActividad.PAUSADA.value)
 
-# Minutos después del inicio del turno a partir de los cuales una entrada sin marcar es una llegada
-# tarde (alcance, Sección 5.1). Es la misma para todas las empresas mientras no se defina por empresa.
-TOLERANCIA_ENTRADA_MIN = 10
 # Días como máximo de una consulta de varios días (Semana pide siete).
 DIAS_MAXIMOS_SEMANA = 14
 # Un día futuro sin turno se proyecta desde esta hora: no hay inicio de turno del que partir.
@@ -60,17 +58,6 @@ def _minutos_fuera_del_turno(tramo: dict, fin_turno) -> int:
     if fin_turno is None or tramo["tipo"] not in TRAMOS_CON_TIEMPO_POR_DELANTE or tramo["fin"] <= fin_turno:
         return 0
     return round((tramo["fin"] - max(tramo["inicio"], fin_turno)).total_seconds() / 60)
-
-
-def _minutos_de_retraso(turno_hoy, asistencia, fecha: str, ahora) -> int:
-    """Minutos que lleva el turno empezado sin la entrada marcada, si ya pasó la tolerancia; si no, 0.
-    Una asistencia de otra jornada (que quedó sin salida) no cuenta como entrada de hoy."""
-    if not turno_hoy or (asistencia and asistencia.get("jornada") == fecha):
-        return 0
-    if not turno_hoy["inicio"] <= ahora < turno_hoy["fin"]:
-        return 0
-    minutos = int((ahora - turno_hoy["inicio"]).total_seconds() // 60)
-    return minutos if minutos > TOLERANCIA_ENTRADA_MIN else 0
 
 
 def _validar_ids(actividad_ids) -> list:
@@ -273,6 +260,9 @@ class ProgramacionService:
                                      turnos.capacidad_de(operario["id"], fecha), cierre,
                                      inicio_turno=turno_hoy["inicio"] if turno_hoy else None)
         asistencia = self.asistencia_service.actual(operario["id"], fecha, ahora)
+        # Si está: la misma regla de todo el sistema (alcance, Sección 5.1).
+        presencia = presencia_en_jornada(turno.ventana_en(fecha, zona) if turno else None,
+                                         self.asistencia_service.de_la_jornada(operario["id"], fecha), ahora)
         # Lo que pasaría del fin del turno: cuánto tendría que quedarse el operario (alcance, Sección 5.1).
         fin_turno = turno_hoy["fin"] if turno_hoy else None
         for tramo in programacion["tramos"]:
@@ -289,7 +279,8 @@ class ProgramacionService:
             "turno": turno_hoy,
             "asistencia": asistencia,
             "en_turno": bool(turno_hoy) and turno_hoy["inicio"] <= ahora < turno_hoy["fin"],
-            "retraso_entrada_min": _minutos_de_retraso(turno_hoy, asistencia, fecha, ahora),
+            "presencia": {"estado": presencia["estado"].value, "minutos": presencia["minutos"]},
+            "retraso_entrada_min": presencia["minutos"] if presencia["estado"] == EstadoPresencia.LLEGADA_TARDE else 0,
             "tolerancia_entrada_min": TOLERANCIA_ENTRADA_MIN,
         }
 

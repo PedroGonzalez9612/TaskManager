@@ -123,6 +123,48 @@ const NOMBRE_PRIORIDAD = {
     BAJA: "Baja",
 };
 
+// Presencia de una persona en su jornada (alcance, Sección 5.1). El servidor decide el estado con una
+// sola regla (app/models/presencia.py); aquí solo se le pone nombre, igual en todas las pantallas.
+const NOMBRE_PRESENCIA = {
+    SIN_TURNO: "Sin turno hoy",
+    POR_LLEGAR: "Por llegar",
+    LLEGADA_TARDE: "Llegada tarde",
+    EN_TURNO: "En turno",
+    TIEMPO_ADICIONAL: "Tiempo adicional",
+    JORNADA_TERMINADA: "Jornada terminada",
+    NO_VINO: "No vino",
+    SIN_SALIDA: "Sin salida",
+};
+
+// El nombre del estado con su dato: "En turno hasta las 22:00", "Llegada tarde, 25 min"...
+// "turno" es { hora_inicio, hora_fin } o null.
+function textoDePresencia(presencia, turno) {
+    const { estado, minutos } = presencia;
+    if (estado === "POR_LLEGAR" && turno) {
+        return `Turno a las ${turno.hora_inicio}`;
+    }
+    if (estado === "EN_TURNO" && turno) {
+        return `En turno hasta las ${turno.hora_fin}`;
+    }
+    if (["LLEGADA_TARDE", "TIEMPO_ADICIONAL"].includes(estado)) {
+        return `${NOMBRE_PRESENCIA[estado]}, ${duracionTexto(minutos)}`;
+    }
+    if (estado === "JORNADA_TERMINADA" && minutos > 0) {
+        return `Jornada terminada, salida anticipada de ${duracionTexto(minutos)}`;
+    }
+    return NOMBRE_PRESENCIA[estado] || estado;
+}
+
+// Su ícono y su color: verde si está, ámbar si pide atención, gris lo demás (alcance, Sección 6.3).
+const ICONO_PRESENCIA = {
+    SIN_TURNO: "minus", POR_LLEGAR: "clock", LLEGADA_TARDE: "clock", EN_TURNO: "circle", TIEMPO_ADICIONAL: "clock",
+    JORNADA_TERMINADA: "log-out", NO_VINO: "minus", SIN_SALIDA: "circle-alert",
+};
+const TONO_PRESENCIA = {
+    EN_TURNO: "presencia-esta", LLEGADA_TARDE: "presencia-atencion", NO_VINO: "presencia-atencion",
+    SIN_SALIDA: "presencia-atencion", TIEMPO_ADICIONAL: "presencia-atencion",
+};
+
 const NOMBRE_ESTADO = {
     PENDIENTE: "Sin asignar",
     ASIGNADA: "Por iniciar",

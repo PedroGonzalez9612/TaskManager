@@ -57,6 +57,10 @@ class Turno:
         """Cuándo termina el turno de la jornada "fecha" (puede ser el día siguiente), en UTC."""
         return self.inicio_en(fecha, zona) + timedelta(minutes=self.duracion_min)
 
+    def ventana_en(self, fecha: str, zona=None) -> tuple:
+        """(inicio, fin) del turno en la jornada "fecha", en UTC: lo que recibe presencia_en_jornada."""
+        return self.inicio_en(fecha, zona), self.fin_en(fecha, zona)
+
     def to_dict(self) -> dict:
         return {
             "nombre": self.nombre, "hora_inicio": self.hora_inicio, "hora_fin": self.hora_fin,

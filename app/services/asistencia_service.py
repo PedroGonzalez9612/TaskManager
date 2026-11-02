@@ -8,17 +8,13 @@ from datetime import date, timedelta
 
 from app.models.asistencia import Asistencia
 from app.models.enums import Rol
+from app.models.presencia import presencia_en_jornada
 from app.models.pausa import en_utc
 from app.services.turno_service import dia_anterior, resumen_turno
 from app.utils.errors import NotFoundError, ProhibidoError, ValidationError
 from app.utils.fechas import validar_fecha, validar_hora
 from app.utils.reloj import ZONA_POR_DEFECTO, ahora_utc, fecha_local, momento_local
 
-# Estados con los que aparece una fila en la lista del Administrador (solo de presentación, no se
-# guardan): un operario con turno que no marcó entrada, y una asistencia de una jornada que ya
-# pasó y quedó sin salida, para que la corrija.
-SIN_MARCA = "SIN_MARCA"
-SIN_SALIDA = "SIN_SALIDA"
 CAMBIO_SIMULTANEO = "La asistencia cambió mientras hacías esto. Actualiza la pantalla e inténtalo de nuevo."
 YA_MARCO_ENTRADA = "Ya marcaste la entrada de esta jornada"
 SIN_ENTRADA = "Marca tu entrada para empezar"
@@ -106,9 +102,10 @@ class AsistenciaService:
     # ---------- Revisión del Administrador ----------
 
     def listar(self, solicitante: dict, jornada=None) -> list:
-        """Las asistencias de la empresa en la jornada, con el nombre del operario, su turno vigente
-        y el tiempo presente. Los operarios con turno que no marcaron aparecen como SIN_MARCA, y una
-        asistencia de una jornada anterior a la vigente del operario que sigue sin salida, como SIN_SALIDA."""
+        """Las asistencias de la empresa en la jornada, con el nombre del operario, su turno vigente,
+        el tiempo presente y su presencia (alcance, Sección 5.1). "estado" es solo la revisión del
+        Administrador (Por validar, Validada, Corregida); si no marcó, es None. Los operarios con turno
+        que no marcaron también aparecen, con su presencia (Por llegar, Llegada tarde o No vino)."""
         self._exigir_rol(solicitante, Rol.ADMINISTRADOR, "Solo el Administrador revisa la asistencia")
         empresa_id = solicitante["empresa_id"]
         ahora = self.reloj()
@@ -127,11 +124,14 @@ class AsistenciaService:
             asistencia = por_usuario.get(usuario_id)
             if asistencia is None and turno is None:
                 continue                        # Sin turno ni marca: no se esperaba que viniera.
+            ventana = turno.ventana_en(jornada, zona) if turno else None
+            vigente = jornada >= turnos.jornada_vigente(usuario_id, ahora, zona)
+            presencia = presencia_en_jornada(ventana, asistencia, ahora, es_jornada_vigente=vigente)
             if asistencia is None:
                 fila = self._sin_marca(usuario_id, jornada)
             else:
-                fin_turno = turno.fin_en(jornada, zona) if turno else None
-                fila = self._fila(asistencia, turnos.jornada_vigente(usuario_id, ahora, zona), ahora, fin_turno)
+                fila = self.presentar(asistencia, ahora, ventana[1] if ventana else None)
+            fila["presencia"] = {"estado": presencia["estado"].value, "minutos": presencia["minutos"]}
             filas.append({**fila, "operario": operario["nombre"], "turno": resumen_turno(turno)})
         return filas
 
@@ -172,20 +172,11 @@ class AsistenciaService:
             "salida_anticipada_min": asistencia.minutos_de_salida_anticipada(fin_turno),
         }
 
-    @classmethod
-    def _fila(cls, asistencia: Asistencia, jornada_vigente: str, ahora, fin_turno=None) -> dict:
-        """La asistencia para la lista del Administrador. Si es de una jornada que ya pasó para el
-        operario y sigue sin salida, se muestra como SIN_SALIDA (el estado guardado no cambia)."""
-        fila = cls.presentar(asistencia, ahora, fin_turno)
-        if asistencia.esta_abierta and asistencia.jornada < jornada_vigente:
-            fila["estado"] = SIN_SALIDA
-        return fila
-
     @staticmethod
     def _sin_marca(usuario_id: str, jornada: str) -> dict:
         return {
             "id": None, "usuario_id": usuario_id, "jornada": jornada, "entrada": None, "salida": None,
-            "estado": SIN_MARCA, "minutos_presente": 0, "revision": None, "salida_anticipada_min": 0,
+            "estado": None, "minutos_presente": 0, "revision": None, "salida_anticipada_min": 0,
         }
 
     # ---------- Apoyo ----------
@@ -209,6 +200,10 @@ class AsistenciaService:
     def _jornada_vigente(self, solicitante: dict, ahora) -> str:
         zona = self._zona_de(solicitante["empresa_id"])
         return self.turno_service.jornada_vigente(solicitante["id"], ahora, zona)
+
+    def de_la_jornada(self, usuario_id: str, jornada: str):
+        """La Asistencia del operario en esa jornada, o None. La usa la presencia de otros servicios."""
+        return self._de_la_jornada(usuario_id, jornada)
 
     def _de_la_jornada(self, usuario_id: str, jornada: str):
         doc = self.asistencia_repository.find_de_usuario_en(usuario_id, jornada)

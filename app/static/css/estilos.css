@@ -110,6 +110,8 @@
     --alto-control: 2.75rem;        /* Al menos 44 px: fácil de tocar en celular (Ley de Fitts) */
     --alto-boton-principal: 3.25rem; /* 52 px: el botón principal en celular */
     --alto-barra-inferior: 3.8rem;  /* La barra de vistas en celular: el contenido deja este espacio abajo */
+    --alto-barra-superior: 3.75rem; /* La barra superior: el panel lateral empieza debajo de ella */
+    --ancho-panel-lateral: 26rem;   /* El detalle del Administrador en computador */
 }
 
 /* El tamaño que el usuario tenga en su navegador (16 px si no lo ha cambiado). */
@@ -210,7 +212,7 @@ a {
     display: flex;
     align-items: center;
     gap: var(--e5);
-    min-height: 3.75rem;
+    min-height: var(--alto-barra-superior);
     /* Siempre el ancho completo de la columna, en todas las pantallas: la marca y el usuario no
        cambian de lugar al pasar de una vista a otra, aunque el contenido sea más angosto. */
     padding-inline: max(var(--margen), calc((100% - var(--ancho-barra)) / 2 + var(--margen)));
@@ -1736,28 +1738,31 @@ fieldset.grupo-botones {
     gap: var(--e1);
 }
 
-/* Por validar: ámbar suave, porque espera una acción del Administrador. */
-.etiqueta.asistencia-registrada {
-    background: var(--advertencia-suave);
-    color: var(--advertencia-texto);
+/* Presencia de una persona (alcance, Sección 5.1): texto con su ícono, sin etiqueta. Verde si está,
+   ámbar si pide atención (llegada tarde, no vino, sin salida, tiempo adicional), gris lo demás. */
+.presencia {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--texto-secundario);
+    font-weight: var(--peso-fuerte);
 }
 
-.etiqueta.asistencia-validada,
-.etiqueta.asistencia-en_turno {
-    background: var(--exito-suave);
-    color: var(--exito-texto);
+.presencia .icono {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
 }
 
-.etiqueta.asistencia-corregida {
-    background: var(--neutro-suave);
-    color: var(--neutro-texto);
-}
+.presencia-esta { color: var(--exito-texto); }
+.presencia-esta .icono { fill: currentColor; }
+.presencia-atencion { color: var(--advertencia-texto); }
 
-/* Sin marca con turno asignado (posible ausencia) o sin salida de una jornada anterior: requieren al Administrador. */
-.etiqueta.asistencia-sin_marca,
-.etiqueta.asistencia-sin_salida {
-    background: var(--error-suave);
-    color: var(--error-texto);
+/* La presencia y, debajo, la revisión de las marcas. */
+.asistencia-estados {
+    display: grid;
+    gap: var(--e1);
+    justify-items: start;
 }
 
 .fila-usuario-acciones .boton-texto {
@@ -3635,8 +3640,46 @@ fieldset.grupo-botones {
     outline-offset: 2px;
 }
 
+/* ================= Administrador: el detalle como panel lateral (alcance, Sección 6.2) ================= */
+/* En computador va a la derecha, debajo de la barra superior, sin velo: la lista o el tablero siguen a la
+   vista y se corren a la izquierda para dejarle espacio. En celular ocupa toda la pantalla. */
+
+.dialogo.panel-lateral[open] {
+    position: fixed;
+    inset: var(--alto-barra-superior) 0 0 auto;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    width: var(--ancho-panel-lateral);
+    max-width: 100vw;
+    height: auto;
+    max-height: none;
+    margin: 0;
+    overflow: hidden;
+    border-left: 1px solid var(--borde);
+    border-radius: 0;
+    box-shadow: none;
+    background: var(--fondo);
+}
+
+body.con-panel-lateral .principal {
+    margin-right: var(--ancho-panel-lateral);
+}
+
+/* La fila cuyo detalle está abierto. */
+[aria-current="true"] > .fila-actividad-admin,
+.fila-actividad-admin[aria-current="true"] {
+    background: var(--principal-suave);
+}
+
 /* En celular: el detalle ocupa toda la pantalla y las hojas suben desde abajo. */
 @media (max-width: 50em) {
+    .dialogo.panel-lateral[open] {
+        inset: 0;
+        width: 100vw;
+        height: 100dvh;
+    }
+
     .dialogo.detalle-op[open] {
         width: 100vw;
         max-width: none;

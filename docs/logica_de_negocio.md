@@ -232,7 +232,8 @@ Cuando termina la jornada, el sistema revisa lo que quedó abierto. Una jornada 
 - **Tiempo fuera del turno:** lo que la programación del día deja después de la hora de fin del turno dice cuántos minutos implica quedarse, actividad por actividad, y el fin del turno suma el total.
 - **Ordenar el día con horas:** mientras el operario ordena sus actividades de horario flexible, cada una dice a qué hora quedaría con ese orden, antes de guardarlo.
 - **El tiempo queda en su día:** lo trabajado se atribuye a la jornada en que se trabajó. Una actividad de 23:00 a 01:00 cuenta una hora en cada jornada; así los indicadores de un día solo suman lo que pasó en él.
-- **Aviso de posible ausencia (pendiente):** si pasado un tiempo de tolerancia el operario no ha marcado entrada, el Administrador recibe un aviso con sus actividades del día para reasignarlas.
+- **Presencia, actividad y carga:** el estado de una persona se dice con tres datos que calcula el servidor con una sola regla, y que todas las pantallas nombran igual. La **presencia** dice si está: Sin turno, Por llegar, Llegada tarde (pasaron más de 10 minutos del inicio del turno sin entrada), En turno, Tiempo adicional (sigue después del fin de su turno), Jornada terminada (con la salida anticipada, si la hubo), No vino o Sin salida (de una jornada anterior). La **actividad** dice qué hace: la que tiene en curso, una de hora fija detenida o nada en curso. La **carga** dice cuánto trabajo tiene: sobrecargado (más del 100 % de su capacidad), con espacio (1 hora libre o más) o normal. La revisión de la asistencia (Por validar, Validada, Corregida) es aparte: es de las marcas, no de la persona.
+- **Aviso de posible ausencia (pendiente):** cuando la presencia pasa a Llegada tarde, el Administrador recibe un aviso con sus actividades del día para reasignarlas.
 
 ---
 

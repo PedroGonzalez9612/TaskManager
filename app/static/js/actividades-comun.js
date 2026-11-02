@@ -38,6 +38,47 @@ function crearEtiquetaCategoria(categoria) {
     );
 }
 
+// ---------- Estado y prioridad como texto (alcance, Sección 6.2: etiquetas solo para excepciones) ----------
+
+const ICONO_ESTADO_TEXTO = {
+    PENDIENTE: "circle", ASIGNADA: "circle", EN_EJECUCION: "circle", PAUSADA: "pause", DEVUELTA: "undo-2",
+    COMPLETADA: "check", NO_REALIZADA: "minus", CANCELADA: "minus",
+};
+
+function crearEstadoComoTexto(estado, clase = "estado-texto") {
+    return crearConIcono("span", `${clase} estado-op-${estado.toLowerCase()}`,
+        ICONO_ESTADO_TEXTO[estado] || "circle", NOMBRE_ESTADO[estado] || estado);
+}
+
+function crearPrioridadComoTexto(prioridad) {
+    return crearConIcono("span", `fila-prioridad prioridad-texto-${prioridad.toLowerCase()}`,
+        ICONO_PRIORIDAD[prioridad], NOMBRE_PRIORIDAD[prioridad] || prioridad);
+}
+
+function textoRetraso(actividad) {
+    const dias = actividad.dias_de_retraso;
+    return dias === 1 ? "Retraso: 1 día" : `Retraso: ${dias} días`;
+}
+
+// Las únicas etiquetas: Urgente, Hora fija y Retraso. Una terminada ya no tiene excepciones que avisar.
+function crearEtiquetasDeExcepcion(actividad, { conHora = false } = {}) {
+    if (["COMPLETADA", "CANCELADA", "NO_REALIZADA"].includes(actividad.estado)) {
+        return [];
+    }
+    const etiquetas = [];
+    if (actividad.prioridad === "URGENTE") {
+        etiquetas.push(crearSenalPrioridad("URGENTE"));
+    }
+    if (actividad.hora_programada) {
+        etiquetas.push(crearConIcono("span", "etiqueta etiqueta-hora-fija", "lock",
+            conHora ? `Hora fija ${actividad.hora_programada}` : "Hora fija"));
+    }
+    if (actividad.reprogramada) {
+        etiquetas.push(crearConIcono("span", "etiqueta etiqueta-retraso", "clock", textoRetraso(actividad)));
+    }
+    return etiquetas;
+}
+
 // ---------- Orden y tiempos ----------
 
 // Por fecha, luego por hora (las que no tienen hora van al final del día) y luego por prioridad.
@@ -81,80 +122,144 @@ function segmentosTrabajados(ejecucion) {
     return segmentos;
 }
 
-// ---------- Detalle de la actividad (Administrador; el del Operario está en operario-comun.js) ----------
+// ---------- Panel lateral del Administrador (alcance, Sección 6.2) ----------
+// En computador va a la derecha y no tapa la lista ni el tablero; en celular ocupa toda la pantalla. Lo
+// usan el detalle de una actividad y el de un proyecto. Uno a la vez: abrir otro reemplaza al anterior.
+// "marca" es el texto pequeño de la barra (el código de la actividad); "volverA", el nombre de la
+// pantalla de atrás (el botón para volver en celular); "alCerrar" avisa al cerrarse, para quitar la
+// marca de la fila abierta.
+let panelAbierto = null;
+const MEDIA_CELULAR = "(max-width: 50em)";
 
-function abrirDetalleActividad(actividad, { acciones = [], aviso = "", extra = [] } = {}) {
-    const dialogo = crearElemento("dialog", "dialogo dialogo-detalle");
-
-    const encabezado = crearElemento("div", "dialogo-encabezado");
-    encabezado.append(crearElemento("span", "codigo cifra", actividad.codigo));
-    const cerrar = crearElemento("button", "boton-cerrar", "×");
+function crearBarraDelPanel(panel, marca, enCelular, volverA) {
+    const barra = crearElemento("div", "detalle-op-barra");
+    const cerrar = crearElemento("button", "detalle-op-volver");
     cerrar.type = "button";
-    cerrar.setAttribute("aria-label", "Cerrar");
-    cerrar.addEventListener("click", () => dialogo.close());
-    encabezado.append(cerrar);
-
-    const cuerpo = crearElemento("div", "detalle-cuerpo");
-    const senales = crearElemento("div", "senales");
-    senales.append(
-        crearSenalPrioridad(actividad.prioridad),
-        crearEtiquetaEstado(actividad.estado),
-        crearEtiquetaCategoria(actividad.categoria),
-    );
-    cuerpo.append(senales, crearElemento("h2", "detalle-titulo", actividad.titulo));
-
-    const datos = crearElemento("dl", "detalle-datos");
-    const filas = [
-        ["Ubicación", actividad.ubicacion, false],
-        ["Programada", textoProgramada(actividad), false],
-        ["Estimado", duracionTexto(actividad.tiempo_estimado_min), true],
-        ["Asignada a", actividad.operarios.map((o) => o.nombre).join(", ") || "Nadie todavía", false],
-        ["Proyecto", actividad.proyecto_nombre || "Actividad independiente", false],
-    ];
-    for (const [nombre, valor, esCifra] of filas) {
-        datos.append(crearElemento("dt", "", nombre), crearElemento("dd", esCifra ? "cifra" : "", valor));
+    cerrar.addEventListener("click", () => panel.close());
+    const textoMarca = crearElemento("span", "codigo cifra texto-secundario", marca);
+    if (enCelular) {
+        cerrar.insertAdjacentHTML("afterbegin", icono("chevron-left"));
+        cerrar.append(volverA);
+        barra.append(cerrar, textoMarca);
+    } else {
+        cerrar.insertAdjacentHTML("afterbegin", icono("x"));
+        cerrar.setAttribute("aria-label", "Cerrar el detalle");
+        barra.append(textoMarca, cerrar);
     }
-    cuerpo.append(datos);
-    if (actividad.descripcion) {
-        cuerpo.append(crearElemento("h3", "detalle-subtitulo", "Descripción de la actividad"),
-            crearElemento("p", "detalle-descripcion", actividad.descripcion));
-    }
-    cuerpo.append(...crearInformacion(actividad), ...extra);
-    if (aviso) {
-        cuerpo.append(crearConIcono("p", "aviso aviso-advertencia", "circle-alert", aviso));
-    }
+    return barra;
+}
 
+function crearAccionesDelPanel(panel, acciones, error) {
+    const pie = crearElemento("div", "detalle-op-acciones");
+    const fila = crearElemento("div", "detalle-op-acciones-fila");
+    for (const accion of acciones) {
+        const boton = crearElemento("button", accion.clase || "boton", accion.texto);
+        boton.type = "button";
+        boton.disabled = Boolean(accion.desactivada);
+        boton.addEventListener("click", async () => {
+            boton.disabled = true;
+            try {
+                await accion.alHacer();
+                panel.close();
+            } catch (error_) {
+                mostrarErrorFormulario(error, error_.message);
+                boton.disabled = false;
+            }
+        });
+        fila.append(boton);
+    }
+    pie.append(fila);
+    return pie;
+}
+
+function abrirPanelLateral({ marca = "", titulo, antesDelTitulo = [], contenido = [], acciones = [], volverA = "Volver", alCerrar = null }) {
+    panelAbierto?.close();
+    const enCelular = window.matchMedia(MEDIA_CELULAR).matches;
+    const origen = document.activeElement;
+    const panel = crearElemento("dialog", "dialogo panel-lateral");
+    panel.setAttribute("aria-labelledby", "panel-lateral-titulo");
+
+    const cuerpo = crearElemento("div", "detalle-op-cuerpo");
+    const encabezado = crearElemento("h2", "detalle-op-titulo", titulo);
+    encabezado.id = "panel-lateral-titulo";
+    encabezado.tabIndex = -1;
     const error = crearElemento("p", "mensaje-formulario");
     error.setAttribute("role", "alert");
     error.hidden = true;
-    cuerpo.append(error);
-
+    cuerpo.append(...antesDelTitulo, encabezado, ...contenido, error);
+    panel.append(crearBarraDelPanel(panel, marca, enCelular, volverA), cuerpo);
     if (acciones.length) {
-        const botones = crearElemento("div", "dialogo-acciones");
-        for (const accion of acciones) {
-            const boton = crearElemento("button", accion.clase || "boton", accion.texto);
-            boton.type = "button";
-            boton.disabled = Boolean(accion.desactivada);
-            boton.addEventListener("click", async () => {
-                boton.disabled = true;
-                try {
-                    await accion.alHacer();
-                    dialogo.close();
-                } catch (error_) {
-                    mostrarErrorFormulario(error, error_.message);
-                    boton.disabled = false;
-                }
-            });
-            botones.append(boton);
-        }
-        cuerpo.append(botones);
+        panel.append(crearAccionesDelPanel(panel, acciones, error));
     }
 
-    dialogo.append(encabezado, cuerpo);
-    dialogo.addEventListener("close", () => dialogo.remove());
-    document.body.append(dialogo);
-    dialogo.showModal();
-    return dialogo;
+    // En computador el panel no es modal (no oscurece ni bloquea la lista), así que Escape se atiende aquí.
+    const conEscape = (evento) => {
+        if (evento.key === "Escape" && !document.querySelector("dialog[open]:not(.panel-lateral)")) {
+            panel.close();
+        }
+    };
+    panel.addEventListener("close", () => {
+        document.removeEventListener("keydown", conEscape);
+        panel.remove();
+        if (panelAbierto === panel) {
+            panelAbierto = null;
+            document.body.classList.remove("con-panel-lateral");
+        }
+        alCerrar?.();
+        if (origen?.isConnected && !panelAbierto) {
+            origen.focus();
+        }
+    });
+    document.body.append(panel);
+    panelAbierto = panel;
+    if (enCelular) {
+        panel.showModal();
+    } else {
+        document.addEventListener("keydown", conEscape);
+        document.body.classList.add("con-panel-lateral");
+        panel.show();
+    }
+    encabezado.focus();
+    return panel;
+}
+
+// ---------- Detalle de la actividad (Administrador; el del Operario está en operario-comun.js) ----------
+// Mismo orden que el del Operario: estado y excepciones, nombre, datos, registro de cada operario e
+// información; las acciones, fijas abajo.
+
+function crearDatosDelPanel(actividad) {
+    const datos = crearElemento("dl", "lista-datos");
+    const filas = [
+        ["Programada", textoProgramada(actividad)],
+        ["Estimado", duracionTexto(actividad.tiempo_estimado_min)],
+        ["Prioridad", crearPrioridadComoTexto(actividad.prioridad)],
+        ["Asignada a", actividad.operarios.map((o) => o.nombre).join(", ") || "Nadie todavía"],
+        ["Categoría", NOMBRE_CATEGORIA[actividad.categoria] || actividad.categoria],
+        ["Ubicación", actividad.ubicacion],
+        ["Proyecto", actividad.proyecto_nombre || "Actividad independiente"],
+    ];
+    for (const [nombre, valor] of filas) {
+        const dd = crearElemento("dd");
+        dd.append(valor);
+        datos.append(crearElemento("dt", "", nombre), dd);
+    }
+    return datos;
+}
+
+function abrirDetalleActividad(actividad, { acciones = [], aviso = "", extra = [], volverA = "Volver", alCerrar = null } = {}) {
+    const estado = crearElemento("div", "detalle-op-estado");
+    estado.append(crearEstadoComoTexto(actividad.estado, "detalle-op-estado-texto"), ...crearEtiquetasDeExcepcion(actividad));
+    const contenido = [];
+    if (actividad.descripcion) {
+        contenido.push(crearElemento("p", "detalle-op-descripcion", actividad.descripcion));
+    }
+    contenido.push(crearDatosDelPanel(actividad), ...extra, ...crearInformacion(actividad));
+    if (aviso) {
+        contenido.push(crearConIcono("p", "linea-info", "info", aviso));
+    }
+    return abrirPanelLateral({
+        marca: actividad.codigo, titulo: actividad.titulo, antesDelTitulo: [estado], contenido, acciones, volverA, alCerrar,
+    });
 }
 
 // ---------- Motivos: lista de la empresa más "Otro" (alcance, Sección 5.1) ----------

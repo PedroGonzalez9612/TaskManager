@@ -145,8 +145,11 @@ def test_la_salida_olvidada_queda_sin_salida_para_el_administrador(asistencia, a
 
     assert asistencias.find_by_id(del_10["id"])["salida"] is None
     assert asistencias.find_by_id(del_10["id"])["estado"] == "REGISTRADA"     # Lo guardado no cambia.
-    assert [fila["estado"] for fila in asistencia.listar(empresa.admin, HOY)] == ["SIN_SALIDA"]
-    assert [fila["estado"] for fila in asistencia.listar(empresa.admin, MANANA)] == ["REGISTRADA"]
+    # La revisión sigue por validar; la presencia dice que quedó sin salida (alcance, Sección 5.1).
+    [del_10_en_lista] = asistencia.listar(empresa.admin, HOY)
+    assert (del_10_en_lista["estado"], del_10_en_lista["presencia"]["estado"]) == ("REGISTRADA", "SIN_SALIDA")
+    [del_11_en_lista] = asistencia.listar(empresa.admin, MANANA)
+    assert (del_11_en_lista["estado"], del_11_en_lista["presencia"]["estado"]) == ("REGISTRADA", "JORNADA_TERMINADA")
 
 
 def test_el_turno_de_noche_en_curso_no_aparece_sin_salida(asistencia, empresa, noche, reloj):
@@ -315,7 +318,10 @@ def test_la_lista_incluye_a_los_que_no_marcaron(servicios, asistencia, repos, em
     assert filas["Ana"]["estado"] == "REGISTRADA"
     assert filas["Ana"]["minutos_presente"] == 60
     assert filas["Ana"]["turno"]["nombre"] == "Tarde"
-    assert filas["Luis"]["estado"] == "SIN_MARCA"
+    assert filas["Ana"]["presencia"]["estado"] == "EN_TURNO"
+    # Luis no ha marcado: no hay revisión, y su turno (14:00) todavía no empieza.
+    assert filas["Luis"]["estado"] is None
+    assert filas["Luis"]["presencia"] == {"estado": "POR_LLEGAR", "minutos": 0}
     assert filas["Luis"]["id"] is None
     assert filas["Luis"]["usuario_id"] == empresa.luis["id"]
 

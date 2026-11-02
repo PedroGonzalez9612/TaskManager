@@ -120,16 +120,10 @@ function accionesDelOperario(actividad, actividades, alCambiar, soloLectura) {
 
 // ---------- Piezas del detalle ----------
 
-const ICONO_ESTADO_OPERARIO = {
-    ASIGNADA: "circle", EN_EJECUCION: "circle", PAUSADA: "pause", COMPLETADA: "check",
-    DEVUELTA: "undo-2", NO_REALIZADA: "minus", CANCELADA: "minus",
-};
-
 // El estado como texto con su ícono (sin etiqueta) y, al lado, las excepciones con etiqueta (6.2).
 function crearLineaDeEstado(actividad) {
     const linea = crearElemento("div", "detalle-op-estado");
-    linea.append(crearConIcono("span", `detalle-op-estado-texto estado-op-${actividad.estado.toLowerCase()}`,
-        ICONO_ESTADO_OPERARIO[actividad.estado] || "circle", NOMBRE_ESTADO[actividad.estado] || actividad.estado));
+    linea.append(crearEstadoComoTexto(actividad.estado, "detalle-op-estado-texto"));
     if (actividad.prioridad === "URGENTE") {
         linea.append(crearSenalPrioridad("URGENTE"));
     }
@@ -669,11 +663,6 @@ function abrirFinalizar(actividad, alCambiar) {
 // ---------- La fila de una actividad: la comparten Hoy y Semana (alcance, Sección 6.2) ----------
 // "nodo" trae la actividad, su tramo y cómo se ve: tipo ("hecha", "en-curso" o "pendiente"), vencida,
 // siguiente y, en Semana, urgenteComoEtiqueta (en Hoy la urgente es un bloque rojo aparte).
-
-function textoRetraso(actividad) {
-    const dias = actividad.dias_de_retraso;
-    return dias === 1 ? "Retraso: 1 día" : `Retraso: ${dias} días`;
-}
 
 // Las excepciones llevan etiqueta (Urgente, Hora fija, Retraso u Hora vencida); "Siguiente" es texto (6.2).
 function crearExcepciones(nodo) {

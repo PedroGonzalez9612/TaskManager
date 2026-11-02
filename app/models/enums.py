@@ -59,6 +59,18 @@ class EstadoEjecucion(str, Enum):
         return self in (EstadoEjecucion.EN_PROGRESO, EstadoEjecucion.PAUSADA)
 
 
+class EstadoPresencia(str, Enum):
+    """Si la persona está en su jornada (alcance, Sección 5.1). Lo calcula presencia_en_jornada; no se guarda."""
+    SIN_TURNO = "SIN_TURNO"                    # No tiene turno ese día y no marcó entrada.
+    POR_LLEGAR = "POR_LLEGAR"                  # Tiene turno y todavía no pasa la tolerancia de la entrada.
+    LLEGADA_TARDE = "LLEGADA_TARDE"            # Pasó la tolerancia sin entrada: aviso de posible ausencia.
+    EN_TURNO = "EN_TURNO"                      # Marcó entrada y no ha salido.
+    TIEMPO_ADICIONAL = "TIEMPO_ADICIONAL"      # Sigue sin salir después del fin de su turno.
+    JORNADA_TERMINADA = "JORNADA_TERMINADA"    # Marcó la salida.
+    NO_VINO = "NO_VINO"                        # Su turno terminó y nunca marcó entrada.
+    SIN_SALIDA = "SIN_SALIDA"                  # Una jornada anterior quedó sin marcar la salida.
+
+
 class EstadoReporte(str, Enum):
     """Un reporte de actividad espera la revisión del Administrador (alcance, Sección 5.1)."""
     PENDIENTE = "PENDIENTE"            # Por revisar: todavía no es trabajo del día.
