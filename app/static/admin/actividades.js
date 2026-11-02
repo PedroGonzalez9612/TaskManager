@@ -17,6 +17,7 @@ const FILTROS = [
 // Lo que hace el botón de arriba en cada pestaña.
 const ACCION_POR_VISTA = {
     actividades: { texto: "Nueva actividad", alHacer: () => formulario.abrirNueva() },
+    carga: { texto: "Nueva actividad", alHacer: () => formulario.abrirNueva() },
     proyectos: { texto: "Nuevo proyecto", alHacer: () => abrirFormularioProyecto() },
 };
 
@@ -253,6 +254,130 @@ function abrirFormularioProyecto(proyecto = null) {
     });
 }
 
+// ---------- Pestaña Carga de la semana (alcance, Sección 6.2) ----------
+// Personas por días: las horas asignadas frente a la capacidad de cada día. El estado de cada día
+// (sobrecargado, con espacio, normal) lo calcula el servidor con la misma regla de Hoy.
+
+let lunes = inicioDeSemana(new Date());
+let cargaSemana = null;
+
+const diasDeLaSemana = () => Array.from({ length: 7 }, (_, indice) => fechaTexto(sumarDias(lunes, indice)));
+
+function crearEncabezadoCarga(dias) {
+    const hoy = fechaTexto(new Date());
+    const fila = crearElemento("tr");
+    const persona = crearElemento("th", "", "Persona");
+    persona.scope = "col";
+    fila.append(persona);
+    for (const fecha of dias) {
+        const celda = crearElemento("th", fecha === hoy ? "carga-hoy" : "",
+            fechaDesdeTexto(fecha).toLocaleDateString("es-CO", { weekday: "short", day: "numeric" }));
+        celda.scope = "col";
+        fila.append(celda);
+    }
+    const total = crearElemento("th", "", "Semana");
+    total.scope = "col";
+    fila.append(total);
+    const encabezado = crearElemento("thead");
+    encabezado.append(fila);
+    return encabezado;
+}
+
+function crearCeldaCarga(operario, fecha) {
+    const celda = crearElemento("td");
+    const jornada = operario.jornadas.find((j) => j.fecha === fecha);
+    const capacidad = jornada?.capacidad_min ?? operario.turnos[fecha]?.capacidad_min ?? cargaSemana.capacidad_min;
+    const boton = crearElemento("button", `celda-carga celda-carga-${(jornada?.estado || "vacia").toLowerCase()}`);
+    boton.type = "button";
+    if (jornada) {
+        boton.append(crearElemento("span", "cifra", duracionTexto(jornada.minutos)));
+        const barra = crearElemento("span", `avance-barra${jornada.estado === "SOBRECARGADO" ? " avance-barra-exceso" : ""}`);
+        barra.setAttribute("aria-hidden", "true");
+        const lleno = crearElemento("span", "avance-barra-lleno");
+        lleno.style.width = `${Math.min(100, jornada.porcentaje)}%`;
+        barra.append(lleno);
+        boton.append(barra);
+        if (jornada.estado === "SOBRECARGADO") {
+            boton.insertAdjacentHTML("afterbegin", icono("triangle-alert"));
+        }
+    } else {
+        boton.append(crearElemento("span", "texto-secundario", "—"));
+    }
+    const dia = fechaLarga(fechaDesdeTexto(fecha));
+    boton.setAttribute("aria-label", jornada
+        ? `${operario.nombre}, ${dia}: ${duracionTexto(jornada.minutos)} de ${duracionTexto(capacidad)}${jornada.estado === "SOBRECARGADO" ? ", sobrecargado" : ""}`
+        : `${operario.nombre}, ${dia}: sin trabajo asignado`);
+    boton.addEventListener("click", () => abrirDiaDePersona(operario, fecha, jornada, capacidad));
+    celda.append(boton);
+    return celda;
+}
+
+function pintarCarga() {
+    if (!cargaSemana) {
+        return;
+    }
+    const dias = diasDeLaSemana();
+    const formato = { day: "numeric", month: "long" };
+    document.getElementById("rango-semana").textContent =
+        `Del ${lunes.toLocaleDateString("es-CO", formato)} al ${sumarDias(lunes, 6).toLocaleDateString("es-CO", formato)}`;
+    const busqueda = document.getElementById("buscar-carga").value.trim().toLowerCase();
+    const visibles = cargaSemana.operarios.filter((o) => o.nombre.toLowerCase().includes(busqueda));
+    const cuerpo = crearElemento("tbody");
+    for (const operario of visibles) {
+        const fila = crearElemento("tr");
+        const nombre = crearElemento("th", "", operario.nombre);
+        nombre.scope = "row";
+        const semana = operario.jornadas.filter((j) => dias.includes(j.fecha)).reduce((suma, j) => suma + j.minutos, 0);
+        fila.append(nombre, ...dias.map((fecha) => crearCeldaCarga(operario, fecha)),
+            crearElemento("td", "cifra carga-total", semana ? duracionTexto(semana) : "—"));
+        cuerpo.append(fila);
+    }
+    document.getElementById("tabla-carga").replaceChildren(crearEncabezadoCarga(dias), cuerpo);
+    document.getElementById("sin-carga").hidden = visibles.length > 0;
+}
+
+// Un día de una persona en el panel lateral: su trabajo de ese día y, si hace falta, asignarle más.
+function abrirDiaDePersona(operario, fecha, jornada, capacidad) {
+    const delDia = ordenarActividades(actividades.filter((a) => a.fecha_programada === fecha
+        && a.estado !== "CANCELADA" && a.operarios.some((o) => o.id === operario.id)));
+    const resumen = crearElemento("p", "cifra", jornada
+        ? `${duracionTexto(jornada.minutos)} de ${duracionTexto(capacidad)} (${jornada.porcentaje} %)`
+        : `Sin trabajo asignado. Capacidad de ${duracionTexto(capacidad)}.`);
+    const lista = crearElemento("ul", "proyecto-actividades");
+    for (const actividad of delDia) {
+        const boton = crearElemento("button", "proyecto-actividad");
+        boton.type = "button";
+        boton.append(crearElemento("span", "", `${actividad.titulo} (${duracionTexto(actividad.tiempo_estimado_min)})`),
+            crearEstadoComoTexto(actividad.estado));
+        boton.addEventListener("click", () => formulario.abrirDetalle(actividad, { volverA: "Planeación" }));
+        const fila = crearElemento("li");
+        fila.append(boton);
+        lista.append(fila);
+    }
+    abrirPanelLateral({
+        marca: fechaLarga(fechaDesdeTexto(fecha)),
+        titulo: operario.nombre,
+        contenido: [resumen, ...(delDia.length ? [lista] : [])],
+        volverA: "Planeación",
+        acciones: [{
+            texto: "Nueva actividad este día", clase: "boton",
+            alHacer: async () => formulario.abrirNueva({ fecha_programada: fecha, operario_ids: [operario.id] }),
+        }],
+    });
+}
+
+async function cargarCarga() {
+    const desde = fechaTexto(lunes);
+    const hasta = fechaTexto(sumarDias(lunes, 6));
+    cargaSemana = await pedirApi(`/analisis/carga?desde=${desde}&hasta=${hasta}`);
+    pintarCarga();
+}
+
+function moverSemana(semanas) {
+    lunes = semanas === 0 ? inicioDeSemana(new Date()) : sumarDias(lunes, semanas * 7);
+    cargarCarga().catch((error) => mostrarAviso(error.message, "advertencia"));
+}
+
 // ---------- Encabezado y carga ----------
 
 function pintarResumen() {
@@ -284,6 +409,7 @@ async function cargar() {
     try {
         [actividades, proyectos] = await Promise.all([pedirApi("/actividades"), pedirApi("/proyectos")]);
         pintar();
+        await cargarCarga();
     } catch (error) {
         mostrarAviso(`No se pudieron cargar las actividades: ${error.message}`, "advertencia");
     }
@@ -301,6 +427,14 @@ iniciarPaginaProtegida(["ADMINISTRADOR"]).then(async (usuario) => {
         alGuardar: cargar,
     });
     document.getElementById("accion-principal").addEventListener("click", () => ACCION_POR_VISTA[vista]?.alHacer());
+    const anterior = document.getElementById("semana-anterior");
+    const siguiente = document.getElementById("semana-siguiente");
+    anterior.insertAdjacentHTML("afterbegin", icono("chevron-left"));
+    siguiente.insertAdjacentHTML("afterbegin", icono("chevron-right"));
+    anterior.addEventListener("click", () => moverSemana(-1));
+    siguiente.addEventListener("click", () => moverSemana(1));
+    document.getElementById("semana-actual").addEventListener("click", () => moverSemana(0));
+    document.getElementById("buscar-carga").addEventListener("input", pintarCarga);
     iniciarPestanas(document.querySelector(".pestanas"), (elegida) => {
         vista = elegida;
         pintarAccionPrincipal();

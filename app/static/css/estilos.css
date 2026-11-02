@@ -2025,365 +2025,6 @@ fieldset.grupo-botones {
     }
 }
 
-/* ================= Administrador: tablero del turno (alcance, Sección 6.5) =================
-   La planilla de la planta: una fila por persona, las horas de izquierda a derecha y la línea "Ahora".
-   En celular se desplaza de lado y el nombre de cada persona queda fijo a la izquierda. */
-
-.tablero-cabecera {
-    flex-wrap: wrap;
-}
-
-.leyenda-tablero {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--e2) var(--e4);
-    padding: var(--e3) var(--e5) 0;
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-}
-
-.leyenda-tablero-item {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--e2);
-}
-
-.leyenda-muestra {
-    display: inline-block;
-    width: var(--e5);
-    height: var(--e3);
-    border: 1px solid transparent;
-    border-radius: var(--e1);
-}
-
-.leyenda-muestra.tablero-pendiente {
-    border-color: var(--borde-control);
-    background: var(--superficie);
-}
-
-.leyenda-muestra.tablero-fuera-turno,
-.leyenda-muestra.tablero-sobrecarga {
-    position: static;
-}
-
-.aviso-tablero {
-    margin: var(--e3) var(--e5) 0;
-}
-
-.tablero-desplazable {
-    overflow-x: auto;
-    padding: var(--e3) 0 var(--e4);
-}
-
-.tablero {
-    --ancho-persona: 13rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    min-width: calc(var(--ancho-persona) + var(--horas-tablero, 12) * 8rem);   /* 30 min caben en 4 rem */
-}
-
-.tablero-fila {
-    display: grid;
-    grid-template-columns: var(--ancho-persona) minmax(0, 1fr);
-    border-bottom: 1px solid var(--borde);
-}
-
-.tablero-fila:last-child {
-    border-bottom: none;
-}
-
-.tablero-persona {
-    position: sticky;
-    left: 0;
-    z-index: 3;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: var(--e1);
-    padding: var(--e3) var(--e4) var(--e3) var(--e5);
-    background: var(--superficie);
-    border-right: 1px solid var(--borde);
-}
-
-.tablero-nombre {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.tablero-horas-persona {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-}
-
-.tablero-persona-sobrecarga {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--e1);
-    color: var(--error-texto);
-    font-weight: var(--peso-fuerte);
-}
-
-.tablero-barra {
-    height: var(--e1);
-    border-radius: 999px;
-    background: var(--neutro-suave);
-    overflow: hidden;
-}
-
-.tablero-barra-relleno {
-    display: block;
-    height: 100%;
-    background: var(--principal);
-}
-
-.tablero-barra-relleno.sobrecarga {
-    background: var(--error);
-}
-
-.tablero-carril {
-    position: relative;
-    min-height: 4rem;
-    cursor: copy;
-}
-
-.tablero-horas .tablero-carril {
-    min-height: var(--e6);
-    cursor: default;
-}
-
-.tablero-horas .tablero-persona {
-    padding-block: 0;
-}
-
-.tablero-hora {
-    position: absolute;
-    top: var(--e2);
-    transform: translateX(-50%);
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-}
-
-.tablero-hora:first-child {
-    transform: none;
-    padding-left: var(--e1);
-}
-
-.tablero-linea-hora {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    border-left: 1px dotted var(--borde);
-}
-
-/* Lo que no es turno, rayado en gris; lo que pasa del fin del turno, rayado en rojo (sobrecarga). */
-.tablero-fuera-turno,
-.tablero-sobrecarga {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    pointer-events: none;
-}
-
-.tablero-fuera-turno {
-    background: repeating-linear-gradient(135deg, var(--neutro-suave) 0 var(--e1), transparent var(--e1) var(--e3));
-}
-
-.tablero-sobrecarga {
-    z-index: 2;
-    /* Va encima de las tarjetas: entre franjas queda transparente para que su texto se siga leyendo. */
-    background: repeating-linear-gradient(135deg, var(--sobrecarga) 0 var(--e1), transparent var(--e1) var(--e3));
-}
-
-/* La línea "Ahora", en el color principal, cruza todas las filas (Gestalt: continuidad). */
-.tablero-ahora {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: 2;
-    border-left: 2px solid var(--principal);
-    pointer-events: none;
-}
-
-.tablero-ahora-etiqueta {
-    position: absolute;
-    bottom: 0;
-    transform: translateX(-50%);
-    padding: 0 var(--e2);
-    border-radius: var(--e1);
-    background: var(--principal);
-    color: var(--texto-sobre-color);
-    font-size: var(--tamano-etiqueta);
-    white-space: nowrap;
-}
-
-/* Cada actividad es una tarjeta en su hora. */
-/* El título va en dos renglones como máximo: una actividad corta se reconoce por su nombre, no por "Insp…". */
-.tarjeta-tablero {
-    position: absolute;
-    top: var(--e2);
-    height: 2.75rem;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    gap: var(--e1);
-    min-width: var(--e2);
-    padding: 0 var(--e2);
-    overflow: hidden;
-    border: 1px solid var(--borde-control);
-    border-radius: var(--radio-control);
-    background: var(--superficie);
-    color: var(--texto);
-    font: inherit;
-    font-size: var(--tamano-etiqueta);
-    font-weight: var(--peso-fuerte);
-    line-height: 1.2;
-    text-align: start;
-    cursor: pointer;
-}
-
-.tarjeta-tablero > span {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-}
-
-.tarjeta-angosta .icono {
-    display: none;
-}
-
-.tarjeta-tablero .icono {
-    flex-shrink: 0;
-}
-
-.tablero-en-curso {
-    border-color: var(--principal);
-    background: var(--principal);
-    color: var(--texto-sobre-color);
-}
-
-.tablero-proyeccion {
-    border: 1px dashed var(--principal);
-    background: var(--principal-suave);
-    color: var(--principal-hover);
-}
-
-.tablero-trabajada {
-    border-color: transparent;
-    background: var(--advertencia-suave);
-    color: var(--advertencia-texto);
-}
-
-.tablero-hecha {
-    border-color: transparent;
-    background: var(--exito-suave);
-    color: var(--exito-texto);
-}
-
-.tablero-aproximada {
-    border-style: dashed;
-}
-
-/* Solo lo urgente por hacer es un bloque rojo lleno (alcance, Sección 6.3). */
-.tablero-urgente {
-    border-color: var(--error);
-    background: var(--error);
-    color: var(--texto-sobre-color);
-}
-
-.tarjeta-tablero:focus-visible {
-    outline: 3px solid var(--principal);
-    outline-offset: 2px;
-}
-
-/* Las de horario flexible de otro día, que todavía no tienen hora. */
-.tablero-sin-hora {
-    position: sticky;
-    left: 0;
-    grid-column: 1 / -1;
-    max-width: var(--ancho-visible, 100%);
-    box-sizing: border-box;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e2);
-    padding: 0 var(--e5) var(--e3);
-}
-
-.tablero-sin-hora-titulo {
-    color: var(--texto-secundario);
-    font-size: var(--tamano-etiqueta);
-}
-
-.tablero-ficha-sin-hora {
-    position: static;
-    min-height: var(--alto-control);
-}
-
-/* Por atender: actividades del día sin nadie (nunca asignadas o devueltas). */
-.fila-por-atender {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--e3);
-    padding: var(--e3) var(--e5);
-    border-bottom: 1px solid var(--borde);
-}
-
-.fila-por-atender:last-child {
-    border-bottom: none;
-}
-
-.fila-por-atender p {
-    margin: var(--e1) 0 0;
-}
-
-.fila-por-atender-acciones {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--e3);
-}
-
-.seccion-apoyo .fila-por-atender {
-    padding-inline: 0;
-}
-
-.seccion-apoyo .fila-por-atender:first-child {
-    border-top: 1px solid var(--borde);
-}
-
-/* Sin panel, el mensaje vacío va pegado a su título, alineado a la izquierda. */
-.seccion-apoyo .estado-vacio {
-    padding: 0;
-    text-align: start;
-}
-
-@media (max-width: 50em) {
-    .tablero {
-        --ancho-persona: 8.5rem;
-        min-width: calc(var(--ancho-persona) + var(--horas-tablero, 12) * 6rem);
-    }
-
-    .tablero-persona {
-        padding-inline: var(--e4) var(--e2);
-    }
-
-    .leyenda-tablero,
-    .tablero-sin-hora,
-    .fila-por-atender {
-        padding-inline: var(--e4);
-    }
-
-    .aviso-tablero {
-        margin-inline: var(--e4);
-    }
-}
-
 /* ================= Información de la actividad (alcance, Sección 5.1) ================= */
 
 /* Editor del Administrador: primero se eligen los bloques; cada bloque elegido muestra su campo. */
@@ -3263,6 +2904,7 @@ fieldset.grupo-botones {
 
 .detalle-op-cuerpo {
     display: grid;
+    align-content: start;       /* El contenido arriba: el espacio que sobra queda al final, no entre bloques. */
     gap: var(--e5);
     flex: 1;
     overflow-y: auto;
@@ -3873,6 +3515,11 @@ fieldset.grupo-botones {
     border-top: 1px solid var(--borde);
 }
 
+.proyecto-actividad .estado-texto {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 .proyecto-actividad {
     display: flex;
     justify-content: space-between;
@@ -3887,6 +3534,121 @@ fieldset.grupo-botones {
     font: inherit;
     text-align: left;
     cursor: pointer;
+}
+
+/* Planeación, Carga de la semana: personas por días. La columna de la persona queda fija al desplazar. */
+.carga-controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--e3) var(--e5);
+    margin-bottom: var(--e4);
+}
+
+.carga-controles p {
+    margin: 0;
+}
+
+.carga-rango {
+    font-weight: var(--peso-fuerte);
+}
+
+.carga-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--e3);
+}
+
+.tabla-carga-desplazable {
+    overflow-x: auto;
+}
+
+.tabla-carga {
+    width: 100%;
+    min-width: 66rem;           /* Si no cabe, la tabla se desplaza de lado: las cifras no se parten. */
+    border-collapse: collapse;
+    table-layout: fixed;        /* Los siete días del mismo ancho, tengan o no trabajo. */
+}
+
+.tabla-carga th:first-child {
+    width: 10rem;
+}
+
+.tabla-carga th:last-child {
+    width: 7rem;
+}
+
+.tabla-carga th,
+.tabla-carga td {
+    padding: var(--e1);
+    border-bottom: 1px solid var(--borde);
+    text-align: left;
+}
+
+.tabla-carga thead th {
+    padding: var(--e2) var(--e1);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+    font-weight: var(--peso-fuerte);
+}
+
+.tabla-carga thead .carga-hoy {
+    color: var(--principal-hover);
+}
+
+.tabla-carga tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 9rem;
+    background: var(--fondo);
+    font-weight: var(--peso-fuerte);
+}
+
+.celda-carga {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--e1);
+    width: 100%;
+    min-height: var(--alto-control);
+    padding: var(--e1) var(--e2);
+    border: 0;
+    border-radius: var(--radio-control);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.celda-carga > .cifra {
+    white-space: nowrap;
+}
+
+.celda-carga > .avance-barra {
+    grid-column: 1 / -1;
+}
+
+.celda-carga:hover {
+    background: var(--superficie);
+}
+
+.celda-carga .icono {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Lo que se pasa: texto rojo con su ícono, además de la barra (regla 1 de la Sección 6.3). */
+.celda-carga-sobrecargado {
+    color: var(--error-texto);
+    font-weight: var(--peso-fuerte);
+}
+
+.carga-total {
+    color: var(--texto-secundario);
+    white-space: nowrap;
 }
 
 /* Hoy, Pendientes: grupos de lo más urgente a lo menos; cada fila con sus acciones a la derecha. */

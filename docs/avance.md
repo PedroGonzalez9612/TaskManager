@@ -550,9 +550,11 @@ Indicadores y Administración, con submenús como pestañas.
   reportes y sobrecargados; el menú muestra cuántos hay), Personas (lista con filtros y buscador, y el día de
   cada una en el panel lateral, con "Reasignar") y Asistencia. Servidor: `HoyService`, rutas `/hoy/personas`
   y `/hoy/pendientes` (10 pruebas). Con esto queda hecho el **aviso de posible ausencia** (criterio 7).
-- **Planeación (primera parte):** Actividades y Proyectos en pestañas, con el detalle en el panel lateral.
-  Falta la pestaña Carga de la semana.
-- **Pendiente:** Carga de la semana, Administración, Indicadores y la revisión final. La reasignación
+- **Planeación:** Actividades, Carga de la semana y Proyectos en pestañas, con el detalle en el panel
+  lateral. Carga de la semana es una tabla de personas por días con las horas asignadas frente a la
+  capacidad; cada día abre el trabajo de esa persona y deja asignarle más. `GET /analisis/carga` trae el
+  estado de cada día con la misma regla de Hoy. Se retiró el tablero por horas (`admin/equipo.*` y su CSS).
+- **Pendiente:** Administración, Indicadores y la revisión final. La reasignación
   automática de lo no reasignado a la siguiente jornada ya la hace el cierre de jornada. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
 

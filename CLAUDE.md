@@ -77,7 +77,8 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   detalle del Administrador es un panel lateral (`abrirPanelLateral` y `abrirDetalleActividad` en
   `js/actividades-comun.js`). El estado de una persona (presencia, actividad, carga) sale de
   `app/models/presencia.py` y sus nombres de `NOMBRE_PRESENCIA` en `api.js`; nunca se calcula en el navegador.
-  El tablero por horas (`admin/equipo.js`) ya no está en el menú: lo reemplaza Carga de la semana. Semana
+  Planeación (`admin/actividades.js`): Actividades, Carga de la semana (tabla personas por días con
+  `GET /analisis/carga`, que trae el `estado` de cada día) y Proyectos. El tablero por horas se retiró. Semana
   del Operario (`operario/semana.js`, clases `semana-*`) es un calendario propio que pide
   `GET /programacion-de-la-semana`; Resumen (`operario/resumen.js`) usa `GET /analisis/indicadores`; Actividades del Administrador tiene filtros y lista agrupada por día.
   Qué falta del MVP y del producto: ver "Estado de los criterios del MVP" en `docs/avance.md`.

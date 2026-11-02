@@ -9,7 +9,7 @@
 </head>
 <body class="cargando">
     <!-- Planeación del Administrador (alcance, Sección 6.2): el trabajo de cualquier día. Pestañas: las
-         actividades y los proyectos (la carga de la semana se agrega después). El detalle se abre en el
+         actividades, la carga de la semana (personas por días) y los proyectos. El detalle se abre en el
          panel lateral. -->
     <main class="principal">
         <div class="encabezado-pagina">
@@ -22,6 +22,7 @@
 
         <div class="pestanas" role="tablist" aria-label="Planeación">
             <button type="button" role="tab" id="pestana-actividades" aria-controls="vista-actividades" data-vista="actividades">Actividades</button>
+            <button type="button" role="tab" id="pestana-carga" aria-controls="vista-carga" data-vista="carga">Carga de la semana</button>
             <button type="button" role="tab" id="pestana-proyectos" aria-controls="vista-proyectos" data-vista="proyectos">Proyectos</button>
         </div>
 
@@ -32,6 +33,29 @@
                 <strong id="sin-actividades-titulo">Sin actividades</strong>
                 <span id="sin-actividades-texto">Crea una actividad y asígnala a uno o varios operarios.</span>
             </div>
+        </section>
+
+        <section id="vista-carga" role="tabpanel" aria-labelledby="pestana-carga" class="vista-pestana" hidden>
+            <div class="carga-controles">
+                <div>
+                    <p id="rango-semana" class="carga-rango"></p>
+                    <p class="texto-secundario">Horas asignadas frente a la capacidad de cada día. Abre un día para ver su trabajo o asignarle más.</p>
+                </div>
+                <div class="carga-acciones">
+                    <label class="solo-lectores" for="buscar-carga">Buscar persona</label>
+                    <input id="buscar-carga" type="search" class="buscar-persona" placeholder="Buscar persona" autocomplete="off">
+                    <fieldset class="grupo-botones">
+                        <legend class="solo-lectores">Cambiar de semana</legend>
+                        <button type="button" id="semana-anterior" class="boton-secundario" aria-label="Semana anterior"></button>
+                        <button type="button" id="semana-actual" class="boton-secundario">Esta semana</button>
+                        <button type="button" id="semana-siguiente" class="boton-secundario" aria-label="Semana siguiente"></button>
+                    </fieldset>
+                </div>
+            </div>
+            <div class="tabla-carga-desplazable">
+                <table id="tabla-carga" class="tabla-carga"></table>
+            </div>
+            <p id="sin-carga" class="estado-vacio" hidden>Nadie en esta búsqueda.</p>
         </section>
 
         <section id="vista-proyectos" role="tabpanel" aria-labelledby="pestana-proyectos" class="vista-pestana" hidden>

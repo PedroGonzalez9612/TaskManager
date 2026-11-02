@@ -118,3 +118,13 @@ def test_rutas_de_hoy(cliente_de, empresa):
     assert admin.get("/hoy/personas").status_code == 200
     assert admin.get("/hoy/pendientes").get_json()["total"] == 0
     assert cliente_de(empresa.ana).get("/hoy/personas").status_code == 403
+
+
+# ---------- La misma regla de carga en la carga por jornada (Planeación, Carga de la semana) ----------
+
+def test_la_carga_por_jornada_trae_su_estado_y_la_capacidad_del_turno(servicios, empresa, crear_actividad, madrugada):
+    crear_actividad([empresa.ana], tiempo_estimado_min=500)
+    carga = servicios.carga.consultar("2026-10-10", "2026-10-11", empresa.admin)
+    ana = next(o for o in carga["operarios"] if o["id"] == empresa.ana["id"])
+    assert ana["jornadas"][0]["estado"] == "SOBRECARGADO"
+    assert ana["turnos"]["2026-10-11"]["capacidad_min"] == 450     # Un día sin trabajo también dice su capacidad.

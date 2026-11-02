@@ -2,6 +2,7 @@ from collections import defaultdict
 from datetime import date, timedelta
 
 from app.models.enums import EstadoActividad, Rol
+from app.models.presencia import estado_de_carga
 from app.utils.errors import ProhibidoError
 from app.utils.fechas import validar_fecha
 
@@ -20,10 +21,11 @@ def _dias(fecha_desde: str, fecha_hasta: str) -> list:
 
 
 def _resumen_turno(turno) -> dict | None:
-    """El horario del turno de ese día, o None si el operario no tiene turno."""
+    """El horario del turno de ese día y su capacidad, o None si el operario no tiene turno."""
     if turno is None:
         return None
-    return {"nombre": turno.nombre, "hora_inicio": turno.hora_inicio, "hora_fin": turno.hora_fin}
+    return {"nombre": turno.nombre, "hora_inicio": turno.hora_inicio, "hora_fin": turno.hora_fin,
+            "capacidad_min": turno.capacidad_min}
 
 
 # Capacidad provisional de una jornada en minutos (turno de 8 h menos 1 h de descanso). Se usa para
@@ -122,4 +124,6 @@ class CargaService:
             "capacidad_min": capacidad_min,
             "porcentaje": round(minutos * 100 / capacidad_min),
             "sobrecarga": minutos > capacidad_min,
+            # La misma regla de Hoy (alcance, Sección 5.1): sobrecargado, con espacio o normal.
+            "estado": estado_de_carga(minutos, capacidad_min).value,
         }

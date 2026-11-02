@@ -94,34 +94,6 @@ function textoProgramada(actividad) {
     return actividad.hora_programada ? `${fecha}, ${actividad.hora_programada}` : `${fecha}, horario flexible`;
 }
 
-// ---------- Horario: lo que comparte el tablero de Equipo ----------
-
-// Las canceladas no se dibujan en el horario: ya no son trabajo de nadie ni suman a la carga.
-// Siguen en la vista Actividades del Administrador, con su motivo.
-function actividadesDelHorario(actividades) {
-    return actividades.filter((actividad) => actividad.estado !== "CANCELADA");
-}
-
-// Los ratos que de verdad trabajó: del inicio al fin (o a ahora), sin las pausas.
-function segmentosTrabajados(ejecucion) {
-    const fin = ejecucion.fecha_fin ? new Date(ejecucion.fecha_fin) : new Date();
-    const pausas = (ejecucion.pausas || [])
-        .map((pausa) => [new Date(pausa.inicio), pausa.fin ? new Date(pausa.fin) : fin])
-        .sort((a, b) => a[0] - b[0]);
-    const segmentos = [];
-    let desde = new Date(ejecucion.fecha_inicio);
-    for (const [inicioPausa, finPausa] of pausas) {
-        if (inicioPausa > desde) {
-            segmentos.push([desde, inicioPausa]);
-        }
-        desde = new Date(Math.max(desde, finPausa));
-    }
-    if (fin > desde) {
-        segmentos.push([desde, fin]);
-    }
-    return segmentos;
-}
-
 // ---------- Panel lateral del Administrador (alcance, Sección 6.2) ----------
 // En computador va a la derecha y no tapa la lista ni el tablero; en celular ocupa toda la pantalla. Lo
 // usan el detalle de una actividad y el de un proyecto. Uno a la vez: abrir otro reemplaza al anterior.
