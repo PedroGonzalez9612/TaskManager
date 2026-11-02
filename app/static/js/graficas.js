@@ -105,7 +105,9 @@ function pintarGrafica(contenedor, { id, titulo, descripcion, tipo, etiquetas, s
             responsive: true,
             maintainAspectRatio: false,
             animation: false,
-            interaction: { mode: "index", intersect: false },
+            // La ventanita toma la fila o la columna bajo el puntero: en las barras acostadas, por la
+            // altura (eje y); si no, Chart.js busca por x y muestra siempre la misma fila.
+            interaction: { mode: "index", intersect: false, axis: horizontal ? "y" : "x" },
             scales: horizontal ? { x: ejeValores, y: ejeEtiquetas } : { x: ejeEtiquetas, y: ejeValores },
             plugins: {
                 legend: {
