@@ -4,6 +4,7 @@
 
 let lunes = inicioDeSemana(new Date());
 let datos = null;
+let tendencia = [];
 
 const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
 const porcentaje = (valor) => (valor === null || valor === undefined ? "Sin datos" : `${valor} %`);
@@ -201,6 +202,112 @@ function pintarActividad() {
     document.getElementById("sin-proyectos").hidden = datos.proyectos.length > 0;
 }
 
+// ---------- Gráficas (alcance, Sección 7: Chart.js). Cada una lleva también su tabla ----------
+
+const formatoPorcentaje = (valor) => (valor === null || valor === undefined ? "Sin datos" : `${Math.round(valor)} %`);
+const formatoTiempo = (valor) => duracionTexto(Math.round(valor || 0));
+const etiquetaSemana = (fecha) => fechaDesdeTexto(fecha).toLocaleDateString("es-CO", { day: "numeric", month: "short" });
+
+// ¿Vamos mejorando? Tres indicadores en las últimas 8 semanas (una sola escala: todos son porcentajes).
+function pintarTendencia() {
+    const contenedor = document.getElementById("grafica-tendencia");
+    const titulo = "Tendencia de las últimas 8 semanas (cada punto es una semana, desde su lunes)";
+    if (!tendencia.some((s) => s.cumplimiento_jornada !== null || s.cumplimiento_actividades !== null || s.aprovechamiento !== null)) {
+        pintarSinDatos(contenedor, titulo, "Todavía no hay semanas con jornadas terminadas para comparar.");
+        return;
+    }
+    const ultima = tendencia.at(-1);
+    pintarGrafica(contenedor, {
+        id: "lienzo-tendencia", titulo, tipo: "linea", formato: formatoPorcentaje,
+        etiquetas: tendencia.map((s) => etiquetaSemana(s.desde)),
+        series: [
+            { nombre: "Cumplimiento de jornada", valores: tendencia.map((s) => s.cumplimiento_jornada) },
+            { nombre: "Cumplimiento de actividades", valores: tendencia.map((s) => s.cumplimiento_actividades) },
+            { nombre: "Aprovechamiento", valores: tendencia.map((s) => s.aprovechamiento) },
+        ],
+        descripcion: `Tendencia de 8 semanas. La última: cumplimiento de jornada ${formatoPorcentaje(ultima.cumplimiento_jornada)}, `
+            + `de actividades ${formatoPorcentaje(ultima.cumplimiento_actividades)} y aprovechamiento ${formatoPorcentaje(ultima.aprovechamiento)}.`,
+    });
+}
+
+// ¿Qué nos frena? El tiempo en pausa por motivo, de todos, y las devoluciones por motivo.
+function pintarMotivos() {
+    const minutos = new Map();
+    for (const operario of datos.operarios) {
+        for (const motivo of operario.detalle.pausas_por_motivo) {
+            minutos.set(motivo.motivo, (minutos.get(motivo.motivo) || 0) + motivo.minutos);
+        }
+    }
+    const pausas = [...minutos].sort((a, b) => b[1] - a[1]);
+    const contenedorPausas = document.getElementById("grafica-pausas");
+    if (pausas.length) {
+        pintarGrafica(contenedorPausas, {
+            id: "lienzo-pausas", titulo: "Tiempo en pausa por motivo", tipo: "barras", horizontal: true, formato: formatoTiempo,
+            etiquetas: pausas.map(([motivo]) => motivo),
+            series: [{ nombre: "Tiempo en pausa", valores: pausas.map(([, valor]) => valor) }],
+            eje: ejeEnHoras([{ valores: pausas.map(([, valor]) => valor) }]),
+            descripcion: `El motivo con más tiempo en pausa es ${pausas[0][0]}, con ${formatoTiempo(pausas[0][1])}.`,
+        });
+    } else {
+        pintarSinDatos(contenedorPausas, "Tiempo en pausa por motivo", "Nadie pausó actividades esta semana.");
+    }
+    const devoluciones = datos.empresa.pendientes.devoluciones_por_motivo;
+    const contenedorDevoluciones = document.getElementById("grafica-devoluciones");
+    if (devoluciones.length) {
+        pintarGrafica(contenedorDevoluciones, {
+            id: "lienzo-devoluciones", titulo: "Devoluciones por motivo", tipo: "barras", horizontal: true,
+            formato: (valor) => String(Math.round(valor)), eje: ejeEnCantidades,
+            etiquetas: devoluciones.map((d) => d.motivo),
+            series: [{ nombre: "Devoluciones", valores: devoluciones.map((d) => d.cantidad) }],
+            descripcion: `El motivo más frecuente de devolución es ${devoluciones[0].motivo}, con ${devoluciones[0].cantidad}.`,
+        });
+    } else {
+        pintarSinDatos(contenedorDevoluciones, "Devoluciones por motivo", "Nadie devolvió actividades esta semana.");
+    }
+}
+
+// ¿Quién tiene la carga desbalanceada? Horas en actividades frente a horas programadas, en orden alfabético.
+function pintarGraficaPersonas() {
+    const contenedor = document.getElementById("grafica-personas");
+    const titulo = "Horas en actividades frente a las programadas";
+    const personas = [...datos.operarios].sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
+    if (!personas.some((o) => o.jornada.programado_min)) {
+        pintarSinDatos(contenedor, titulo, "Ninguna jornada terminó esta semana.");
+        return;
+    }
+    pintarGrafica(contenedor, {
+        id: "lienzo-personas", titulo, tipo: "barras", horizontal: true, formato: formatoTiempo,
+        etiquetas: personas.map((o) => o.nombre),
+        series: [
+            { nombre: "En actividades", valores: personas.map((o) => o.jornada.actividades_min) },
+            { nombre: "Programado", valores: personas.map((o) => o.jornada.programado_min) },
+        ],
+        descripcion: "Por persona, en orden alfabético: las horas en actividades frente a las horas programadas de la semana.",
+        eje: ejeEnHoras([{ valores: personas.flatMap((o) => [o.jornada.actividades_min, o.jornada.programado_min]) }]),
+    });
+}
+
+// ¿En qué tipo de trabajo estimamos mal? Lo estimado frente a lo real de lo finalizado, por categoría.
+function pintarGraficaCategorias() {
+    const contenedor = document.getElementById("grafica-categorias");
+    const titulo = "Lo estimado frente a lo real, por categoría";
+    const categorias = datos.categorias.filter((c) => c.actividades.estimado_min);
+    if (!categorias.length) {
+        pintarSinDatos(contenedor, titulo, "Todavía no hay actividades finalizadas esta semana.");
+        return;
+    }
+    pintarGrafica(contenedor, {
+        id: "lienzo-categorias", titulo, tipo: "barras", formato: formatoTiempo,
+        etiquetas: categorias.map((c) => NOMBRE_CATEGORIA[c.categoria] || c.categoria),
+        series: [
+            { nombre: "Estimado", valores: categorias.map((c) => c.actividades.estimado_min) },
+            { nombre: "Real", valores: categorias.map((c) => c.actividades.real_min) },
+        ],
+        descripcion: "Por categoría, el tiempo estimado frente al tiempo real de las actividades finalizadas.",
+        eje: ejeEnHoras([{ valores: categorias.flatMap((c) => [c.actividades.estimado_min, c.actividades.real_min]) }]),
+    });
+}
+
 // ---------- Carga ----------
 
 async function cargar() {
@@ -210,11 +317,18 @@ async function cargar() {
         `Semana del ${lunes.toLocaleDateString("es-CO", formato)} al ${domingo.toLocaleDateString("es-CO", formato)}`;
     const mensaje = document.getElementById("mensaje");
     try {
-        datos = await pedirApi(`/analisis/indicadores?desde=${fechaTexto(lunes)}&hasta=${fechaTexto(domingo)}`);
+        [datos, tendencia] = await Promise.all([
+            pedirApi(`/analisis/indicadores?desde=${fechaTexto(lunes)}&hasta=${fechaTexto(domingo)}`),
+            pedirApi(`/analisis/indicadores/tendencia?hasta=${fechaTexto(domingo)}&semanas=8`),
+        ]);
         mensaje.hidden = true;
         pintarEmpresa();
         pintarPersonas();
         pintarActividad();
+        pintarTendencia();
+        pintarMotivos();
+        pintarGraficaPersonas();
+        pintarGraficaCategorias();
     } catch (error) {
         mensaje.hidden = false;
         mensaje.textContent = `No se pudieron calcular los indicadores: ${error.message}`;

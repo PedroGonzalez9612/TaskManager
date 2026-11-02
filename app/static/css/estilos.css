@@ -112,6 +112,13 @@
     --alto-barra-inferior: 3.8rem;  /* La barra de vistas en celular: el contenido deja este espacio abajo */
     --alto-barra-superior: 3.75rem; /* La barra superior: el panel lateral empieza debajo de ella */
     --ancho-panel-lateral: 26rem;   /* El detalle del Administrador en computador */
+
+    /* ---- Gráficas: tres colores de datos, validados para daltonismo (scripts del dataviz, 2026-11-02).
+       No son los de estado (rojo, ámbar, verde) ni el principal, que como dato se lee gris. Bajo 3:1 sobre
+       blanco el aqua y el magenta: por eso cada gráfica lleva su tabla y sus puntos con forma propia. */
+    --grafica-1: #2A78D6;
+    --grafica-2: #1BAF7A;
+    --grafica-3: #E87BA4;
 }
 
 /* El tamaño que el usuario tenga en su navegador (16 px si no lo ha cambiado). */
@@ -3675,6 +3682,46 @@ fieldset.grupo-botones {
 .carga-total {
     color: var(--texto-secundario);
     white-space: nowrap;
+}
+
+/* Gráficas: título, lienzo y, debajo, la tabla con los mismos datos. */
+.grafica {
+    margin: var(--e5) 0;
+}
+
+.grafica-titulo {
+    margin-bottom: var(--e3);
+    font-weight: var(--peso-fuerte);
+}
+
+.grafica-lienzo {
+    position: relative;
+    height: 16rem;
+}
+
+.grafica-datos {
+    margin-top: var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+}
+
+.grafica-datos summary {
+    min-height: var(--alto-control);
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.grafica-datos .tabla {
+    margin-top: var(--e2);
+    color: var(--texto);
+}
+
+/* Dos gráficas lado a lado en computador; una debajo de la otra en celular. */
+.graficas-par {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    gap: 0 var(--e6);
 }
 
 /* Indicadores (alcance, Secciones 5.2 y 6.2): en una sola franja, como frases; no una tarjeta por número. */

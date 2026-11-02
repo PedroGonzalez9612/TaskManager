@@ -35,11 +35,17 @@
         <section id="vista-empresa" role="tabpanel" aria-labelledby="pestana-empresa" class="vista-pestana">
             <p class="texto-secundario">Solo cuentan las jornadas que ya terminaron.</p>
             <dl id="indicadores-empresa" class="indicadores"></dl>
+            <div id="grafica-tendencia"></div>
+            <div class="graficas-par">
+                <div id="grafica-pausas"></div>
+                <div id="grafica-devoluciones"></div>
+            </div>
             <h2 class="indicadores-subtitulo">Lo que quedó pendiente</h2>
             <ul id="pendientes-empresa" class="indicadores-pendientes"></ul>
         </section>
 
         <section id="vista-personas" role="tabpanel" aria-labelledby="pestana-personas" class="vista-pestana" hidden>
+            <div id="grafica-personas"></div>
             <div class="personas-controles">
                 <label class="solo-lectores" for="buscar-persona">Buscar persona</label>
                 <input id="buscar-persona" type="search" class="buscar-persona" placeholder="Buscar persona" autocomplete="off">
@@ -52,6 +58,7 @@
         </section>
 
         <section id="vista-actividad" role="tabpanel" aria-labelledby="pestana-actividad" class="vista-pestana" hidden>
+            <div id="grafica-categorias"></div>
             <h2 class="indicadores-subtitulo">Por categoría</h2>
             <ul id="por-categoria" class="lista-admin"></ul>
             <h2 class="indicadores-subtitulo">Por proyecto</h2>
@@ -64,6 +71,8 @@
     <script src="/static/vendor/lucide/iconos.js"></script>
     <script src="/static/js/layout.js"></script>
     <script src="/static/js/actividades-comun.js"></script>
+    <script src="/static/vendor/chartjs/chart.umd.min.js"></script>
+    <script src="/static/js/graficas.js"></script>
     <script src="/static/admin/indicadores.js"></script>
 </body>
 </html>

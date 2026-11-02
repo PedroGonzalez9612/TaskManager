@@ -561,6 +561,10 @@ Indicadores y Administración, con submenús como pestañas.
 - **Indicadores:** Empresa (los indicadores en una franja, como frases, y lo que quedó pendiente), Por persona
   (en orden alfabético, sin ranking; cada persona abre su asistencia, lo que finalizó y sus pausas) y Por
   actividad (categoría y proyecto). Usa `GET /analisis/indicadores`, sin cambios en el servidor.
+- **Gráficas en Indicadores (Chart.js):** tendencia de 8 semanas (`GET /analisis/indicadores/tendencia`, 4
+  pruebas), pausas y devoluciones por motivo, horas en actividades frente a programadas por persona, y lo
+  estimado frente a lo real por categoría. Tres colores propios de las gráficas, validados para daltonismo;
+  cada gráfica con su tabla. Los reportes (imprimir o exportar) quedan como ampliación futura.
 - **Pendiente:** la revisión final (contraste, capturas, auditoría de diseño, CSS sin uso). La reasignación
   automática de lo no reasignado a la siguiente jornada ya la hace el cierre de jornada. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.

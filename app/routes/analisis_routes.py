@@ -26,4 +26,11 @@ def create_blueprint(db, reloj=None):
         resultado = indicador_service.consultar(request.args.get("desde"), request.args.get("hasta"), usuario_actual())
         return jsonify(resultado), 200
 
+    @bp.get("/indicadores/tendencia")
+    @requiere_rol(Rol.ADMINISTRADOR, Rol.OPERARIO)
+    def tendencia():
+        """Los indicadores semana por semana (?hasta=AAAA-MM-DD&semanas=8), para la gráfica de tendencia."""
+        resultado = indicador_service.tendencia(request.args.get("hasta"), request.args.get("semanas", 8), usuario_actual())
+        return jsonify(resultado), 200
+
     return bp

@@ -95,8 +95,9 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   `app/utils/seguridad.py`). Cualquier llamada nueva a la API debe pasar por `pedirApi`.
 - Errores de negocio: lanzar subclases de `ErrorApi` (`app/utils/errors.py`); un solo manejador las
   convierte en JSON con su código HTTP.
-- Bibliotecas de interfaz copiadas en `app/static/vendor/` (sin CDN ni compilación): Chart.js (gráficas;
-  hoy sin uso en las pantallas) y Lucide (íconos, solo los usados, en `vendor/lucide/iconos.js`). Los
+- Bibliotecas de interfaz copiadas en `app/static/vendor/` (sin CDN ni compilación): Chart.js (gráficas de
+  Indicadores, con `pintarGrafica` en `js/graficas.js`: colores `--grafica-1` a `--grafica-3`, validados para
+  daltonismo, y siempre su tabla "Ver los datos") y Lucide (íconos, solo los usados, en `vendor/lucide/iconos.js`). Los
   horarios son propios (Semana y el tablero de Equipo).
 - Piezas compartidas de la interfaz: `js/actividades-comun.js` (señales de prioridad y estado, detalle
   de actividad del Administrador, registro de ejecución, información por bloques) y `js/formulario-actividad.js` (crear y editar).

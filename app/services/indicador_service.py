@@ -26,6 +26,7 @@ from app.utils.fechas import validar_fecha
 from app.utils.reloj import ZONA_POR_DEFECTO, fecha_local, momento_local
 
 DIAS_MAXIMOS = 92                   # Un trimestre: la consulta recorre cada día de cada operario.
+SEMANAS_MAXIMAS_TENDENCIA = 12      # La tendencia repite la consulta una vez por semana.
 ASISTENCIA_REVISADA = (EstadoAsistencia.VALIDADA.value, EstadoAsistencia.CORREGIDA.value)
 
 
@@ -189,6 +190,31 @@ class IndicadorService:
         self.cierre_jornada = cierre_jornada
         # La hora la pone el servidor. Las pruebas pasan un reloj que ellas controlan.
         self.reloj = reloj or (lambda: datetime.now(timezone.utc))
+
+    def tendencia(self, hasta, semanas, solicitante: dict) -> list:
+        """Los indicadores de la empresa (o del Operario, si él pregunta) semana por semana, de lunes a
+        domingo, hasta la semana que contiene "hasta". Cada semana se calcula con las mismas reglas de
+        consultar(); las de una semana sin jornadas terminadas quedan en None."""
+        hasta = validar_fecha(hasta, "La fecha final")
+        try:
+            semanas = int(semanas)
+        except (TypeError, ValueError):
+            raise ValidationError("La cantidad de semanas debe ser un número entero")
+        if not 1 <= semanas <= SEMANAS_MAXIMAS_TENDENCIA:
+            raise ValidationError(f"Consulta entre 1 y {SEMANAS_MAXIMAS_TENDENCIA} semanas")
+        ultimo_lunes = date.fromisoformat(hasta) - timedelta(days=date.fromisoformat(hasta).weekday())
+        resultado = []
+        for atras in range(semanas - 1, -1, -1):
+            lunes = ultimo_lunes - timedelta(weeks=atras)
+            domingo = lunes + timedelta(days=6)
+            semana = self.consultar(lunes.isoformat(), domingo.isoformat(), solicitante)["empresa"]
+            resultado.append({
+                "desde": lunes.isoformat(), "hasta": domingo.isoformat(),
+                "cumplimiento_jornada": semana["jornada"]["cumplimiento_jornada"],
+                "aprovechamiento": semana["jornada"]["aprovechamiento"],
+                "cumplimiento_actividades": semana["actividades"]["cumplimiento_actividades"],
+            })
+        return resultado
 
     def consultar(self, desde, hasta, solicitante: dict) -> dict:
         """Indicadores entre dos jornadas. El Administrador ve su empresa completa, por operario, por

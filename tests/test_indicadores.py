@@ -208,3 +208,26 @@ def test_el_detalle_del_operario_para_su_resumen(servicios, empresa, crear_activ
     assert [(f["titulo"], f["real_min"], f["estimado_min"]) for f in detalle["finalizadas"]] == [
         ("Calibrar la selladora", 50, 60)]
     assert detalle["pausas_por_motivo"] == [{"motivo": "Descanso", "cantidad": 1, "minutos": 10}]
+
+
+# ---------- Tendencia semana por semana (gráfica de Indicadores) ----------
+
+def test_la_tendencia_trae_cada_semana_de_lunes_a_domingo_con_las_mismas_reglas(servicios, empresa):
+    semanas = servicios.indicadores.tendencia(HOY, 3, empresa.admin)     # HOY es sábado 2026-10-10.
+    assert [(s["desde"], s["hasta"]) for s in semanas] == [
+        ("2026-09-21", "2026-09-27"), ("2026-09-28", "2026-10-04"), ("2026-10-05", "2026-10-11")]
+    sola = servicios.indicadores.consultar("2026-10-05", "2026-10-11", empresa.admin)["empresa"]
+    assert semanas[-1]["cumplimiento_jornada"] == sola["jornada"]["cumplimiento_jornada"]
+    assert semanas[-1]["cumplimiento_actividades"] == sola["actividades"]["cumplimiento_actividades"]
+
+
+@pytest.mark.parametrize("semanas", [0, 13, "ocho"])
+def test_la_tendencia_valida_la_cantidad_de_semanas(servicios, empresa, semanas):
+    with pytest.raises(ValidationError):
+        servicios.indicadores.tendencia(HOY, semanas, empresa.admin)
+
+
+def test_la_ruta_de_la_tendencia(cliente_de, empresa):
+    respuesta = cliente_de(empresa.admin).get(f"/analisis/indicadores/tendencia?hasta={HOY}&semanas=8")
+    assert respuesta.status_code == 200
+    assert len(respuesta.get_json()) == 8
