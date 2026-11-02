@@ -238,9 +238,7 @@ async function cargar() {
     const domingo = sumarDias(lunes, 6);
     const desde = fechaTexto(lunes);
     const hasta = fechaTexto(domingo);
-    const formato = { day: "numeric", month: "long" };
-    document.getElementById("rango-semana").textContent =
-        `Del ${lunes.toLocaleDateString("es-CO", formato)} al ${domingo.toLocaleDateString("es-CO", formato)}`;
+    document.getElementById("rango-semana").textContent = textoDeSemana(lunes);
     const mensaje = document.getElementById("mensaje");
 
     // La carga de la semana siguiente solo se pregunta cuando se mira la semana en curso.
@@ -272,18 +270,11 @@ async function cargar() {
     }
 }
 
-function moverSemana(semanas) {
-    lunes = semanas === 0 ? inicioDeSemana(new Date()) : sumarDias(lunes, semanas * 7);
-    cargar();
-}
-
 iniciarPaginaProtegida(["OPERARIO"]).then(() => {
-    const anterior = document.getElementById("semana-anterior");
-    const siguiente = document.getElementById("semana-siguiente");
-    anterior.insertAdjacentHTML("afterbegin", icono("chevron-left"));
-    siguiente.insertAdjacentHTML("afterbegin", icono("chevron-right"));
-    anterior.addEventListener("click", () => moverSemana(-1));
-    siguiente.addEventListener("click", () => moverSemana(1));
-    document.getElementById("semana-actual").addEventListener("click", () => moverSemana(0));
+    // Una semana que no ha empezado no tiene nada que resumir: "Semana siguiente" no pasa de la actual.
+    conectarSemanas((elegido) => {
+        lunes = elegido;
+        cargar();
+    }, { permitirFuturo: false });
     cargar();
 });

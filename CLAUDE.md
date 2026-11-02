@@ -72,7 +72,9 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   Operario (`estadoDeJornada`, `avisoDelTurno`, `abrirSalida`, `atenderUrgente`, el detalle) está en
   `operario/operario-comun.js`. ADMINISTRADOR V3 (plan en `docs/plan_rediseno_admin_v3.md`, rama
   `feature/rediseno-admin-v3`): menú Hoy, Planeación, Indicadores y Administración, con submenús como
-  pestañas (`iniciarPestanas` en `layout.js`). Hoy (`admin/hoy.js`, `GET /hoy/personas` y `/hoy/pendientes`
+  pestañas (`iniciarPestanas` en `layout.js`). Toda navegación por semanas usa `conectarSemanas` y
+  `textoDeSemana` (`layout.js`): "Esta semana" se desactiva cuando ya se está en ella; donde no hay nada que
+  medir hacia adelante (Indicadores, Resumen), "Semana siguiente" no pasa de la actual. Hoy (`admin/hoy.js`, `GET /hoy/personas` y `/hoy/pendientes`
   de `HoyService`) es la pantalla de entrada: Pendientes, Personas y Asistencia (`admin/asistencia.js`). El
   detalle del Administrador es un panel lateral (`abrirPanelLateral` y `abrirDetalleActividad` en
   `js/actividades-comun.js`). El estado de una persona (presencia, actividad, carga) sale de

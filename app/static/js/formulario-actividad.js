@@ -354,11 +354,12 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
 
     fecha.addEventListener("change", () => pintarOperarios(operariosMarcados()));
 
-    // "opciones" (solo para una nueva): { ruta, titulo }, por ejemplo al convertir un reporte.
+    // "opciones": { ruta, titulo }. "ruta" solo para una nueva (por ejemplo, al convertir un reporte); "titulo"
+    // cambia el del diálogo (por ejemplo, "Asignar" en vez de "Editar", para que diga lo mismo que el botón).
     function abrir(actividad, valores = {}, opciones = {}) {
         actividadEnEdicion = actividad;
         rutaNueva = opciones.ruta || "/actividades";
-        titulo.textContent = actividad ? `Editar ${actividad.codigo}` : (opciones.titulo || "Nueva actividad");
+        titulo.textContent = opciones.titulo || (actividad ? `Editar ${actividad.codigo}` : "Nueva actividad");
         guardar.textContent = actividad ? "Guardar cambios" : "Guardar actividad";
 
         const ninguno = crearElemento("option", "", "Ninguno");
@@ -473,7 +474,7 @@ function crearFormularioActividad({ obtenerProyectos, obtenerOperarios, alGuarda
 
     return {
         abrirNueva: (valores, opciones) => abrir(null, valores, opciones),
-        abrirEdicion: (actividad) => abrir(actividad),
+        abrirEdicion: (actividad, opciones) => abrir(actividad, {}, opciones),
         abrirDetalle,
     };
 }

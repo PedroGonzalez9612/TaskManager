@@ -3706,10 +3706,39 @@ fieldset.grupo-botones {
 }
 
 .grafica-datos summary {
-    min-height: var(--alto-control);
-    display: flex;
+    display: inline-flex;
     align-items: center;
+    gap: var(--e2);
+    min-height: var(--alto-control);
+    color: var(--principal);
+    font-weight: var(--peso-fuerte);
+    list-style: none;
     cursor: pointer;
+}
+
+/* Se ve que se despliega: una flecha que gira al abrir (display flex quita el triángulo del navegador). */
+.grafica-datos summary::-webkit-details-marker {
+    display: none;
+}
+
+.grafica-datos summary::before {
+    content: "";
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.15s;
+}
+
+.grafica-datos[open] summary::before {
+    transform: rotate(45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grafica-datos summary::before {
+        transition: none;
+    }
 }
 
 .grafica-datos .tabla {

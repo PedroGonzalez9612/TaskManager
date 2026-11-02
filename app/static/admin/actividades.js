@@ -317,9 +317,7 @@ function pintarCarga() {
         return;
     }
     const dias = diasDeLaSemana();
-    const formato = { day: "numeric", month: "long" };
-    document.getElementById("rango-semana").textContent =
-        `Del ${lunes.toLocaleDateString("es-CO", formato)} al ${sumarDias(lunes, 6).toLocaleDateString("es-CO", formato)}`;
+    document.getElementById("rango-semana").textContent = textoDeSemana(lunes);
     const busqueda = document.getElementById("buscar-carga").value.trim().toLowerCase();
     const visibles = cargaSemana.operarios.filter((o) => o.nombre.toLowerCase().includes(busqueda));
     const cuerpo = crearElemento("tbody");
@@ -373,10 +371,6 @@ async function cargarCarga() {
     pintarCarga();
 }
 
-function moverSemana(semanas) {
-    lunes = semanas === 0 ? inicioDeSemana(new Date()) : sumarDias(lunes, semanas * 7);
-    cargarCarga().catch((error) => mostrarAviso(error.message, "advertencia"));
-}
 
 // ---------- Encabezado y carga ----------
 
@@ -427,13 +421,10 @@ iniciarPaginaProtegida(["ADMINISTRADOR"]).then(async (usuario) => {
         alGuardar: cargar,
     });
     document.getElementById("accion-principal").addEventListener("click", () => ACCION_POR_VISTA[vista]?.alHacer());
-    const anterior = document.getElementById("semana-anterior");
-    const siguiente = document.getElementById("semana-siguiente");
-    anterior.insertAdjacentHTML("afterbegin", icono("chevron-left"));
-    siguiente.insertAdjacentHTML("afterbegin", icono("chevron-right"));
-    anterior.addEventListener("click", () => moverSemana(-1));
-    siguiente.addEventListener("click", () => moverSemana(1));
-    document.getElementById("semana-actual").addEventListener("click", () => moverSemana(0));
+    conectarSemanas((elegido) => {
+        lunes = elegido;
+        cargarCarga().catch((error) => mostrarAviso(error.message, "advertencia"));
+    });
     document.getElementById("buscar-carga").addEventListener("input", pintarCarga);
     iniciarPestanas(document.querySelector(".pestanas"), (elegida) => {
         vista = elegida;

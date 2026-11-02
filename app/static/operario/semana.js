@@ -16,6 +16,7 @@ let lunes = inicioDeSemana(new Date());
 let semana = null;
 let actividades = [];
 let diaElegido = null;              // En celular: la fecha que se ve.
+let actualizarSemanas = () => {};   // Repinta "Volver a hoy" cuando cambia el día elegido.
 let cargadaEn = 0;                  // Cuándo llegó la semana: el tiempo en curso se adelanta desde ahí.
 
 function hora(momento) {
@@ -298,6 +299,7 @@ function pintarPestanas() {
         pestana.addEventListener("click", () => {
             diaElegido = dia.fecha;
             pintar();
+            actualizarSemanas();
         });
         return pestana;
     }));
@@ -357,9 +359,7 @@ function pintar() {
 
 async function cargar() {
     const domingo = sumarDias(lunes, 6);
-    const formato = { day: "numeric", month: "long" };
-    document.getElementById("rango-semana").textContent =
-        `Del ${lunes.toLocaleDateString("es-CO", formato)} al ${domingo.toLocaleDateString("es-CO", formato)}`;
+    document.getElementById("rango-semana").textContent = textoDeSemana(lunes);
     const mensaje = document.getElementById("mensaje");
     try {
         semana = await pedirApi(`/programacion-de-la-semana?desde=${fechaTexto(lunes)}&hasta=${fechaTexto(domingo)}`);
@@ -370,6 +370,7 @@ async function cargar() {
         }
         mensaje.hidden = true;
         pintar();
+        actualizarSemanas();
     } catch (error) {
         mensaje.hidden = false;
         mensaje.textContent = `No pudimos cargar tu semana: ${error.message}`;
@@ -377,22 +378,17 @@ async function cargar() {
     }
 }
 
-function moverSemana(semanas) {
-    lunes = semanas === 0 ? inicioDeSemana(new Date()) : sumarDias(lunes, semanas * 7);
-    if (semanas === 0) {
-        diaElegido = null;
-    }
-    cargar();
-}
 
 iniciarPaginaProtegida(["OPERARIO"]).then(() => {
-    const anterior = document.getElementById("semana-anterior");
-    const siguiente = document.getElementById("semana-siguiente");
-    anterior.insertAdjacentHTML("afterbegin", icono("chevron-left"));
-    siguiente.insertAdjacentHTML("afterbegin", icono("chevron-right"));
-    anterior.addEventListener("click", () => moverSemana(-1));
-    siguiente.addEventListener("click", () => moverSemana(1));
-    document.getElementById("semana-actual").addEventListener("click", () => moverSemana(0));
+    // "Volver a hoy" también regresa al día de hoy si en celular se eligió otro día de esta semana.
+    const diaDeHoy = () => semana?.dias.find((dia) => dia.es_vigente)?.fecha;
+    actualizarSemanas = conectarSemanas((elegido, semanas) => {
+        lunes = elegido;
+        if (semanas === 0) {
+            diaElegido = null;
+        }
+        cargar();
+    }, { enLoActual: () => !diaElegido || !diaDeHoy() || diaElegido === diaDeHoy() });
     PANTALLA_ANGOSTA.addEventListener("change", pintar);
     cargar();
 });

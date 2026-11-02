@@ -143,7 +143,7 @@ function crearFilaSinDueno(actividad) {
     if (actividad.estado === "DEVUELTA" && devolucion) {
         lineas.push(crearConIcono("p", "linea-info", "undo-2", `Devuelta por ${devolucion.operario_nombre}: ${devolucion.motivo}`));
     }
-    return crearFilaPendiente(nombre, lineas, [crearBoton("Asignar", "boton-secundario", () => formulario.abrirEdicion(actividad), "users")]);
+    return crearFilaPendiente(nombre, lineas, [crearBoton("Asignar", "boton-secundario", () => formulario.abrirEdicion(actividad, { titulo: `Asignar ${actividad.codigo}` }), "users")]);
 }
 
 // Convertir un reporte: el formulario de actividad ya lleno con lo reportado y asignado a quien lo reportó.

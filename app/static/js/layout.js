@@ -140,6 +140,49 @@ function construirBloqueUsuario(usuario) {
     return bloque;
 }
 
+// ---------- Navegación por semanas (Indicadores, Planeación, Semana y Resumen) ----------
+// Conecta los botones #semana-anterior, #semana-actual y #semana-siguiente de la página. "Esta semana" (o
+// "Volver a hoy") se desactiva cuando ya se está en ella: un botón que no cambia nada confunde (Nielsen 1,
+// visibilidad del estado). Con "permitirFuturo" en false, "Semana siguiente" no pasa de la actual: una
+// semana que no ha empezado no tiene nada que medir. "alMover" recibe el lunes elegido y cuántas semanas
+// se movió (0 si volvió a la actual). "enLoActual" (opcional) suma una condición para considerar que ya se
+// está en lo actual (Semana del Operario: además, en el día de hoy). Devuelve la función que repinta los
+// botones, para llamarla si esa condición cambia.
+function conectarSemanas(alMover, { permitirFuturo = true, enLoActual = () => true } = {}) {
+    const anterior = document.getElementById("semana-anterior");
+    const actual = document.getElementById("semana-actual");
+    const siguiente = document.getElementById("semana-siguiente");
+    let lunes = inicioDeSemana(new Date());
+    const pintar = () => {
+        const esLaActual = fechaTexto(lunes) === fechaTexto(inicioDeSemana(new Date()));
+        actual.disabled = esLaActual && enLoActual();
+        siguiente.disabled = !permitirFuturo && esLaActual;
+    };
+    const mover = (semanas) => {
+        lunes = semanas === 0 ? inicioDeSemana(new Date()) : sumarDias(lunes, semanas * 7);
+        pintar();
+        // El foco no se queda en un botón que se acaba de desactivar.
+        if (document.activeElement?.disabled) {
+            anterior.focus();
+        }
+        alMover(lunes, semanas);
+    };
+    anterior.insertAdjacentHTML("afterbegin", icono("chevron-left"));
+    siguiente.insertAdjacentHTML("afterbegin", icono("chevron-right"));
+    anterior.addEventListener("click", () => mover(-1));
+    actual.addEventListener("click", () => mover(0));
+    siguiente.addEventListener("click", () => mover(1));
+    pintar();
+    return pintar;
+}
+
+// "Esta semana, del 2 al 8 de noviembre" o "Semana del 26 de octubre al 1 de noviembre".
+function textoDeSemana(lunes) {
+    const formato = { day: "numeric", month: "long" };
+    const rango = `del ${lunes.toLocaleDateString("es-CO", formato)} al ${sumarDias(lunes, 6).toLocaleDateString("es-CO", formato)}`;
+    return fechaTexto(lunes) === fechaTexto(inicioDeSemana(new Date())) ? `Esta semana, ${rango}` : `Semana ${rango}`;
+}
+
 // ---------- Pestañas de un submenú (alcance, Sección 6.2) ----------
 // Botones role="tab" con data-vista y aria-controls dentro de un role="tablist". La pestaña elegida
 // queda en la dirección (por ejemplo #proyectos), para volver a ella o enlazarla desde otra pantalla.

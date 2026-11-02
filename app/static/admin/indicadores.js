@@ -316,10 +316,8 @@ function pintarGraficaCategorias() {
 // ---------- Carga ----------
 
 async function cargar() {
-    const formato = { day: "numeric", month: "long" };
     const domingo = sumarDias(lunes, 6);
-    document.getElementById("rango-semana").textContent =
-        `Semana del ${lunes.toLocaleDateString("es-CO", formato)} al ${domingo.toLocaleDateString("es-CO", formato)}`;
+    document.getElementById("rango-semana").textContent = textoDeSemana(lunes);
     const mensaje = document.getElementById("mensaje");
     try {
         [datos, tendencia] = await Promise.all([
@@ -340,19 +338,12 @@ async function cargar() {
     }
 }
 
-function moverSemana(semanas) {
-    lunes = semanas === 0 ? inicioDeSemana(new Date()) : sumarDias(lunes, semanas * 7);
-    cargar();
-}
-
 iniciarPaginaProtegida(["ADMINISTRADOR"]).then(() => {
-    const anterior = document.getElementById("semana-anterior");
-    const siguiente = document.getElementById("semana-siguiente");
-    anterior.insertAdjacentHTML("afterbegin", icono("chevron-left"));
-    siguiente.insertAdjacentHTML("afterbegin", icono("chevron-right"));
-    anterior.addEventListener("click", () => moverSemana(-1));
-    siguiente.addEventListener("click", () => moverSemana(1));
-    document.getElementById("semana-actual").addEventListener("click", () => moverSemana(0));
+    // Una semana que no ha empezado no tiene nada que medir: "Semana siguiente" no pasa de la actual.
+    conectarSemanas((elegido) => {
+        lunes = elegido;
+        cargar();
+    }, { permitirFuturo: false });
     document.getElementById("buscar-persona").addEventListener("input", pintarPersonas);
     iniciarPestanas(document.querySelector(".pestanas"));
     cargar();
