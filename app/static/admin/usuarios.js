@@ -37,7 +37,7 @@ async function iniciarPantalla() {
     const recargar = async () => {
         const usuarios = await cargarUsuarios(usuario.empresa_id, lista, estadoVacio, abrirAsignarTurno,
             { usuarioActualId: usuario.id, alCambiar: recargar });
-        await Promise.all([cargarTurnos(), cargarAsistencia()]);
+        await cargarTurnos();
         // El subtítulo cuenta a quienes trabajan hoy: los desactivados no.
         const contar = (rol) => usuarios.filter((u) => u.rol === rol && u.activo !== false).length;
         const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : varios}`;
@@ -53,7 +53,7 @@ async function iniciarPantalla() {
         usuario.empresa_id,
         recargar,
     );
-    configurarTurnosYAsistencia(recargar);
+    configurarTurnos(recargar);
     await recargar();
 }
 

@@ -70,7 +70,14 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
   El Operario llega a Inicio: estado del turno, la urgente, la actividad en curso o lo que sigue, "Marcar
   entrada" / "Marcar salida" (solo en Inicio) y el balance de la jornada. Lo que comparten las pantallas del
   Operario (`estadoDeJornada`, `avisoDelTurno`, `abrirSalida`, `atenderUrgente`, el detalle) está en
-  `operario/operario-comun.js`. Equipo es el tablero del turno (`admin/equipo.js`, clases `tablero-*`); Semana
+  `operario/operario-comun.js`. ADMINISTRADOR V3 (plan en `docs/plan_rediseno_admin_v3.md`, rama
+  `feature/rediseno-admin-v3`): menú Hoy, Planeación, Indicadores y Administración, con submenús como
+  pestañas (`iniciarPestanas` en `layout.js`). Hoy (`admin/hoy.js`, `GET /hoy/personas` y `/hoy/pendientes`
+  de `HoyService`) es la pantalla de entrada: Pendientes, Personas y Asistencia (`admin/asistencia.js`). El
+  detalle del Administrador es un panel lateral (`abrirPanelLateral` y `abrirDetalleActividad` en
+  `js/actividades-comun.js`). El estado de una persona (presencia, actividad, carga) sale de
+  `app/models/presencia.py` y sus nombres de `NOMBRE_PRESENCIA` en `api.js`; nunca se calcula en el navegador.
+  El tablero por horas (`admin/equipo.js`) ya no está en el menú: lo reemplaza Carga de la semana. Semana
   del Operario (`operario/semana.js`, clases `semana-*`) es un calendario propio que pide
   `GET /programacion-de-la-semana`; Resumen (`operario/resumen.js`) usa `GET /analisis/indicadores`; Actividades del Administrador tiene filtros y lista agrupada por día.
   Qué falta del MVP y del producto: ver "Estado de los criterios del MVP" en `docs/avance.md`.

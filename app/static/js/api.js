@@ -6,7 +6,7 @@ const RUTA_LOGIN = "/static/login.html";
 // Pantalla de inicio de cada rol después de iniciar sesión.
 const INICIO_POR_ROL = {
     SUPERADMIN: "/static/superadmin/empresas.html",
-    ADMINISTRADOR: "/static/admin/equipo.html",
+    ADMINISTRADOR: "/static/admin/hoy.html",
     OPERARIO: "/static/operario/inicio.html",
 };
 

@@ -422,6 +422,17 @@ body.ancho-angosto {
         border-top-color: var(--principal);
     }
 
+    /* El número de pendientes, sobre la esquina del ícono. */
+    .navegacion a {
+        position: relative;
+    }
+
+    .navegacion .menu-cantidad {
+        position: absolute;
+        top: var(--e1);
+        left: calc(50% + var(--e2));
+    }
+
     /* Con una sola vista no hace falta la barra inferior. */
     .navegacion:has(a:only-child) {
         display: none;
@@ -3638,6 +3649,375 @@ fieldset.grupo-botones {
 #finalizar-archivos:focus-visible + .hoja-agregar {
     outline: 2px solid var(--principal);
     outline-offset: 2px;
+}
+
+/* ================= Administrador v3: pestañas, listas, Hoy y Planeación (alcance, Sección 6.2) =================
+   Filas separadas por líneas finas sobre el fondo, sin panel; los estados como texto con su ícono. */
+
+/* El número de pendientes junto a "Hoy" en el menú. */
+.menu-cantidad {
+    min-width: 1.25rem;
+    padding: 0 var(--e1);
+    border-radius: 999px;
+    background: var(--error);
+    color: #FFFFFF;
+    font-size: var(--tamano-etiqueta);
+    line-height: 1.25rem;
+    text-align: center;
+}
+
+/* Submenú: pestañas con una línea bajo la elegida, como el menú principal. */
+.pestanas {
+    display: flex;
+    gap: var(--e2);
+    margin-bottom: var(--e5);
+    overflow-x: auto;
+    border-bottom: 1px solid var(--borde);
+}
+
+.pestanas [role="tab"] {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--e2);
+    min-height: var(--alto-control);
+    padding: 0 var(--e3);
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--texto-secundario);
+    font: inherit;
+    font-weight: var(--peso-fuerte);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.pestanas [role="tab"]:hover {
+    color: var(--texto);
+}
+
+.pestanas [role="tab"][aria-selected="true"] {
+    border-bottom-color: var(--principal);
+    color: var(--principal-hover);
+}
+
+.vista-pestana > p:first-child {
+    margin-top: 0;
+}
+
+/* Filtros en una línea: se desplazan de lado en celular. */
+.filtros-linea {
+    display: flex;
+    gap: var(--e2);
+    margin-bottom: var(--e4);
+    overflow-x: auto;
+}
+
+.filtro-linea {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e2);
+    min-height: var(--alto-control);
+    padding: 0 var(--e3);
+    border: 1px solid var(--borde);
+    border-radius: 999px;
+    background: var(--superficie);
+    color: var(--texto);
+    font: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.filtro-linea[aria-pressed="true"] {
+    border-color: var(--principal);
+    background: var(--principal-suave);
+    color: var(--principal-hover);
+    font-weight: var(--peso-fuerte);
+}
+
+/* Listas del Administrador: una fila por renglón, separadas por líneas finas. */
+.lista-admin {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--borde);
+}
+
+.lista-admin > li {
+    border-bottom: 1px solid var(--borde);
+}
+
+.fila-admin {
+    display: grid;
+    align-items: center;
+    gap: var(--e4);
+    width: 100%;
+    padding: var(--e3) var(--e2);
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.fila-admin:hover {
+    background: var(--superficie);
+}
+
+.fila-admin[aria-current="true"] {
+    background: var(--principal-suave);
+}
+
+.fila-admin > .icono {
+    color: var(--texto-secundario);
+}
+
+.fila-admin-textos {
+    display: grid;
+    gap: var(--e1);
+    min-width: 0;
+}
+
+.fila-admin-textos > p {
+    margin: 0;
+}
+
+.fila-admin-nombre {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e1) var(--e2);
+}
+
+.fila-admin-datos {
+    font-size: var(--tamano-secundario);
+}
+
+.fila-admin-datos .codigo {
+    margin-right: var(--e2);
+}
+
+/* Estado como texto con su ícono (el mismo de los detalles). */
+.estado-texto {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--texto-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+.estado-texto .icono {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Planeación, Actividades: nombre y datos, prioridad, quién y estado. */
+.lista-admin .fila-admin:not(.fila-proyecto, .fila-persona) {
+    grid-template-columns: minmax(0, 1fr) 7rem 9rem 10rem 1.25rem;
+}
+
+.fila-admin-estado {
+    display: grid;
+    gap: var(--e1);
+    justify-items: start;
+}
+
+.grupo-dia-admin {
+    display: flex;
+    align-items: baseline;
+    gap: var(--e2);
+    padding: var(--e4) var(--e2) var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+/* Barra de avance o de carga: lo hecho en el color principal; lo que se pasa, en rojo. */
+.avance-barra {
+    display: block;
+    height: 0.5rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--neutro-suave);
+}
+
+.avance-barra-lleno {
+    display: block;
+    height: 100%;
+    background: var(--principal);
+}
+
+.avance-barra-exceso .avance-barra-lleno {
+    background: var(--error);
+}
+
+/* Planeación, Proyectos. */
+.fila-proyecto {
+    grid-template-columns: minmax(0, 1fr) 16rem 7rem 1.25rem;
+}
+
+.fila-proyecto-avance,
+.proyecto-avance {
+    display: grid;
+    gap: var(--e2);
+}
+
+.proyecto-avance p {
+    margin: 0;
+}
+
+.proyecto-actividades {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--borde);
+}
+
+.proyecto-actividad {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--e3);
+    width: 100%;
+    min-height: var(--alto-control);
+    padding: var(--e2) 0;
+    border: 0;
+    border-bottom: 1px solid var(--borde);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Hoy, Pendientes: grupos de lo más urgente a lo menos; cada fila con sus acciones a la derecha. */
+.grupo-pendiente {
+    margin-bottom: var(--e6);
+}
+
+.grupo-pendiente > h2 {
+    margin-bottom: var(--e3);
+}
+
+.fila-pendiente {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3) var(--e5);
+    padding: var(--e3) var(--e2);
+}
+
+.fila-pendiente > .fila-admin-textos {
+    flex: 1 1 22rem;
+}
+
+.fila-pendiente-acciones {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--e3);
+}
+
+/* Hoy, Personas: nombre, cómo va, qué hace y su carga. */
+.personas-controles {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--e3);
+}
+
+.buscar-persona {
+    min-height: var(--alto-control);
+    padding: 0 var(--e3);
+    border: 1px solid var(--borde-control);
+    border-radius: var(--radio-control);
+    font: inherit;
+}
+
+.encabezado-personas,
+.fila-persona {
+    grid-template-columns: minmax(0, 1fr) 13rem minmax(0, 1fr) 13rem 1.25rem;
+}
+
+.encabezado-personas {
+    display: grid;
+    gap: var(--e4);
+    padding: var(--e2);
+    color: var(--texto-secundario);
+    font-size: var(--tamano-etiqueta);
+}
+
+.persona-carga {
+    display: grid;
+    gap: var(--e1);
+}
+
+.persona-exceso {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--e1);
+    color: var(--error-texto);
+    font-size: var(--tamano-secundario);
+    font-weight: var(--peso-fuerte);
+}
+
+.persona-exceso .icono {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* El día de una persona, en el panel lateral: hora, actividad y, si se puede, "Reasignar". */
+.dia-persona {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--borde);
+}
+
+.dia-persona-fila {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--e3);
+    padding: var(--e3) 0;
+    border-bottom: 1px solid var(--borde);
+}
+
+.dia-persona-hora {
+    color: var(--texto-secundario);
+}
+
+@media (max-width: 62em) {
+    .encabezado-personas {
+        display: none;
+    }
+
+    .lista-admin .fila-admin:not(.fila-proyecto, .fila-persona),
+    .fila-proyecto,
+    .fila-persona {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--e2) var(--e3);
+    }
+
+    /* El nombre ocupa la fila; lo demás va debajo, y la flecha queda a la derecha del nombre. */
+    .fila-admin > .fila-admin-textos {
+        grid-column: 1;
+    }
+
+    .fila-admin > :not(.fila-admin-textos, .icono) {
+        grid-column: 1;
+    }
+
+    .fila-admin > .icono {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    /* Sin nada que decir, el renglón de "Ahora" no ocupa espacio. */
+    .persona-sin-dato {
+        display: none;
+    }
 }
 
 /* ================= Administrador: el detalle como panel lateral (alcance, Sección 6.2) ================= */

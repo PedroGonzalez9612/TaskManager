@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <title>Hoy — GestLab</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+</head>
+<body class="cargando">
+    <!-- Hoy del Administrador (alcance, Sección 6.2): la pantalla de entrada. Lo que pide una decisión
+         suya (Pendientes), cómo va cada persona (Personas) y la asistencia del día (Asistencia). -->
+    <main class="principal">
+        <div class="encabezado-pagina">
+            <div>
+                <p id="fecha-hoy" class="texto-secundario"></p>
+                <h1>Hoy</h1>
+                <p id="resumen" class="texto-secundario" aria-live="polite"></p>
+            </div>
+            <button type="button" id="nueva-actividad" class="boton">Nueva actividad</button>
+        </div>
+
+        <div class="pestanas" role="tablist" aria-label="Hoy">
+            <button type="button" role="tab" id="pestana-pendientes" aria-controls="vista-pendientes" data-vista="pendientes">Pendientes <span id="cantidad-pendientes" class="cantidad cifra"></span></button>
+            <button type="button" role="tab" id="pestana-personas" aria-controls="vista-personas" data-vista="personas">Personas</button>
+            <button type="button" role="tab" id="pestana-asistencia" aria-controls="vista-asistencia" data-vista="asistencia">Asistencia</button>
+        </div>
+
+        <section id="vista-pendientes" role="tabpanel" aria-labelledby="pestana-pendientes" class="vista-pestana">
+            <div id="grupos-pendientes" aria-live="polite"></div>
+            <p id="sin-pendientes" class="estado-vacio" hidden>Nada pendiente: todos llegaron y todo el trabajo tiene dueño.</p>
+        </section>
+
+        <section id="vista-personas" role="tabpanel" aria-labelledby="pestana-personas" class="vista-pestana" hidden>
+            <div class="personas-controles">
+                <div id="filtros-personas" class="filtros-linea" role="group" aria-label="Mostrar personas"></div>
+                <label class="solo-lectores" for="buscar-persona">Buscar persona</label>
+                <input id="buscar-persona" type="search" class="buscar-persona" placeholder="Buscar persona" autocomplete="off">
+            </div>
+            <div class="encabezado-personas" aria-hidden="true">
+                <span>Persona</span><span>Cómo va</span><span>Ahora</span><span>Carga de la jornada</span>
+            </div>
+            <ul id="lista-personas" class="lista-admin"></ul>
+            <p id="sin-personas" class="estado-vacio" hidden>Nadie en este filtro.</p>
+        </section>
+
+        <section id="vista-asistencia" role="tabpanel" aria-labelledby="pestana-asistencia" class="vista-pestana" hidden>
+            <ul id="lista-asistencia" class="lista-admin"></ul>
+            <p id="asistencia-vacia" class="estado-vacio" hidden>Ningún operario tiene turno ni marcas hoy.</p>
+        </section>
+    </main>
+
+    <dialog id="dialogo-corregir" class="dialogo" aria-labelledby="titulo-corregir">
+        <div class="dialogo-encabezado">
+            <h2 id="titulo-corregir">Corregir asistencia</h2>
+            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
+        </div>
+        <form class="formulario" novalidate>
+            <input type="hidden" name="asistencia_id">
+            <div class="fila-campos">
+                <div class="campo">
+                    <label for="corregir-entrada">Entrada</label>
+                    <input id="corregir-entrada" name="entrada" type="time" required>
+                </div>
+                <div class="campo">
+                    <label for="corregir-salida">Salida</label>
+                    <input id="corregir-salida" name="salida" type="time">
+                </div>
+            </div>
+            <label for="corregir-motivo">Motivo de la corrección</label>
+            <input id="corregir-motivo" name="motivo" required>
+            <p class="ayuda-campo">Las marcas originales quedan guardadas junto con la corrección.</p>
+            <p class="mensaje-formulario" role="alert" hidden></p>
+            <div class="dialogo-acciones">
+                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Guardar corrección</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/vendor/lucide/iconos.js"></script>
+    <script src="/static/js/layout.js"></script>
+    <script src="/static/js/actividades-comun.js"></script>
+    <script src="/static/js/formulario-actividad.js"></script>
+    <script src="/static/admin/asistencia.js"></script>
+    <script src="/static/admin/hoy.js"></script>
+</body>
+</html>

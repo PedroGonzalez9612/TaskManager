@@ -536,7 +536,24 @@ Reemplaza la exploración del 2026-10-16 y lo visual de "Calma operativa" (guard
   actividad (E5); la salida antes del fin del turno queda como salida anticipada, con aviso al Operario y
   dato para el Administrador y los indicadores (S3). 12 pruebas nuevas. E3 y E4 siguen en
   [casos_por_definir.md](casos_por_definir.md).
-- **Pendiente:** la evidencia de la evolución del diseño para el informe de Diseño de Interfaces. Confirmar con la profesora que la interfaz en código sirve como el
+- **Pendiente:** la evidencia de la evolución del diseño para el informe de Diseño de Interfaces.
+
+## Rediseño del Administrador v3 (2026-11-02, en curso) 🟡
+
+Plan en [plan_rediseno_admin_v3.md](plan_rediseno_admin_v3.md). Menú por lo que más usa: Hoy, Planeación,
+Indicadores y Administración, con submenús como pestañas.
+
+- **Estado de una persona estandarizado:** presencia, actividad y carga, calculados por el servidor con una
+  sola regla (`app/models/presencia.py`, 13 pruebas). La barra del Operario y la asistencia la usan; la
+  asistencia separa la presencia de la revisión de las marcas.
+- **Hoy:** Pendientes (llegada tarde con su trabajo para reasignar, detenidas por emergencia, sin dueño,
+  reportes y sobrecargados; el menú muestra cuántos hay), Personas (lista con filtros y buscador, y el día de
+  cada una en el panel lateral, con "Reasignar") y Asistencia. Servidor: `HoyService`, rutas `/hoy/personas`
+  y `/hoy/pendientes` (10 pruebas). Con esto queda hecho el **aviso de posible ausencia** (criterio 7).
+- **Planeación (primera parte):** Actividades y Proyectos en pestañas, con el detalle en el panel lateral.
+  Falta la pestaña Carga de la semana.
+- **Pendiente:** Carga de la semana, Administración, Indicadores y la revisión final. La reasignación
+  automática de lo no reasignado a la siguiente jornada ya la hace el cierre de jornada. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
 
 ## Depuración del proyecto (2026-10-24) ✅

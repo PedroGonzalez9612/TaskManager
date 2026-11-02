@@ -4,25 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-    <title>Actividades — GestLab</title>
+    <title>Planeación — GestLab</title>
     <link rel="stylesheet" href="/static/css/estilos.css">
 </head>
 <body class="cargando">
-    <!-- Actividades del Administrador (alcance, Sección 6.2): el trabajo. Tres pestañas: las actividades,
-         los proyectos y los reportes de actividad por revisar. El detalle se abre en el panel lateral. -->
+    <!-- Planeación del Administrador (alcance, Sección 6.2): el trabajo de cualquier día. Pestañas: las
+         actividades y los proyectos (la carga de la semana se agrega después). El detalle se abre en el
+         panel lateral. -->
     <main class="principal">
         <div class="encabezado-pagina">
             <div>
-                <h1>Actividades</h1>
+                <h1>Planeación</h1>
                 <p id="resumen" class="cifra texto-secundario" aria-live="polite"></p>
             </div>
             <button type="button" id="accion-principal" class="boton">Nueva actividad</button>
         </div>
 
-        <div class="pestanas" role="tablist" aria-label="Actividades">
+        <div class="pestanas" role="tablist" aria-label="Planeación">
             <button type="button" role="tab" id="pestana-actividades" aria-controls="vista-actividades" data-vista="actividades">Actividades</button>
             <button type="button" role="tab" id="pestana-proyectos" aria-controls="vista-proyectos" data-vista="proyectos">Proyectos</button>
-            <button type="button" role="tab" id="pestana-reportes" aria-controls="vista-reportes" data-vista="reportes">Reportes <span id="cantidad-reportes" class="cantidad cifra"></span></button>
         </div>
 
         <section id="vista-actividades" role="tabpanel" aria-labelledby="pestana-actividades" class="vista-pestana">
@@ -42,11 +42,6 @@
             </div>
         </section>
 
-        <section id="vista-reportes" role="tabpanel" aria-labelledby="pestana-reportes" class="vista-pestana" hidden>
-            <p class="texto-secundario">Trabajo que otra área les pidió directamente a tus operarios. Conviértelo en actividad para programarlo, o descártalo con un motivo.</p>
-            <ul id="lista-reportes" class="lista-admin" hidden></ul>
-            <p id="sin-reportes" class="estado-vacio" hidden>No hay reportes por revisar.</p>
-        </section>
     </main>
 
     <script src="/static/js/api.js"></script>

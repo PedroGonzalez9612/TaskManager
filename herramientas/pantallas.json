@@ -20,13 +20,13 @@
         },
         {
             "rol": "administrador",
-            "nombre": "equipo",
-            "ruta": "/static/admin/equipo.html",
-            "esperar": ".tablero-fila"
+            "nombre": "hoy",
+            "ruta": "/static/admin/hoy.html",
+            "esperar": ".pestanas"
         },
         {
             "rol": "administrador",
-            "nombre": "actividades",
+            "nombre": "planeacion",
             "ruta": "/static/admin/actividades.html"
         },
         {

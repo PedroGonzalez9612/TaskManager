@@ -1,6 +1,6 @@
-// Menú "Actividades" del Administrador (alcance, Sección 6.2): el trabajo. Tres pestañas: las actividades
-// del filtro elegido agrupadas por día, los proyectos con su avance en horas y los reportes de actividad
-// por revisar. El detalle de una actividad o de un proyecto se abre en el panel lateral.
+// Menú "Planeación" del Administrador (alcance, Sección 6.2): el trabajo de cualquier día. Pestañas: las
+// actividades del filtro elegido agrupadas por día y los proyectos con su avance en horas. El detalle de
+// una actividad o de un proyecto se abre en el panel lateral.
 
 const ESTADOS_TERMINADOS = new Set(["COMPLETADA", "NO_REALIZADA", "CANCELADA"]);
 const terminada = (actividad) => ESTADOS_TERMINADOS.has(actividad.estado);
@@ -14,7 +14,7 @@ const FILTROS = [
     { id: "todas", nombre: "Todas", incluye: () => true, recientesPrimero: true },
 ];
 
-// Lo que hace el botón de arriba en cada pestaña (Reportes no crea nada: los reportes llegan de los operarios).
+// Lo que hace el botón de arriba en cada pestaña.
 const ACCION_POR_VISTA = {
     actividades: { texto: "Nueva actividad", alHacer: () => formulario.abrirNueva() },
     proyectos: { texto: "Nuevo proyecto", alHacer: () => abrirFormularioProyecto() },
@@ -23,7 +23,6 @@ const ACCION_POR_VISTA = {
 let actividades = [];
 let operarios = [];
 let proyectos = [];
-let reportes = [];
 let filtroElegido = FILTROS[0];
 let formulario = null;
 let vista = "actividades";
@@ -34,7 +33,7 @@ const plural = (cantidad, uno, varios) => `${cantidad} ${cantidad === 1 ? uno : 
 function abrirEnPanel(fila, abrir) {
     document.querySelectorAll(".lista-admin [aria-current]").forEach((otra) => otra.removeAttribute("aria-current"));
     fila.setAttribute("aria-current", "true");
-    abrir({ volverA: "Actividades", alCerrar: () => fila.removeAttribute("aria-current") });
+    abrir({ volverA: "Planeación", alCerrar: () => fila.removeAttribute("aria-current") });
 }
 
 // ---------- Pestaña Actividades ----------
@@ -209,7 +208,7 @@ async function abrirDetalleProyecto(proyectoId, opciones) {
         boton.type = "button";
         boton.append(crearElemento("span", "", actividad.titulo), crearEstadoComoTexto(actividad.estado));
         // Abrir una actividad reemplaza el panel del proyecto por el de la actividad.
-        boton.addEventListener("click", () => formulario.abrirDetalle(actividad, { volverA: "Actividades" }));
+        boton.addEventListener("click", () => formulario.abrirDetalle(actividad, { volverA: "Planeación" }));
         fila.append(boton);
         lista.append(fila);
     }
@@ -254,77 +253,6 @@ function abrirFormularioProyecto(proyecto = null) {
     });
 }
 
-// ---------- Pestaña Reportes (alcance, Sección 5.1) ----------
-
-// Convertir: el formulario de actividad ya lleno con lo reportado y asignado a quien lo reportó.
-function convertirReporte(reporte) {
-    const descripcion = [`Pedido por ${reporte.pedido_por}.`, reporte.detalle].filter(Boolean).join("\n");
-    formulario.abrirNueva({
-        titulo: reporte.titulo,
-        descripcion,
-        tiempo_estimado_min: reporte.tiempo_estimado_min,
-        fecha_programada: fechaTexto(new Date()),
-        operario_ids: [reporte.operario_id],
-    }, { ruta: `/reportes/${reporte.id}/convertir`, titulo: "Convertir el reporte en actividad" });
-}
-
-function descartarReporte(reporte) {
-    const motivo = crearElemento("textarea");
-    motivo.id = "descartar-motivo";
-    motivo.rows = 3;
-    motivo.maxLength = 1000;
-    motivo.required = true;
-    const etiqueta = crearElemento("label", "", "Motivo");
-    etiqueta.htmlFor = motivo.id;
-    abrirDialogoAccion({
-        titulo: "Descartar el reporte",
-        subtitulo: `${reporte.titulo} (reporte de ${reporte.operario_nombre})`,
-        campos: [etiqueta, motivo, crearElemento("p", "ayuda-campo",
-            "No se borra: el operario ve que se descartó y el motivo.")],
-        textoConfirmar: "Descartar reporte",
-        iconoConfirmar: "minus",
-        textoCerrar: "Volver",
-        alConfirmar: async () => {
-            await enviarJson(`/reportes/${reporte.id}/descartar`, "POST", { motivo: motivo.value });
-            await cargar();
-            mostrarAviso("Reporte descartado.");
-        },
-    });
-}
-
-function crearFilaReporte(reporte) {
-    const fila = crearElemento("li", "fila-reporte");
-    const textos = crearElemento("div", "fila-admin-textos");
-    const datos = crearElemento("p", "fila-admin-datos texto-secundario datos-linea");
-    datos.append(crearElemento("span", "", `Reporte de ${reporte.operario_nombre}`),
-        crearElemento("span", "", `Pedido por ${reporte.pedido_por}`));
-    if (reporte.tiempo_estimado_min) {
-        datos.append(crearElemento("span", "cifra", duracionTexto(reporte.tiempo_estimado_min)));
-    }
-    textos.append(crearElemento("strong", "fila-admin-nombre", reporte.titulo), datos);
-    if (reporte.detalle) {
-        textos.append(crearElemento("p", "fila-reporte-detalle", reporte.detalle));
-    }
-    const convertir = crearConIcono("button", "boton-secundario", "plus", "Convertir en actividad");
-    convertir.type = "button";
-    convertir.addEventListener("click", () => convertirReporte(reporte));
-    const descartar = crearElemento("button", "boton-terciario boton-baja", "Descartar");
-    descartar.type = "button";
-    descartar.addEventListener("click", () => descartarReporte(reporte));
-    const acciones = crearElemento("div", "fila-reporte-acciones");
-    acciones.append(convertir, descartar);
-    fila.append(textos, acciones);
-    return fila;
-}
-
-function pintarReportes() {
-    document.getElementById("cantidad-reportes").textContent = reportes.length ? String(reportes.length) : "";
-    const lista = document.getElementById("lista-reportes");
-    lista.hidden = reportes.length === 0;
-    document.getElementById("sin-reportes").hidden = reportes.length > 0;
-    lista.replaceChildren(...reportes.map(crearFilaReporte));
-}
-
 // ---------- Encabezado y carga ----------
 
 function pintarResumen() {
@@ -333,9 +261,6 @@ function pintarResumen() {
     const partes = [plural(porHacer.length, "actividad por hacer", "actividades por hacer")];
     if (sinAsignar) {
         partes.push(`${sinAsignar} sin asignar`);
-    }
-    if (reportes.length) {
-        partes.push(plural(reportes.length, "reporte por revisar", "reportes por revisar"));
     }
     document.getElementById("resumen").textContent = partes.join(", ");
 }
@@ -353,16 +278,11 @@ function pintar() {
     pintarResumen();
     pintarActividades();
     pintarProyectos();
-    pintarReportes();
 }
 
 async function cargar() {
     try {
-        [actividades, proyectos, reportes] = await Promise.all([
-            pedirApi("/actividades"),
-            pedirApi("/proyectos"),
-            pedirApi("/reportes?estado=PENDIENTE"),
-        ]);
+        [actividades, proyectos] = await Promise.all([pedirApi("/actividades"), pedirApi("/proyectos")]);
         pintar();
     } catch (error) {
         mostrarAviso(`No se pudieron cargar las actividades: ${error.message}`, "advertencia");

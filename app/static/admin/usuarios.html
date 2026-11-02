@@ -28,14 +28,6 @@
                 </div>
             </section>
 
-            <!-- Asistencia de la jornada: las marcas de entrada y salida de cada operario. -->
-            <section class="panel" aria-labelledby="titulo-asistencia">
-                <div class="panel-encabezado">
-                    <h2 id="titulo-asistencia">Asistencia de hoy</h2>
-                </div>
-                <ul id="lista-asistencia" class="lista-filas"></ul>
-                <p id="asistencia-vacia" class="estado-vacio" hidden>Ningún operario tiene turno ni marcas hoy.</p>
-            </section>
             </div>
 
             <aside>
@@ -131,34 +123,6 @@
             <div class="dialogo-acciones">
                 <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
                 <button type="submit" class="boton">Asignar turno</button>
-            </div>
-        </form>
-    </dialog>
-
-    <dialog id="dialogo-corregir" class="dialogo" aria-labelledby="titulo-corregir">
-        <div class="dialogo-encabezado">
-            <h2 id="titulo-corregir">Corregir asistencia</h2>
-            <button type="button" class="boton-cerrar" data-cerrar aria-label="Cerrar">&times;</button>
-        </div>
-        <form class="formulario" novalidate>
-            <input type="hidden" name="asistencia_id">
-            <div class="fila-campos">
-                <div class="campo">
-                    <label for="corregir-entrada">Entrada</label>
-                    <input id="corregir-entrada" name="entrada" type="time" required>
-                </div>
-                <div class="campo">
-                    <label for="corregir-salida">Salida</label>
-                    <input id="corregir-salida" name="salida" type="time">
-                </div>
-            </div>
-            <label for="corregir-motivo">Motivo de la corrección</label>
-            <input id="corregir-motivo" name="motivo" required>
-            <p class="ayuda-campo">Las marcas originales quedan guardadas junto con la corrección.</p>
-            <p class="mensaje-formulario" role="alert" hidden></p>
-            <div class="dialogo-acciones">
-                <button type="button" class="boton-secundario" data-cerrar>Cancelar</button>
-                <button type="submit" class="boton">Guardar corrección</button>
             </div>
         </form>
     </dialog>

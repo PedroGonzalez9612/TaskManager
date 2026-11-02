@@ -13,10 +13,10 @@ const VISTAS_POR_ROL = {
         },
     ],
     ADMINISTRADOR: [
-        // Cuatro menús (alcance, Sección 6.2): Equipo, Actividades, Indicadores y Administración.
-        // Indicadores se agrega cuando exista su pantalla.
-        { texto: "Equipo", icono: "calendar-days", destino: "/static/admin/equipo.html", rutas: ["/static/admin/equipo.html"] },
-        { texto: "Actividades", icono: "clipboard-check", destino: "/static/admin/actividades.html", rutas: ["/static/admin/actividades.html"] },
+        // Cuatro menús, por lo que más usa (alcance, Sección 6.2): Hoy, Planeación, Indicadores y
+        // Administración. Indicadores se agrega cuando exista su pantalla.
+        { texto: "Hoy", icono: "house", destino: "/static/admin/hoy.html", rutas: ["/static/admin/hoy.html"], conPendientes: true },
+        { texto: "Planeación", icono: "clipboard-check", destino: "/static/admin/actividades.html", rutas: ["/static/admin/actividades.html"] },
         { texto: "Administración", icono: "users", destino: "/static/admin/usuarios.html", rutas: ["/static/admin/usuarios.html"] },
     ],
     OPERARIO: [
@@ -91,6 +91,9 @@ function construirNavegacion(usuario) {
     for (const vista of VISTAS_POR_ROL[usuario.rol] || []) {
         const enlace = crearConIcono("a", "", vista.icono, vista.texto);
         enlace.href = vista.destino;
+        if (vista.conPendientes) {
+            enlace.dataset.pendientes = "";
+        }
         if (vista.rutas.includes(window.location.pathname)) {
             enlace.setAttribute("aria-current", "page");
         }
@@ -250,6 +253,25 @@ async function construirEstadoDelTurno(contenedor) {
     }
 }
 
+// Cuántos pendientes tiene el Administrador, junto a "Hoy" en el menú (alcance, Sección 6.2). Sin
+// pendientes no se muestra nada.
+function pintarCantidadDelMenu(total) {
+    const enlace = document.querySelector("[data-pendientes]");
+    if (!enlace) {
+        return;
+    }
+    enlace.querySelector(".menu-cantidad")?.remove();
+    if (total > 0) {
+        const cantidad = crearElemento("span", "menu-cantidad cifra", String(total));
+        cantidad.setAttribute("aria-label", plural_(total, "pendiente", "pendientes"));
+        enlace.append(cantidad);
+    }
+}
+
+function plural_(cantidad, uno, varios) {
+    return `${cantidad} ${cantidad === 1 ? uno : varios}`;
+}
+
 // Protege una página: comprueba la sesión y el rol, arma el marco y devuelve el usuario.
 async function iniciarPaginaProtegida(rolesPermitidos) {
     const usuario = await pedirApi("/auth/sesion");
@@ -268,6 +290,10 @@ async function iniciarPaginaProtegida(rolesPermitidos) {
     }
     barra.append(construirBloqueUsuario(usuario));
     document.body.prepend(barra);
+    // En las demás pantallas del Administrador, el menú también dice cuántos pendientes hay (Hoy los pinta solo).
+    if (usuario.rol === "ADMINISTRADOR" && window.location.pathname !== "/static/admin/hoy.html") {
+        pedirApi("/hoy/pendientes").then((pendientes) => pintarCantidadDelMenu(pendientes.total)).catch(() => {});
+    }
     document.body.classList.remove("cargando");
     return usuario;
 }
