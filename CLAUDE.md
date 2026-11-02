@@ -212,6 +212,10 @@ Cuando una regla cambie, se actualiza primero el alcance (con su entrada en la b
 - `documento_pdf.py`: convierte un documento Markdown de `docs/` en PDF (imágenes y diagramas Mermaid).
   Los entregables de cada materia van en `docs/diseno_interfaces/` y `docs/diseno_orientado_objetos/`,
   en una carpeta por momento, junto al enunciado (`actividad.md`).
+- `datos_de_ejemplo.py`: varias semanas de historia para la empresa de prueba (para Indicadores y sus gráficas).
+  Simula el uso real con los servicios y un reloj que avanza por los días pasados, así respeta todas las reglas.
+  Solo base de prueba; sin `--aplicar` muestra lo que haría. Se copia al contenedor (la imagen no trae
+  `herramientas/`): instrucciones en su encabezado. Conviene un `mongodump` antes.
 - `migrar_etapa4.py`: migración de una sola vez para bases con datos anteriores a la Etapa 4
   (sin argumentos muestra lo que haría; con `--aplicar` lo hace).
 

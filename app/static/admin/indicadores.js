@@ -230,11 +230,14 @@ function pintarTendencia() {
     });
 }
 
-// ¿Qué nos frena? El tiempo en pausa por motivo, de todos, y las devoluciones por motivo.
+// "Fin de jornada" no es una interrupción: esa pausa dura la noche, hasta que se retoma al día siguiente.
+const MOTIVO_FIN_DE_JORNADA = "Fin de jornada";
+
+// ¿Qué nos frena? El tiempo en pausa por motivo, de todos (sin "Fin de jornada"), y las devoluciones por motivo.
 function pintarMotivos() {
     const minutos = new Map();
     for (const operario of datos.operarios) {
-        for (const motivo of operario.detalle.pausas_por_motivo) {
+        for (const motivo of operario.detalle.pausas_por_motivo.filter((m) => m.motivo !== MOTIVO_FIN_DE_JORNADA)) {
             minutos.set(motivo.motivo, (minutos.get(motivo.motivo) || 0) + motivo.minutos);
         }
     }
@@ -242,14 +245,16 @@ function pintarMotivos() {
     const contenedorPausas = document.getElementById("grafica-pausas");
     if (pausas.length) {
         pintarGrafica(contenedorPausas, {
-            id: "lienzo-pausas", titulo: "Tiempo en pausa por motivo", tipo: "barras", horizontal: true, formato: formatoTiempo,
+            id: "lienzo-pausas", titulo: "Tiempo en pausa por motivo, durante el turno", tipo: "barras", horizontal: true, formato: formatoTiempo,
             etiquetas: pausas.map(([motivo]) => motivo),
             series: [{ nombre: "Tiempo en pausa", valores: pausas.map(([, valor]) => valor) }],
             eje: ejeEnHoras([{ valores: pausas.map(([, valor]) => valor) }]),
             descripcion: `El motivo con más tiempo en pausa es ${pausas[0][0]}, con ${formatoTiempo(pausas[0][1])}.`,
         });
+        contenedorPausas.querySelector(".grafica").append(crearElemento("p", "texto-secundario grafica-nota",
+            "No incluye las pausas por fin de jornada: duran la noche, no son una interrupción."));
     } else {
-        pintarSinDatos(contenedorPausas, "Tiempo en pausa por motivo", "Nadie pausó actividades esta semana.");
+        pintarSinDatos(contenedorPausas, "Tiempo en pausa por motivo, durante el turno", "Nadie pausó actividades durante el turno esta semana.");
     }
     const devoluciones = datos.empresa.pendientes.devoluciones_por_motivo;
     const contenedorDevoluciones = document.getElementById("grafica-devoluciones");

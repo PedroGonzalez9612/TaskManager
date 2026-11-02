@@ -565,6 +565,10 @@ Indicadores y Administración, con submenús como pestañas.
   pruebas), pausas y devoluciones por motivo, horas en actividades frente a programadas por persona, y lo
   estimado frente a lo real por categoría. Tres colores propios de las gráficas, validados para daltonismo;
   cada gráfica con su tabla. Los reportes (imprimir o exportar) quedan como ampliación futura.
+- **Datos de ejemplo (`herramientas/datos_de_ejemplo.py`):** 8 semanas de historia para "Café La Montaña"
+  simuladas con los servicios (unas 1 360 actividades, pausas con motivo, devoluciones reasignadas,
+  ausencias, asistencia validada), para presentar Indicadores con datos reales. En la gráfica de pausas no
+  se cuenta "Fin de jornada", que dura la noche.
 - **Pendiente:** la revisión final (contraste, capturas, auditoría de diseño, CSS sin uso). La reasignación
   automática de lo no reasignado a la siguiente jornada ya la hace el cierre de jornada. Confirmar con la profesora que la interfaz en código sirve como el
   prototipo de la Fase 2.
