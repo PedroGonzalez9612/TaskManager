@@ -29,6 +29,11 @@
         <section id="vista-actividades" role="tabpanel" aria-labelledby="pestana-actividades" class="vista-pestana">
             <div id="lista-filtros" class="filtros-linea" role="group" aria-label="Mostrar actividades"></div>
             <ul id="lista-actividades" class="lista-admin" aria-live="polite" hidden></ul>
+            <!-- Lo terminado crece con el tiempo: se ven las últimas semanas y se piden más. -->
+            <div id="mas-antiguas" class="mas-antiguas" hidden>
+                <p id="desde-cuando" class="texto-secundario"></p>
+                <button type="button" id="ver-mas-antiguas" class="boton-secundario">Ver 4 semanas más</button>
+            </div>
             <div id="sin-actividades" class="estado-vacio" hidden>
                 <strong id="sin-actividades-titulo">Sin actividades</strong>
                 <span id="sin-actividades-texto">Crea una actividad y asígnala a uno o varios operarios.</span>

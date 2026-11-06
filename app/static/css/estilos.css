@@ -3294,6 +3294,19 @@ fieldset.grupo-botones {
     justify-items: start;
 }
 
+.mas-antiguas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--e3);
+    margin-top: var(--e4);
+}
+
+.mas-antiguas p {
+    margin: 0;
+}
+
 .grupo-dia-admin {
     display: flex;
     align-items: baseline;

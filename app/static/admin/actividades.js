@@ -21,6 +21,12 @@ const ACCION_POR_VISTA = {
     proyectos: { texto: "Nuevo proyecto", alHacer: () => abrirFormularioProyecto() },
 };
 
+// Planeación carga lo de las últimas semanas en adelante, no toda la historia: con meses de uso serían
+// miles de filas. Lo que no ha terminado nunca queda atrás (el cierre de jornada lo reprograma o lo
+// deja No realizado), así que "Por hacer" no pierde nada; lo terminado se pide de a 4 semanas.
+const SEMANAS_POR_TANDA = 4;
+let semanasCargadas = SEMANAS_POR_TANDA;
+
 let actividades = [];
 let operarios = [];
 let proyectos = [];
@@ -139,6 +145,15 @@ function pintarActividades() {
         : "Crea una actividad con \"Nueva actividad\" y asígnala a uno o varios operarios.";
     reemplazarSiCambia(lista, agruparPorDia(visibles).flatMap(([fecha, delDia]) =>
         [crearEncabezadoDia(fecha, delDia.length), ...delDia.map(crearFilaActividad)]));
+    // En Terminadas y Todas se dice desde cuándo se ve y se ofrece pedir más.
+    const masAntiguas = document.getElementById("mas-antiguas");
+    masAntiguas.hidden = !filtroElegido.recientesPrimero;
+    document.getElementById("desde-cuando").textContent =
+        `Se ven las actividades desde el ${fechaLarga(desdeCargado())}.`;
+}
+
+function desdeCargado() {
+    return sumarDias(inicioDeSemana(new Date()), -7 * (semanasCargadas - 1));
 }
 
 // ---------- Pestaña Proyectos ----------
@@ -335,9 +350,17 @@ function pintarCarga() {
 }
 
 // Un día de una persona en el panel lateral: su trabajo de ese día y, si hace falta, asignarle más.
-function abrirDiaDePersona(operario, fecha, jornada, capacidad) {
-    const delDia = ordenarActividades(actividades.filter((a) => a.fecha_programada === fecha
-        && a.estado !== "CANCELADA" && a.operarios.some((o) => o.id === operario.id)));
+// Las actividades de ese día se piden aparte: la semana elegida puede ser anterior a lo cargado en la lista.
+async function abrirDiaDePersona(operario, fecha, jornada, capacidad) {
+    let delDia;
+    try {
+        delDia = (await pedirApi(`/actividades?fecha_desde=${fecha}&fecha_hasta=${fecha}`))
+            .filter((a) => a.estado !== "CANCELADA" && a.operarios.some((o) => o.id === operario.id));
+    } catch (error) {
+        mostrarAviso(error.message, "advertencia");
+        return;
+    }
+    delDia = ordenarActividades(delDia);
     const resumen = crearElemento("p", "cifra", jornada
         ? `${duracionTexto(jornada.minutos)} de ${duracionTexto(capacidad)} (${jornada.porcentaje} %)`
         : `Sin trabajo asignado. Capacidad de ${duracionTexto(capacidad)}.`);
@@ -401,7 +424,10 @@ function pintar() {
 
 async function cargar() {
     try {
-        [actividades, proyectos] = await Promise.all([pedirApi("/actividades"), pedirApi("/proyectos")]);
+        [actividades, proyectos] = await Promise.all([
+            pedirApi(`/actividades?fecha_desde=${fechaTexto(desdeCargado())}`),
+            pedirApi("/proyectos"),
+        ]);
         pintar();
         await cargarCarga();
     } catch (error) {
@@ -421,6 +447,13 @@ iniciarPaginaProtegida(["ADMINISTRADOR"]).then(async (usuario) => {
         alGuardar: cargar,
     });
     document.getElementById("accion-principal").addEventListener("click", () => ACCION_POR_VISTA[vista]?.alHacer());
+    const verMas = document.getElementById("ver-mas-antiguas");
+    verMas.addEventListener("click", async () => {
+        verMas.disabled = true;     // Mientras llegan, para no pedir dos tandas a la vez.
+        semanasCargadas += SEMANAS_POR_TANDA;
+        await cargar();
+        verMas.disabled = false;
+    });
     conectarSemanas((elegido) => {
         lunes = elegido;
         cargarCarga().catch((error) => mostrarAviso(error.message, "advertencia"));
